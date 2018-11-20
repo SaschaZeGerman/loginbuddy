@@ -5,6 +5,14 @@
 <%@ page import="net.loginbuddy.cache.LoginbuddyCache" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<%--
+  ~ Copyright (c) 2018. . All rights reserved.
+  ~
+  ~ This software may be modified and distributed under the terms of the Apache License 2.0 license.
+  ~ See http://www.apache.org/licenses/LICENSE-2.0 for details.
+  ~
+  --%>
+
 <html>
 <head>
     <meta charset="utf-8">
