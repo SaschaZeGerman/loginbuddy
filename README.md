@@ -1,7 +1,11 @@
+#About
+
+A container based solution that should help developers support social login for their applications in a simple way!
+
 # Loginbuddy - Your authenticator
 
 This project implements an OpenID Connect client that can be used as proxy between an application (your application) and 
-an OpenID Connect provider. This is useful for cases where social login should be an option for users to login to your 
+an OpenID Provider. This is useful for cases where social login should be an option for users to login to your 
 application. Your application needs to make two simple calls only and the response will be users details. Loginbuddy 
 takes care of the complete OAuth/ OpenID Connect protocol.
 
@@ -17,13 +21,15 @@ random **nonce** and **state** value, it validates received **id_token (JWT)**. 
 id_token but also the response of a call to **/userinfo** to your application. It does **NOT** expose or persist or cache received access_token or 
 refresh_token. Once responses are returned to your application loginbuddy remembers nothing ... .
 
-Loginbuddy only communicates with OpenID Connect providers using **TLS/SSL**.
+Loginbuddy only communicates with OpenID Providers using **TLS/SSL**.
 
 Loginbuddy itself can be configured easily to use a certificate signed by **Let's Encrypt**. This allows you to run loginbuddy 
 in public with no TLS/SSL issues!
 
 With that, it follows best practices for OAuth and OpenID Connect.
  
+# Getting started
+
 ## Building and using the development container of loginbuddy:
 
 - Preparation
@@ -86,9 +92,9 @@ $ mv loginbuddy.crt loginbuddy.p12 docker-build/add-ons/local
 
 With that, **Rebuilt loginbuddy as shown above** and give it a try!
 
-## Configuring 'real' OpenID Connect providers
+## Configuring 'real' OpenID Providers
 
-Loginbuddy is able to communicate with any OpenID Connect provider. The only requirements are these:
+Loginbuddy is able to communicate with any OpenID Provider. The only requirements are these:
 
 - you need to register loginbuddy as an OAuth client at desired providers
 - use **https://local.loginbuddy.net** as redirect_uri (reply_url) to make your life simple, at least, during your first steps with loginbuddy
@@ -97,7 +103,7 @@ Once registered, you only need to add a JSON based configuration as shown below:
 
 1. **loginbuddy**: this is the root key
 2. **clients**: this is an array of your clients (applications) that may use loginbuddy. Each client has a 'client_uri' and a 'redirect_uri'
-3. **providers**: an array of OpenID Connect providers (OP)
+3. **providers**: an array of OpenID Providers (OP)
 
 The document looks like this:
 ```
@@ -210,9 +216,9 @@ Loginbuddy provides exactly one API:
 
 That's all!
 
-## TODO
+# Current state
 
-A few features are described but currently not implemented. HEre is the TODO list:
+Loginbuddy does not support all described features yet. Here is a high level (short) list of things that need to be done first:
 
 - implement provider id_token validation
 - return base64 encoded content of id_token payload
@@ -220,3 +226,9 @@ A few features are described but currently not implemented. HEre is the TODO lis
 - use SSL only. Redirect http traffic to https
 - logging
 - other stuff ...
+
+# License
+
+Copyright (c) 2018 CA. All rights reserved.
+
+This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](SaschaZeGerman/loginbuddy/LICENSE) file for details.
