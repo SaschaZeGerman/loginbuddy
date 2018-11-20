@@ -220,6 +220,3 @@ A few features are described but currently not implemented. HEre is the TODO lis
 - use SSL only. Redirect http traffic to https
 - logging
 - other stuff ...
-
-
-
