@@ -1,0 +1,13 @@
+language: java
+jdk:
+  - oraclejdk9
+script:
+  - mvn package
+branches:
+  only:
+  - master
+deploy:
+  provider: script
+  script: docker-compose build --no-cache
+  on:
+    branch: master

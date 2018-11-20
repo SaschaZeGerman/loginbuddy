@@ -41,9 +41,9 @@ With that, it follows best practices for OAuth and OpenID Connect.
 - Run ```mvn package```
   - this will compile all sources and it will copy the content of **./web** to **./docker-build/web**
   - that web content is used when the docker image is built
-- Run ```docker-compose -f docker-compose-local.yml build --no-cache```
+- Run ```docker-compose build --no-cache```
   - this will simply build the docker image (without a tag)
-- Run ```docker-compose -f docker-compose-local.yml up -d```
+- Run ```docker-compose up -d```
   - this will create a container, configured for remote debugging
   - this will use ports 80 (http), 443 (https), 8000 (debugging)
 - Open a browser
