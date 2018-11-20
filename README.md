@@ -183,7 +183,7 @@ Here are the images:
 
 [IntelliJ - Debug Configuration - 01:](doc/intellij_debug_config.png)
 
-[IntelliJ - Debug Configuration - 02:](doc/intellij_debug_config_02.png)
+[IntelliJ - Debug Configuration - 02:](doc/intellij_debug_config_2.png)
 
 After you have launched the container, click the **Debug** button in IntelliJ's UI. You will now be connected and are able to 
 debug any code found in **src/main/***.
