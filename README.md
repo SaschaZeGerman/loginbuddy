@@ -1,4 +1,4 @@
-#About
+# About
 
 A container based solution that should help developers support social login for their applications in a simple way!
 
