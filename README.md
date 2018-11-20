@@ -231,4 +231,4 @@ Loginbuddy does not support all described features yet. Here is a high level (sh
 
 Copyright (c) 2018 CA. All rights reserved.
 
-This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](SaschaZeGerman/loginbuddy/LICENSE) file for details.
+This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](/LICENSE) file for details.
