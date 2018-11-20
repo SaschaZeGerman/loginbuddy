@@ -1,0 +1,29 @@
+{
+  "loginbuddy": {
+    "clients": [
+      {
+        "client_uri": "https://local.loginbuddy.net",
+        "redirect_uri": "https://local.loginbuddy.net/exampleAppCallback.jsp"
+      },
+      {
+        "client_uri": "https://local.soapui.com",
+        "redirect_uri": "https://local.soapui.com/redirect"
+      }
+    ],
+    "providers": [
+      {
+        "provider": "server_loginbuddy",
+        "issuer": "https://server.loginbuddy.com/demo",
+        "client_id": "loginbuddy_demoId",
+        "client_secret": "loginbuddy_demoSecret",
+        "authorization_endpoint": "https://server.loginbuddy.net/demo/authorize",
+        "token_endpoint": "https://server.loginbuddy.net:8443/demo/token",
+        "userinfo_endpoint": "https://server.loginbuddy.net:8443/demo/userinfo",
+        "jwks_uri": "https://server.loginbuddy.net/demo/openid/jwks.json",
+        "scope": "openid profile email",
+        "response_type": "code",
+        "redirect_uri": "https://local.loginbuddy.net/callback"
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+version: '3.4'
+services:
+  loginbuddy:
+    build:
+      context: .
+    restart: always
+    ports:
+      - "80:8080"
+      - "443:8443"
+      - "8000:8000"
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
+      - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
+      - "DEBUG=jpda"
+    volumes:
+      - ./docker-build/add-ons/local/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
+      - ./docker-build/add-ons/local/loginbuddy.crt:/usr/local/tomcat/ssl/loginbuddy.crt
+      - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
+    entrypoint:
+      - /opt/docker/loginbuddy.sh

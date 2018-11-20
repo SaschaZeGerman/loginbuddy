@@ -1,0 +1,12 @@
+<Context>
+
+    <Resource name="bean/ConfigUtilFactory" auth="Container"
+              type="net.loginbuddy.config.ConfigUtil"
+              factory="org.apache.naming.factory.BeanFactory"
+              path="webapps/ROOT/config/config.json"/>
+
+    <Resource name="bean/CacheFactory" auth="Container"
+              type="net.loginbuddy.cache.Cache"
+              factory="org.apache.naming.factory.BeanFactory"/>
+
+</Context>

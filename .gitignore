@@ -1,0 +1,33 @@
+# Compiled class file
+target/
+
+# Log file
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Mac
+.DS_Store
+
+# Intellij
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# SOAPUI
+apitest/soapui/project/*workspace.xml
+apitest/soapui/properties/*.properties
+!apitest/soapui/properties/template.properties
+
+# test files
+apitest/tempfiles/*
+
+# Loginbuddy
+docker-build/add-ons/web/*
