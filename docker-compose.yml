@@ -1,20 +1,26 @@
-version: '3.4'
-services:
-  loginbuddy:
-    build:
-      context: .
-    restart: always
-    ports:
-      - "80:8080"
-      - "443:8443"
-      - "8000:8000"
-    environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
-      - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
-      - "DEBUG=jpda"
-    volumes:
-      - ./docker-build/add-ons/local/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
-      - ./docker-build/add-ons/local/loginbuddy.crt:/usr/local/tomcat/ssl/loginbuddy.crt
-      - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
-    entrypoint:
-      - /opt/docker/loginbuddy.sh
+#
+# This docker compose file is an example. To make it work do the following:
+#
+# - create the referenced p12 file BEFORE you use loginbuddy
+# - have that p12 keystore file be signed by a public CA (i.e.: Let's Encrypt)
+# - update the environment variable 'HOSTNAME_LOGINBUDDY' to match your 'real' hostname
+# - update the 'volumes' section to map the correct p12 keystore location
+#
+# As long as only self-signed certificates are available, use 'docker-compose-dev.yml' instead. It takes care of
+# creating and updating temporary keystore files.
+#
+# The README file (soon after 21. Nov 2018) has instructions on how to leverage 'Let's Encrypt' for signing purposes!
+
+#
+#version: '3.4'
+#services:
+#  loginbuddy:
+#    image: saschazegerman/loginbuddy:latest
+#    restart: always
+#    ports:
+#      - "80:8080"
+#      - "443:8443"
+#    environment:
+#      - "HOSTNAME_LOGINBUDDY=my.loginbuddy.hostname"
+#    volumes:
+#      - /opt/certs/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12

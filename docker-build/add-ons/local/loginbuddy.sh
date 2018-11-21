@@ -1,19 +1,23 @@
 #!/bin/bash
 #
-# Pick up inputs from the command line to run in debug mode if requested
-# this should be used for development only
-#
-# To debug tomcat run 'export DEBUG=jdpa'
-#
-JPDA=$(echo $DEBUG)
+# For development purposes, this script generates a private key on the fly.
 
-if [ "$JPDA" = "jpda" ]
-then
-    # import our own certificate as trusted cert for local development (including debugging)
-    #
-    $JAVA_HOME/bin/keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
-fi
-
-# run the original tomcat entrypoint script but with security manager
+# Create a directory for ssl certificates
 #
-sh /usr/local/tomcat/bin/catalina.sh $JDPA run -security
+mkdir /usr/local/tomcat/ssl
+
+# Create private key, including subject alternative name
+#
+keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass changeit -keypass changeit -validity 1 -keysize 2048 -dname "CN=local.lognbuddy.net" -ext san=dns:server.loginbuddy.net
+
+# Export the public certificate
+#
+keytool -export -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storepass changeit
+
+# Import that cert as trusted certificate
+#
+$JAVA_HOME/bin/keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
+
+# run the original tomcat entrypoint command as specified in Dockerfile
+#
+sh /usr/local/tomcat/bin/catalina.sh run -security

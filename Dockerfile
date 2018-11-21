@@ -8,10 +8,6 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 #
 COPY docker-build/add-ons/web /usr/local/tomcat/webapps/ROOT
 
-# copy the entrypoint script to run tomcat ith security manager
-#
-COPY docker-build/add-ons/server/loginbuddy.sh /opt/docker/
-
 # overwrite some configuration to 'harden' tomat. 'logindbuddy.xml' is required since we run tomcat with security manager
 # without 'loginbuddy.xml' we would use a 'META-INF/context.xml' file
 #
@@ -26,7 +22,6 @@ RUN addgroup tomcat
 RUN adduser -SG tomcat tomcat
 RUN chown -R tomcat:tomcat /usr/local/tomcat/
 
-# set permissions
+# Run the entrypoint script to run tomcat with security manager
 #
-RUN chmod 755 /opt/docker/loginbuddy.sh
-RUN chown tomcat:tomcat /opt/docker/loginbuddy.sh
+CMD ["catalina.sh", "run", "-security"]

@@ -43,7 +43,8 @@
         <li><strong>redirect_uri *: </strong>This must match the registered redirect_uri. Loginbuddy will return user details to that location</li>
         <li><strong>state *: </strong>A opaque value for loginbuddy, but required to match sessions, keep them aligned</li>
         <li><strong>provider: </strong>If this value is included, loginbuddy will not display a provider list to the user. Loginbuddy will forward the
-            authentication request to that platform. The value has to match one of the configured provider IDs, an error will be returned otherwise.</li>
+            authentication request to that platform. The value has to match one of the configured provider IDs, an error will be returned otherwise. For testing
+        purposes, use 'server_loginbuddy'. The value matches what has been configured at '/web/config/config.json'.</li>
     </ol>
     <p><strong>NOTE: </strong>Loginbuddy is an OAuth client of supported social platforms. That means, loginbuddy will <strong>NEVER</strong> see any users passwords!</p>
     <p>Below is an example form, give it a try:</p>
