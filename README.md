@@ -194,11 +194,11 @@ This gives you and idea how loginbuddy works without having to write a single li
 
 Loginbuddy is an API based solution which means no special libraries are required. In the end you could use 'curl' if you like!
 
-Loginbuddy provides exactly one API:
+Loginbuddy provides exactly one API to initialize the flow. This must be called using a browser, the repsonse is HTML:
 
 **Request**
 
-- URL :/initialize
+- URL :/provider.jsp
 - Method: POST/ GET
 - Content-Type: application-x-www-form-urlencoded
 - Parameters:
@@ -207,11 +207,15 @@ Loginbuddy provides exactly one API:
   * *provider* (optional): if provided, it must match one of the values configured at **config.json[loginbuddy.providers]**. If 
   this value is provided loginbuddy will skip the **provider-selection-screen**
 
-**Response**
+**OAuth dance between loginbuddy, resource_owner and OpenID Provider**
+
+- there is nothing your application has to do. Just sit and wait
+
+**Response** to your redirect_uri of your application, after the login process has finished
 
 - *userinforesponse*: The base64 encoded response the provider responded as a request to **/userinfo** 
-- *id_token*: the id_token (jwt) as return by the provider
-- *state*: the value as given by the application
+- *id_token*: the id_token (jwt) as returned by the provider
+- *state*: the value as given by your application
 
 That's all!
 
