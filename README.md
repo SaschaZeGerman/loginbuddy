@@ -192,20 +192,20 @@ debug any code found in **src/main/***.
 **IMPORTANT:** Use the example browser client at **http://local.loginbuddy.net** to try out your configurations with your desired providers. 
 This gives you and idea how loginbuddy works without having to write a single line of code! Once you have done that, get going, it is easy!
 
-Loginbuddy is an API based solution which means no special libraries are required. In the end you could use 'curl' if you like!
+Loginbuddy is an API based solution which means no special libraries are required.
 
-Loginbuddy provides exactly one API to initialize the flow. This must be called using a browser, the repsonse is HTML:
+Loginbuddy provides exactly one API to initialize the flow. This must be called using a browser, the response is HTML:
 
 **Request**
 
-- URL :/provider.jsp
+- URL: /provider.jsp
 - Method: POST/ GET
 - Content-Type: application-x-www-form-urlencoded
 - Parameters:
   * *redirect_uri*: this must match one of the values configured in **config.json[loginbuddy.clients]**
   * *state*: a state value, opaque to loginbuddy but used for session handling
   * *provider* (optional): if provided, it must match one of the values configured at **config.json[loginbuddy.providers]**. If 
-  this value is provided loginbuddy will skip the **provider-selection-screen**
+  this value is provided loginbuddy will skip the **provider-selection-screen**. Otherwise an HTML page will be presented to the resource_owner.
 
 **OAuth dance between loginbuddy, resource_owner and OpenID Provider**
 
