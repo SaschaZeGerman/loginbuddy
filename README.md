@@ -136,6 +136,7 @@ The overview below displays the JSON configuration keys. Depending on the suppor
 
 - X: required
 - O: optional
+- ---: Not applicable
 
 | keys                     | w/ OpenID Discovery | w/o OpenID Discovery   | Note  |
 | ------------------------ |:-------------------:| :--------------------: | --- |
@@ -144,13 +145,13 @@ The overview below displays the JSON configuration keys. Depending on the suppor
 | client_id                | X                   | X                      | This must be obtained from the OP|
 | client_secret            | X                   | X                      | This must be obtained from the OP. Loginbuddy is a 'confidential' client and presents the client_secret when exchanging the 'code' for a token |
 | redirect_uri             | X                   | X                      | This must point to loginbuddy, e.g.: 'https://local.loginbuddy.net/callback'. The OP will send all responses to this API |
-| openid_configuration_uri | X                   |                        | Loginbuddy uses this absolute URI instead of concatenating {issuer}/.well-known/openid-configuration | 
+| openid_configuration_uri | X                   | ---                    | Loginbuddy uses this absolute URI instead of concatenating {issuer}/.well-known/openid-configuration | 
 | response_type            | O                   | O                      | Loginbuddy always uses 'code'. Any configuration here is ignored and meant for future purposes only. For those reasons this is optional |
 | scope                    | O                   | O                      | In most cases this will be 'openid profile email'. This is also the default if it is left empty |
-| authorization_endpoint   |                     | X                      | An absolute URI of the authorization endpoint |
-| token_endpoint           |                     | X                      | An absolute URI of the token endpoint |
-| userinfo_endpoint        |                     | X                      | An absolute URI of the userinfo endpoint |
-| jwks_uri                 |                     | X                      | An absolute URI of the jwks_uri for id_token (JWT) validations |
+| authorization_endpoint   | ---                 | X                      | An absolute URI of the authorization endpoint |
+| token_endpoint           | ---                 | X                      | An absolute URI of the token endpoint |
+| userinfo_endpoint        | ---                 | X                      | An absolute URI of the userinfo endpoint |
+| jwks_uri                 | ---                 | X                      | An absolute URI of the jwks_uri for id_token (JWT) validations |
 
 Once this configuration document has been created, place it at **web/config/config.json**. 
 
