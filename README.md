@@ -19,7 +19,7 @@ it would be too easy otherwise)! All default tomcat applications are removed, on
 When loginbuddy communicates with an OpenID Provider it always uses **response_type=code** with **PKCE (RFC 7636)**. It produces a 
 random **nonce** and **state** value, it validates received **id_token (JWT)**. Loginbuddy always returns the received 
 id_token but also the response of a call to **/userinfo** to your application. It does **NOT** expose or persist or cache received access_token or 
-refresh_token. Once responses are returned to your application loginbuddy remembers nothing ... .
+refresh_token. Once responses are returned to your application, loginbuddy remembers nothing ... .
 
 Loginbuddy only communicates with OpenID Providers using **TLS/SSL**.
 
@@ -35,16 +35,15 @@ With that, it follows best practices for OAuth and OpenID Connect.
 - Preparation
   - modify your hosts file, add **127.0.0.1 local.loginbuddy.net server.loginbuddy.net**
   - for MacBooks this would be done at ```sudo /etc/hosts```
-  - by default a self-signed private key is available. Certainly only for development purposes
-    - find it here: **./docker-build/add-ons/local/loginbuddy.p12**
-    - CN=local.loginbuddy.net, subjectAlternativeName: server.loginbuddy.net
 - Run ```mvn package```
   - this will compile all sources and it will copy the content of **./web** to **./docker-build/web**
   - that web content is used when the docker image is built
-- Run ```docker-compose build --no-cache```
+- Run ```docker-compose -f docker-compose-dev.yml build --no-cache```
   - this will simply build the docker image (without a tag)
-- Run ```docker-compose up -d```
+- Run ```docker-compose -f docker-compose-dev.yml up -d```
   - this will create a container, configured for remote debugging
+  - this will also create a private key on the fly, used for testing and development purposes. See 'docker-build/add-ons/local/loginbuddy.sh' for details
+  - the private key's subject is **CN=local.loginbuddy.net**. The subject alternative name is **server.loginbuddy.net** to simulate a provider
   - this will use ports 80 (http), 443 (https), 8000 (debugging)
 - Open a browser
   - go to **http://local.loginbuddy.net** and follow the prompts
@@ -52,7 +51,7 @@ With that, it follows best practices for OAuth and OpenID Connect.
 
 That's it! The response that is shown is completely fake but it represents the type of content that can be expected.
 
-### Optional: overwrite test private key
+### Optional: overwrite test private key (ignore this for now)
 
 If you would like to use your own private key for testing purposes, simply follow the instructions below:
 
@@ -97,7 +96,7 @@ With that, **Rebuilt loginbuddy as shown above** and give it a try!
 Loginbuddy is able to communicate with any OpenID Provider. The only requirements are these:
 
 - you need to register loginbuddy as an OAuth client at desired providers
-- use **https://local.loginbuddy.net** as redirect_uri (reply_url) to make your life simple, at least, during your first steps with loginbuddy
+- use **https://local.loginbuddy.net/callback** as redirect_uri (reply_url) to make your life simple, at least, during your first steps with loginbuddy
 
 Once registered, you only need to add a JSON based configuration as shown below:
 
