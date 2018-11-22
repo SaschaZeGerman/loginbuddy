@@ -23,4 +23,6 @@
 #    environment:
 #      - "HOSTNAME_LOGINBUDDY=my.loginbuddy.hostname"
 #    volumes:
+#      - /opt/loginbuddy/catalina.policy:/usr/local/tomcat/conf/catalina.policy
+#      - /opt/loginbuddy/config.json:/usr/local/tomcat/webapps/ROOT/config/config.json
 #      - /opt/certs/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12

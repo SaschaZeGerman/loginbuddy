@@ -51,46 +51,6 @@ With that, it follows best practices for OAuth and OpenID Connect.
 
 That's it! The response that is shown is completely fake but it represents the type of content that can be expected.
 
-### Optional: overwrite test private key (ignore this for now)
-
-If you would like to use your own private key for testing purposes, simply follow the instructions below:
-
-Create a new, self-signed key. The referenced file **doc/openssl.conf** is a mini-configuration file to generate an 
-subject alternative name. Doing that allows loginbuddy (local.loginbuddy.net, server.loginbuddy.net) to be client and 
-server at the same time with just one private key/ public certificate:
-
-```
-$ openssl req -newkey rsa:2048 -nodes -keyout loginbuddy.key -x509 -days 365 -out loginbuddy.crt \
-      -subj "/CN=local.loginbuddy.net" \
-      -config doc/openssl.config \
-      -extensions SAN
-```
-
-Next, generate the p12 file that will be used with tomcat. When prompted for a password use 'changeit'. If you would like to 
-use a unique password, search and replace all occurrences of 'changeit' in this project:
-
-```
-$ openssl pkcs12 -export \
-      -name "loginbuddy" \
-      -inkey loginbuddy.key \
-      -in loginbuddy.crt \
-      -out loginbuddy.p12
-```
-
-Check the content of the generated p12 file:
-
-```$ openssl pkcs12 -info -in loginbuddy.p12```
-
-Now, move the files **loginbuddy.crt** and **loginbuddy.p12** to a new location, overwriting the existing files. The 
-file 'loginbuddy.key' can be removed:
-
-```
-$ rm loginbuddy.key
-$ mv loginbuddy.crt loginbuddy.p12 docker-build/add-ons/local
-```
-
-With that, **Rebuilt loginbuddy as shown above** and give it a try!
-
 ## Configuring 'real' OpenID Providers
 
 Loginbuddy is able to communicate with any OpenID Provider. The only requirements are these:
@@ -219,6 +179,159 @@ Loginbuddy provides exactly one API to initialize the flow. This must be called 
 - *state*: the value as given by your application
 
 That's all!
+
+## Using certificates signed by Let's Encrypt
+
+To use loginbuddy as part of a real system, it needs to have a valid SSL certificate. Achieving this is quite simple. However,
+you need to satisfy these requirements:
+
+- you need to own a domain name that you are in control of
+  - meaning, you need to register the desired hostname
+- you need a platform that supports docker and is accessible on the internet
+
+### Digitalocean
+
+This is not an advertisement for [digitalocean.com](https://www.digitalocean.com), but I have tried the described approach below 
+on that platform and it worked very well. You can do the following:
+
+- register yourself at digitalocean and create a so-called *droplet*
+- in the options to choose from, select *one-click apps*
+  - here you will find the option *Docker \<version\>*. This is a docker enabled Ubuntu droplet
+  - choose the cheapest one, USD $5,--/ month
+- once that is launched, follow digitalocean's instructions on creating valid users and enabling ssh
+- when this is done, the menu *Networking* on the left side of the screen allows you to manage domain names and associate them with your droplet
+  - to make this work, you have to update the DNS registration at your domains registrar
+  - at the registrar configure it so that digitalocean manages the DNS names
+
+Now, if you got this working, which took you probably a few hours for the first time (not because it is complicated, but because it is ... well ... the first time)
+ you can login to your droplet via ssh and install *certbot-auto*. That is the client that will provide the signed certificate. The good news is 
+ that digialocean has a very good API that let's you automate practically all required steps later on if you like!
+ 
+The main idea is to install a signed cert in your droplet and map loginbuddy to it via a volume in docker-compose. Here are the steps:
+
+On the droplet console:
+
+**Create directories:**
+
+```
+$ mkdir /opt/certs
+$ mkdir /opt/certbot
+$ mkdir /opt/loginbuddy
+```
+
+**Install certbot-auto:** 
+ 
+```
+$ curl -o /opt/certbot/certbot-auto https://dl.eff.org/certbot-auto
+$ chmod a+x /opt/certbot/certbot-auto
+```
+
+**Create your private key and a CSR:**
+
+```
+$ cd /opt/certs
+$ openssl req -out server.csr -new -newkey rsa:2048 -nodes -keyout server.key -subj "/CN=your-hostname" // You can certainly include C... ST... L... O... in your subject
+```
+
+**Verify that port 80 is open:**
+
+Certbot will start a standalone web server for verification purposes and will place a file on your system. It will then 
+try to retrieve that file via an http request.
+  
+```
+$ ufw status  // port 80 is most likey not listed
+$ ufw allow 80/tcp // opens port 80
+```
+
+**Run certbot-auto:**
+
+The command below *simulates* the process. Use this option '--staging' while you are testing with certbot. Otherwise 
+you will run into ratelimit issues and BOOOOOMMM you are banned for some time!
+
+The command below executes certbot in a non-interactive mode. The signed certificate will be placed at */opt/certs/signed.pem*. 
+
+```
+$ cd /opt/certbot
+$ ./certbot-auto certonly --csr /opt/certs/server.csr --standalone --staging --email your@email.com --non-interactive --agree-tos --cert-path /opt/certs/signed.pem
+``` 
+
+The first time cerbot-auto runs it will download some stuff. Nevertheless, at the end you should see a message like this:
+
+*Congratulations! Your certificate and chain have been saved ...*
+
+If you run ```ls -l``` you should find files called **0000_chain.pem 0001_chain.pem***. The first file is the CA, in this 
+case *CN = Fake LE Root X1*, the second one is your signed cert!
+
+In addition, **/opt/certs/signed.pem** was created which is the same as **0001_chain.pem**.
+
+**Run certbot-auto - the real thing:**
+
+Remove the test-certificates and get your real signed certificate!
+
+```
+$ cd /opt/certs
+$ rm signed.pem
+
+$ cd /opt/certbot
+$ remove 000*
+
+# the switch --staging has been removed!
+$ ./certbot-auto certonly --csr /opt/certs/server.csr --standalone --email your@email.com --non-interactive --agree-tos --cert-path /opt/certs/signed.pem
+```
+
+*Congratulations! Your certificate and chain have been saved ...*
+
+This time Let's Encrypt has signed your certificate! Check it by running this command, look for *Issuer* within the print out:
+
+```openssl x509 -in signed.pem -text -noout```
+
+Now, lets update the private key and create a p12 file which will be used by tomcat (You have to provide a password! For 
+testing, just use 'changeit'. In all other cases use a unique password!):
+
+```
+$ cd /opt/certs
+$ openssl pkcs12 -export -in signed.pem -inkey server.key -certfile signed.pem -name "latest.loginbuddy.net" -out loginbuddy.p12
+``` 
+
+Very good! You have now got everything you need to get your first loginbuddy container running, including a 'real' SSL certificate!
+
+### Launching loginbuddy
+
+To make your life easy, copy a few example files onto your droplet.
+
+Copy the local file **docker-build/add-ons/server/catalina.policy** to your droplet into the directory **/opt/loginbuddy/catalina.policy**. 
+Modify the copy to end with this line:
+
+```
+  permission ...
+  permission java.net.SocketPermission "your-hostname", "connect,resolve";
+};
+```
+
+Copy the local file **web/config/config.json** to your droplet into the directory **/opt/loginbuddy/config.json**. Update 
+all occurences of *local.logindbuddy.net* and *server.loginbuddy.net* with your hostname!
+
+Copy the provided example file **docker-compose.yml** and place it on your droplet at **/opt/loginbuddy/docker-compose.yml**.
+
+Uncomment all lines as of *version: '3.4'* and update the hostname!
+
+Now open port 443:
+
+```
+$ ufw allow 443/tcp
+$ ufw status // it should appear in the list of open ports
+```
+
+Finally, it is time to give it a try!
+
+```
+$ cd /opt/loginbuddy
+$ docker-compose up -d
+```
+
+**NOTE:** It may take a few minutes for loginbuddy to start up! Be patient, we have chosen the cheapest droplet!
+
+Open a browser and open loginbuddy at **http://your-hostname**.
 
 # Current state
 
