@@ -344,6 +344,8 @@ Open a browser and open loginbuddy at **http://your-hostname**.
 I am running the latest version of loginbuddy here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). It only supports the 
 'fake' provider, but it may help getting an idea how it works. If the URL is not working, I am trying figure out something new.
 
+**NOTE:** When going through the flow the first time it may fail. Just try it again and it will work!
+
 # Current state
 
 Loginbuddy does not support all described features yet. Here is a high level (short) list of things that need to be done first:
