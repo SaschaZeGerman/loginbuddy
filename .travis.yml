@@ -1,17 +1,16 @@
 sudo: required
-
 services:
-  - docker
-
+- docker
 language: java
-
 jdk:
-  - oraclejdk9
-
+- oraclejdk9
 branches:
   only:
   - master
-
 before_install:
-  - mvn package
-  - docker build --tag saschazegerman/loginbuddy:latest .
+- mvn package
+script:
+- docker build --tag saschazegerman/loginbuddy:latest .
+env:
+  matrix:
+    secure: LKGPk2NVgfihUci6LpqWG4UWRnwDroDA7lS4Xy1BNMBan3avttlFn3mdjovoTG6Ni/mC7UgUer7HC7nKopZFSsWuAoAQZQd/BJM7JE7yGkOgZl6fR9l+H6Yu6xEgrAWGxsYY0SCBiNkxPXeNFvBroVEMkEE+FkUGivvCA7PXXGKVNkZBrzUYhz2Wm763yfynYfOL1FIeu5gOXbey8EDZO/6HPHwYRmFaqMcT72RV2ZD4YMN3631yM2bKkkie6kGyF+n1i6J2UYsvJJWpo+fwJBoLO+7YKPCnLDuU9H5Bxv5GJH7cAWBRk8BykClm3Yjnc8gGzXQi/SuaDioM/eZWOl8AtblrSlZLvW1y0oL2XNHf3G+SAbfQXy/Ilv2duOT5P+abAwIpJM72o9lpdGJ+O/yCjGm+t7t6BgvJAsxkQmoPd/3avAf8f79W7rAvCuc7lH/CQtnz/2KCi4A4/0NTp3LgiRQQabeuwx9eqN2ogsgheHQBRIo8vOYQpkpnyqdZ1AciHCAKeGm3kCOA10W9biiARTs0wjsSJgw+FHyRvHmDfkmzln4xJAZuNW+ZAb4Pp0tr0PrEMg9YlZK9uFZI2w4XYAF/A0W1HAa4tUD5jvcDGyNUZ/WjqTU0UmyjLc1XLJrsvnpmcFre4UKKsMUvRdO9SdLyZBNGDrZvyGqBvIU=
