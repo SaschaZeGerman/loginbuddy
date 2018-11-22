@@ -12,8 +12,6 @@ branches:
   only:
   - master
 
-script:
-  - mvn package
-
 before_install:
+  - mvn package
   - docker build --tag saschazegerman/loginbuddy:latest .
