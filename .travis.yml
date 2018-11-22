@@ -1,13 +1,19 @@
+sudo: required
+
+services:
+  - docker
+
 language: java
+
 jdk:
   - oraclejdk9
-script:
-  - mvn package
+
 branches:
   only:
   - master
-deploy:
-  provider: script
-  script: docker-compose build --no-cache
-  on:
-    branch: master
+
+script:
+  - mvn package
+
+before_install:
+  - docker build --tag saschazegerman/loginbuddy:latest .
