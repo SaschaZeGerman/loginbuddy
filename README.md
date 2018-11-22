@@ -260,9 +260,9 @@ The first time cerbot-auto runs it will download some stuff. Nevertheless, at th
 *Congratulations! Your certificate and chain have been saved ...*
 
 If you run ```ls -l``` you should find files called **0000_chain.pem 0001_chain.pem***. The first file is the CA, in this 
-case *CN = Fake LE Root X1*, the second one is your signed cert!
+case *CN = Fake LE Root X1*, the second one is your signed cert in combination with the CA cert!
 
-In addition, **/opt/certs/signed.pem** was created which is the same as **0001_chain.pem**.
+In addition, **/opt/certs/signed.pem** was created which is your signed cert.
 
 **Run certbot-auto - the real thing:**
 
@@ -281,16 +281,22 @@ $ ./certbot-auto certonly --csr /opt/certs/server.csr --standalone --email your@
 
 *Congratulations! Your certificate and chain have been saved ...*
 
-This time Let's Encrypt has signed your certificate! Check it by running this command, look for *Issuer* within the print out:
+This time Let's Encrypt has signed your certificate using the 'real' CA! Check it by running this command, look for *Issuer* within the print out:
 
-```openssl x509 -in signed.pem -text -noout```
+```
+$ openssl x509 -in /opt/certs/signed.pem -text -noout
+```
 
 Now, lets update the private key and create a p12 file which will be used by tomcat (You have to provide a password! For 
-testing, just use 'changeit'. In all other cases use a unique password!):
+testing, just use 'changeit'. In all other cases use a unique password!).
+
+To make this work we can either use **0001_chain.pem** or combine **signed.pem** and **0001_chain.pem**:
 
 ```
 $ cd /opt/certs
-$ openssl pkcs12 -export -in signed.pem -inkey server.key -certfile signed.pem -name "latest.loginbuddy.net" -out loginbuddy.p12
+$ cat signed.pem /opt/certbot/0000_chain.pem > loginbuddy_signed.pem // creating the certificate chain
+$ openssl pkcs12 -export -in loginbuddy_signed.pem -inkey server.key -name "loginbuddy" -out loginbuddy.p12
+$ openssl pkcs12 -info -in loginbuddy.p12 // view the content of the p12 file
 ``` 
 
 Very good! You have now got everything you need to get your first loginbuddy container running, including a 'real' SSL certificate!
