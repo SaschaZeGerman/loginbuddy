@@ -341,7 +341,7 @@ Open a browser and open loginbuddy at **http://your-hostname**.
 
 # Loginbuddy live
 
-I am running the latest version of loginbuddy here: [http://loginbuddy.net](http://latest.loginbuddy.net). It only supports the 
+I am running the latest version of loginbuddy here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). It only supports the 
 'fake' provider, but it may help getting an idea how it works. If the URL is not working, I am trying figure out something new.
 
 # Current state
