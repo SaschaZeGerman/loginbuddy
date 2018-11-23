@@ -100,53 +100,26 @@
         <location>/error.jsp</location>
     </error-page>
 
+    <!-- Require HTTPS for everything except /img (favicon) and /css. -->
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>Require SSL everywhere</web-resource-name>
-            <url-pattern>/authorize</url-pattern>
+            <web-resource-name>HTTPSOnly</web-resource-name>
+            <url-pattern>/*</url-pattern>
         </web-resource-collection>
         <user-data-constraint>
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
-
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>Require SSL everywhere</web-resource-name>
-            <url-pattern>/callback</url-pattern>
+            <web-resource-name>HTTPSOrHTTP</web-resource-name>
+            <url-pattern>/favicon.ico</url-pattern>
+            <url-pattern>/images/*</url-pattern>
+            <url-pattern>/css/*</url-pattern>
+            <url-pattern>/fonts/*</url-pattern>
         </web-resource-collection>
         <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Require SSL everywhere</web-resource-name>
-            <url-pattern>/initialize</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Require SSL everywhere</web-resource-name>
-            <url-pattern>/index.html</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Require SSL everywhere</web-resource-name>
-            <url-pattern>/demo/*</url-pattern>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+            <transport-guarantee>NONE</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
 

@@ -9,7 +9,7 @@
 # As long as only self-signed certificates are available, use 'docker-compose-dev.yml' instead. It takes care of
 # creating and updating temporary keystore files.
 #
-# The README file (soon after 21. Nov 2018) has instructions on how to leverage 'Let's Encrypt' for signing purposes!
+# The README file has instructions on how to leverage 'Let's Encrypt' for signing purposes!
 
 #
 #version: '3.4'
@@ -18,8 +18,8 @@
 #    image: saschazegerman/loginbuddy:latest
 #    restart: always
 #    ports:
-#      - "80:8080"
-#      - "443:8443"
+#      - "80:80"
+#      - "443:443"
 #    environment:
 #      - "HOSTNAME_LOGINBUDDY=my.loginbuddy.hostname"
 #    volumes:
