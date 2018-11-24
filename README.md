@@ -187,7 +187,7 @@ That's all!
 ## Using TLS/SSL certificates signed by Let's Encrypt
 
 To use loginbuddy as part of a real system, it needs to have a valid SSL certificate. Achieving this is quite simple. 
-[Let's Encrypt](https://letsencrypt.org) is a Certificate Authority (CA) that issues certificates for free! The signed certificate are valid for 3 months and can 
+[Let's Encrypt](https://letsencrypt.org) is a Certificate Authority (CA) that issues certificates for free! The signed certificates are valid for 3 months and can 
 be renewed as often as needed.
 
 However, you need to satisfy these requirements:
@@ -263,11 +263,11 @@ $ cd /opt/certbot
 $ ./certbot-auto certonly --csr /opt/certs/server.csr --standalone --staging --email your@email.com --non-interactive --agree-tos --cert-path /opt/certs/signed.pem
 ``` 
 
-The first time cerbot-auto runs it will download some stuff. Nevertheless, at the end you should see a message like this:
+The first time cerbot-auto runs it will download some libraries. Nevertheless, at the end you should see a message like this:
 
 *Congratulations! Your certificate and chain have been saved ...*
 
-If you run ```ls -l``` you should find files called **0000_chain.pem 0001_chain.pem***. The first file is the CA, in this 
+If you run ```ls -l``` you should find files called **0000_chain.pem 0001_chain.pem**. The first file is the CA, in this 
 case *CN = Fake LE Root X1*, the second one is your signed cert in combination with the CA cert!
 
 In addition, **/opt/certs/signed.pem** was created which is your signed cert.
@@ -350,9 +350,7 @@ Open a browser and open loginbuddy at **http://your-hostname**.
 # Loginbuddy live
 
 I am running the latest version of loginbuddy here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). It only supports the 
-'fake' provider, but it may help getting an idea how it works. If the URL is not working, I am trying figure out something new.
-
-**NOTE:** When going through the flow the first time it may fail. Just try it again and it will work!
+'fake' provider, but it may help getting an idea how it works. If the URL is not working, I am trying to figure out something new.
 
 # Current state
 
@@ -361,7 +359,6 @@ Loginbuddy does not support all described features yet. Here is a high level (sh
 - implement provider id_token validation
 - return base64 encoded content of id_token payload
 - create JWT by loginbuddy to return content back to application
-- use SSL only. Redirect http traffic to https
 - logging
 - other stuff ...
 
