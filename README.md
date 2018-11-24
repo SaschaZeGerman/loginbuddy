@@ -9,6 +9,10 @@ an OpenID Provider. This is useful for cases where social login should be an opt
 application. Your application needs to make two simple calls only and the response will be users details. Loginbuddy 
 takes care of the complete OAuth/ OpenID Connect protocol.
 
+This is the visual overview of the design:
+
+![alt overview](doc/overview_700.png)
+
 ## How it's implemented
 
 Loginbuddy is a simple java web application running in tomcat. The Docker image is based on tomcat:alpine. The Dockerfile shows all details.
@@ -180,10 +184,13 @@ Loginbuddy provides exactly one API to initialize the flow. This must be called 
 
 That's all!
 
-## Using certificates signed by Let's Encrypt
+## Using TLS/SSL certificates signed by Let's Encrypt
 
-To use loginbuddy as part of a real system, it needs to have a valid SSL certificate. Achieving this is quite simple. However,
-you need to satisfy these requirements:
+To use loginbuddy as part of a real system, it needs to have a valid SSL certificate. Achieving this is quite simple. 
+[Let's Encrypt](https://letsencrypt.org) is a Certificate Authority (CA) that issues certificates for free! The signed certificate are valid for 3 months and can 
+be renewed as often as needed.
+
+However, you need to satisfy these requirements:
 
 - you need to own a domain name that you are in control of
   - meaning, you need to register the desired hostname
@@ -218,6 +225,7 @@ $ mkdir /opt/certs
 $ mkdir /opt/certbot
 $ mkdir /opt/loginbuddy
 ```
+### Let's Encrypt
 
 **Install certbot-auto:** 
  
