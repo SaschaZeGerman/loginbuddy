@@ -37,7 +37,10 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to loginbuddy demo client!</h1>
+    <h1>Welcome to Loginbuddy!</h1>
+    <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
+        It is meant for demo purposes only! This client is not collecting data, using cookies, remembering user interactions or tries to sell ads!</p>
+    <hr/>
     <p>If you are developing an application and if you want to support social login, loginbuddy can help achieving that.
         Once you have registered your application, your application only has to make a simple call in order to receive
     details of the current user.</p>

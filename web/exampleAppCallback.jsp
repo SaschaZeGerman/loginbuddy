@@ -38,8 +38,12 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to loginbuddy demo client!</h1>
-    <p>Below are the values provided by the social platform which the user has chosen.</p>
+    <h1>Welcome to Loginbuddy!</h1>
+    <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
+        It is meant for demo purposes only! This client is not collecting data, using cookies, remembering user interactions or tries to sell ads!</p>
+    <hr/>
+    <h2>Provider response</h2>
+    <p>Below are the values returned by the social platform which the user has chosen.</p>
     <hr/>
     <%
         StringBuilder htmlPage = new StringBuilder();
