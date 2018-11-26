@@ -21,6 +21,8 @@ public enum Constants {
     CODE("code"),
     GRANT_TYPE("grant_type"),
     CODE_VERIFIER("code_verifier"),
+    CODE_CHALLENGE("code_challenge"),
+    CODE_CHALLENGE_METHOD("code_challenge_method"),
     ID_TOKEN("id_token"),
     PROVIDER("provider"),
     REDIRECT_URI("redirect_uri"),

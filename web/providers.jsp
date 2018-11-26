@@ -70,7 +70,7 @@
         }
 
         // Set Attributes that were given by the client
-        Map<String, String> sessionValues = new HashMap<>();
+        Map<String, Object> sessionValues = new HashMap<>();
         sessionValues.put("clientState", clientState);
         sessionValues.put("clientRedirectUri", clientRedirectUri);
 
@@ -99,7 +99,7 @@
                 } else {
                     providers.append("<td style=\"text-align: center; vertical-align: middle;\">");
                 }
-                providers.append("<form action=\"authorize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
+                providers.append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
                 providers.append("<input type=\"hidden\" name=\"state\" value=\"").append(state).append("\">");
                 providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
                 providers.append("<button type=\"submit\">");
@@ -120,7 +120,7 @@
             providers.append("</table>");
         } else {
             sessionValues.put("clientProvider", clientProvider);
-            response.sendRedirect("authorize?state=".concat(state));
+            response.sendRedirect("initialize?state=".concat(state));
         }
         LoginbuddyCache.getInstance().getCache().put(state, sessionValues);
 
