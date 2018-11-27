@@ -81,9 +81,7 @@ public class LoginbuddyUserinfo extends HttpServlet {
             }
         }
 
-
         if (!error) {
-
 
             // Let's build the response message depending on scope values other than 'openid'
 

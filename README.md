@@ -34,7 +34,16 @@ With that, it follows best practices for OAuth and OpenID Connect.
  
 # Getting started
 
+To build loginbuddy you need these tools:
+
+- java jdk8
+- maven
+- docker
+- docker-compose
+
 ## Building and using the development container of loginbuddy:
+
+I have only used loginbuddy on a MacBook, if you run it on Windows, some instructions may need to be adjusted!
 
 - Preparation
   - modify your hosts file, add **127.0.0.1 local.loginbuddy.net server.loginbuddy.net**
@@ -52,8 +61,10 @@ With that, it follows best practices for OAuth and OpenID Connect.
 - Open a browser
   - go to **http://local.loginbuddy.net** and follow the prompts
   - the following screen will display an image saying 'fake' which is the demo provider. Just click it ...
+  - the demo takes your through the (simulated) typical authentication/ authorization flow
+  - the response at the end is completely fake but it represents the type of content that can be expected 
 
-That's it! The response that is shown is completely fake but it represents the type of content that can be expected.
+That's it! In a real life scenario the 'fake' image would be replaced by images of real providers!
 
 ## Configuring 'real' OpenID Providers
 

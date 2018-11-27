@@ -37,8 +37,7 @@
     <h1>Welcome to Loginbuddy!</h1>
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy"
                                                           target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data, using cookies, remembering user
-        interactions or tries to sell ads!</p>
+        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
     <h2>Welcome to Fake-Provider</h2>
     <h3>Please login using your email address:</h3>
@@ -46,7 +45,7 @@
         <div class="form-group">
             <input type="hidden" name="state" value="<%=request.getParameter("state")%>">
             <label for="email">Email address</label>
-            <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter an email address">
+            <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter an email address" required>
             <small id="emailHelp" class="form-text text-muted">Any (fake) email, it is not used, just for demo purposes.</small>
         </div>
         <button type="submit" class="btn btn-primary">Next</button>

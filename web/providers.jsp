@@ -44,7 +44,7 @@
 
     <h1>Welcome to Loginbuddy!</h1>
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data, using cookies, remembering user interactions or tries to sell ads!</p>
+        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
     <h2>Choose your provider</h2>
     <p>The images below represent configured and supported providers one can choose from. <strong>fake</strong> is a place holder and does not do anything else
