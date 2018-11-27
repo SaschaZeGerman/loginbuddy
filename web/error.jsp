@@ -38,7 +38,7 @@
 
     <h1>Welcome to Loginbuddy!</h1>
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data, using cookies, remembering user interactions or tries to sell ads!</p>
+        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
     <h2>An error occured</h2>
     <a href="index.html">Click here to start over again</a>

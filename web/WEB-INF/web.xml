@@ -7,16 +7,21 @@
     <display-name>Loginbuddy</display-name>
 
     <servlet>
-        <servlet-name>Authorize</servlet-name>
-        <servlet-class>net.loginbuddy.oauth.server.Authorize</servlet-class>
+        <servlet-name>Initialize</servlet-name>
+        <servlet-class>net.loginbuddy.oauth.server.Initialize</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>Callback</servlet-name>
         <servlet-class>net.loginbuddy.oauth.client.Callback</servlet-class>
     </servlet>
+
     <servlet>
-        <servlet-name>LoginbuddyProvider</servlet-name>
-        <servlet-class>net.loginbuddy.provider.LoginbuddyProvider</servlet-class>
+        <servlet-name>LoginbuddyProviderAuthorize</servlet-name>
+        <servlet-class>net.loginbuddy.provider.LoginbuddyProviderAuthorize</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginbuddyProviderToken</servlet-name>
+        <servlet-class>net.loginbuddy.provider.LoginbuddyProviderToken</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LoginbuddyUserinfo</servlet-name>
@@ -24,8 +29,8 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>Authorize</servlet-name>
-        <url-pattern>/authorize</url-pattern>
+        <servlet-name>Initialize</servlet-name>
+        <url-pattern>/initialize</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Callback</servlet-name>
@@ -33,16 +38,28 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>LoginbuddyProvider</servlet-name>
-        <url-pattern>/demo/authorize</url-pattern>
+        <servlet-name>LoginbuddyProviderAuthorize</servlet-name>
+        <url-pattern>/authorize</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>LoginbuddyProvider</servlet-name>
-        <url-pattern>/demo/token</url-pattern>
+        <servlet-name>LoginbuddyProviderAuthorize</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginbuddyProviderAuthorize</servlet-name>
+        <url-pattern>/authenticate</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginbuddyProviderAuthorize</servlet-name>
+        <url-pattern>/consent</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginbuddyProviderToken</servlet-name>
+        <url-pattern>/token</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginbuddyUserinfo</servlet-name>
-        <url-pattern>/demo/userinfo</url-pattern>
+        <url-pattern>/userinfo</url-pattern>
     </servlet-mapping>
 
     <welcome-file-list>

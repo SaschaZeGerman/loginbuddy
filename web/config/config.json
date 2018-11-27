@@ -13,13 +13,13 @@
     "providers": [
       {
         "provider": "server_loginbuddy",
-        "issuer": "https://server.loginbuddy.com/demo",
+        "issuer": "https://server.loginbuddy.com/server",
         "client_id": "loginbuddy_demoId",
         "client_secret": "loginbuddy_demoSecret",
-        "authorization_endpoint": "https://server.loginbuddy.net/demo/authorize",
-        "token_endpoint": "https://server.loginbuddy.net/demo/token",
-        "userinfo_endpoint": "https://server.loginbuddy.net/demo/userinfo",
-        "jwks_uri": "https://server.loginbuddy.net/demo/openid/jwks.json",
+        "authorization_endpoint": "https://server.loginbuddy.net/authorize",
+        "token_endpoint": "https://server.loginbuddy.net/token",
+        "userinfo_endpoint": "https://server.loginbuddy.net/userinfo",
+        "jwks_uri": "https://server.loginbuddy.net/jwks.json",
         "scope": "openid profile email",
         "response_type": "code",
         "redirect_uri": "https://local.loginbuddy.net/callback"

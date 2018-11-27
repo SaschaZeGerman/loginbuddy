@@ -141,7 +141,8 @@ public class Callback extends HttpServlet {
             HttpResponse response = httpClient.execute(httpGet);
 
             // assuming it is always JSON, not checking for content-type here
-            return (JSONObject)new JSONParser().parse(EntityUtils.toString(response.getEntity()));
+            String s = EntityUtils.toString(response.getEntity());
+            return (JSONObject)new JSONParser().parse(s);
 
         } catch (IOException e) {
             LOGGER.severe("userinfo request failed");

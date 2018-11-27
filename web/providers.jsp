@@ -44,7 +44,7 @@
 
     <h1>Welcome to Loginbuddy!</h1>
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data, using cookies, remembering user interactions or tries to sell ads!</p>
+        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
     <h2>Choose your provider</h2>
     <p>The images below represent configured and supported providers one can choose from. <strong>fake</strong> is a place holder and does not do anything else
@@ -70,7 +70,7 @@
         }
 
         // Set Attributes that were given by the client
-        Map<String, String> sessionValues = new HashMap<>();
+        Map<String, Object> sessionValues = new HashMap<>();
         sessionValues.put("clientState", clientState);
         sessionValues.put("clientRedirectUri", clientRedirectUri);
 
@@ -99,7 +99,7 @@
                 } else {
                     providers.append("<td style=\"text-align: center; vertical-align: middle;\">");
                 }
-                providers.append("<form action=\"authorize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
+                providers.append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
                 providers.append("<input type=\"hidden\" name=\"state\" value=\"").append(state).append("\">");
                 providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
                 providers.append("<button type=\"submit\">");
@@ -120,7 +120,7 @@
             providers.append("</table>");
         } else {
             sessionValues.put("clientProvider", clientProvider);
-            response.sendRedirect("authorize?state=".concat(state));
+            response.sendRedirect("initialize?state=".concat(state));
         }
         LoginbuddyCache.getInstance().getCache().put(state, sessionValues);
 

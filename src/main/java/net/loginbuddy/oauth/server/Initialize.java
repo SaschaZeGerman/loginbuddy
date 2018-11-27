@@ -31,9 +31,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 
-public class Authorize extends HttpServlet {
+public class Initialize extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Authorize.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
 
     // initiate authorization flow with provider
     @Override
