@@ -1,6 +1,10 @@
 # About
 
-A container based solution that should help developers support social login for their applications in a simple way!
+A container based solution that helps developers support social login for their applications in a simple way!
+
+The latest docker image is always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
+
+A running version of the latest loginbuddy is here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). (If the URL is not working, I am trying to figure out something new)
 
 # Loginbuddy - Your authenticator
 
@@ -358,22 +362,9 @@ $ docker-compose up -d
 
 Open a browser and open loginbuddy at **http://your-hostname**.
 
-# Loginbuddy live
-
-I am running the latest version of loginbuddy here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). It only supports the 
-'fake' provider, but it may help getting an idea how it works. If the URL is not working, I am trying to figure out something new.
-
-In addition, the latest docker image is always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
-
 # Current state
 
-Loginbuddy does not support all described features yet. Here is a high level (short) list of things that need to be done first:
-
-- implement provider id_token validation
-- return base64 encoded content of id_token payload
-- create JWT by loginbuddy to return content back to application
-- logging
-- other stuff ...
+Please check the project page: [projects](/projects).
 
 # License
 

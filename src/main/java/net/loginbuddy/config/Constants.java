@@ -29,8 +29,13 @@ public enum Constants {
     RESPONSE_TYPE("response_type"),
     SCOPE("scope"),
     STATE("state"),
+    ERROR("error"),
+    SESSION("session"),
     NONCE("nonce"),
-    OPENID_SCOPE("openid profile email");
+    OPENID_SCOPE("openid profile email"),
+    CLIENT_STATE("clientState"),
+    CLIENT_REDIRECT("clientRedirectUri"),
+    CLIENT_PROVIDER("clientProvider");
 
     private final String key;
 
