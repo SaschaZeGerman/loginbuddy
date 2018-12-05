@@ -8,7 +8,7 @@ mkdir /usr/local/tomcat/ssl
 
 # Create private key, including subject alternative name
 #
-keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass changeit -keypass changeit -validity 1 -keysize 2048 -dname "CN=local.lognbuddy.net" -ext san=dns:server.loginbuddy.net
+keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass changeit -keypass changeit -validity 1 -keysize 2048 -dname "CN=local.loginbuddy.net" -ext san=dns:server.loginbuddy.net
 
 # Export the public certificate
 #
