@@ -16,6 +16,7 @@ public enum Constants {
     TOKEN_ENDPOINT("token_endpoint"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
     BEARER("Bearer "),
+    BASIC("Basic "),
     CLIENT_ID("client_id"),
     CLIENT_SECRET("client_secret"),
     CODE("code"),

@@ -6,7 +6,7 @@
  *
  */
 
-package net.loginbuddy.oauth.openid;
+package net.loginbuddy.oauth.util;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -19,7 +19,7 @@ import org.json.simple.parser.JSONParser;
 public class OpenIDConfiguration {
 
     /**
-     * Retrieve the openid-configuration of the given provider
+     * Retrieve the util-configuration of the given provider
      *
      * @param openidConfigUrl
      */

@@ -364,7 +364,7 @@ Open a browser and open loginbuddy at **http://your-hostname**.
 
 # Current state
 
-Please check the project page: [projects](/projects).
+Please check the project page: [projects](projects).
 
 # License
 

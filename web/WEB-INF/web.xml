@@ -15,6 +15,10 @@
         <servlet-class>net.loginbuddy.oauth.server.Providers</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>Exchange</servlet-name>
+        <servlet-class>net.loginbuddy.oauth.server.Token</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Callback</servlet-name>
         <servlet-class>net.loginbuddy.oauth.client.Callback</servlet-class>
     </servlet>
@@ -39,6 +43,11 @@
     <servlet-mapping>
         <servlet-name>Providers</servlet-name>
         <url-pattern>/providers</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>Exchange</servlet-name>
+        <url-pattern>/exchange</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Callback</servlet-name>

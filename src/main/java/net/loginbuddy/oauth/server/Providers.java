@@ -39,11 +39,6 @@ public class Providers extends HttpServlet {
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
 
-        if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues("state").length > 1) {
-            response.sendError(400, "Missing or invalid state parameter");
-            return;
-        }
-
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues("redirect_uri").length > 1) {
             response.sendError(400, "Missing or invalid redirect_uri parameter");
             return;
@@ -61,8 +56,25 @@ public class Providers extends HttpServlet {
             return;
         }
 
+        if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues("state").length > 1) {
+            if (clientRedirectUri.contains("?")) {
+                clientRedirectUri = clientRedirectUri.concat("&");
+
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("?");
+            }
+            response.sendRedirect(clientRedirectUri.concat("error=invalid_request&error_description=".concat(URLEncoder.encode("Missing or invalid state parameter", "UTF-8"))));
+            return;
+        }
+
         if (clientProvider != null && request.getParameterValues("provider").length > 1) {
-            response.sendError(400, "Invalid provider parameter");
+            if (clientRedirectUri.contains("?")) {
+                clientRedirectUri = clientRedirectUri.concat("&");
+
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("?");
+            }
+            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=".concat(URLEncoder.encode("Invalid provider parameter", "UTF-8"))));
             return;
         }
 
