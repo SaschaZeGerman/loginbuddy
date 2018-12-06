@@ -31,3 +31,4 @@ apitest/tempfiles/*
 
 # Loginbuddy
 docker-build/add-ons/web/*
+docker-build/add-ons/local/dev_*
