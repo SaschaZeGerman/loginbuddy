@@ -95,6 +95,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
             sessionValues.put(Constants.REDIRECT_URI.getKey(), redirectUri);
             sessionValues.put(Constants.NONCE.getKey(), nonce);
             sessionValues.put(Constants.STATE.getKey(), state);
+            sessionValues.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_LOGIN.getKey());
 
             LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues); // adding 'fakeProvider_' to not overlap with Loginbuddy client values
 
@@ -109,83 +110,127 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+        // TODO: since this is fake, we do not really validate the incoming parameters ... just assuming they are available ... exactly once ... otherwise, add validation!
+
         String path = request.getRequestURL().toString();
         String state = request.getParameter("state");
+        String action = request.getParameter("action");
+
+        Map<String, Object> sessionValues = null;
+        if (state != null && state.trim().length() > 0) {
+            sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get("fakeProvider_".concat(state));
+            if (sessionValues == null) {
+                LOGGER.warning("Unknown or expired session!");
+                response.sendError(400, "Unknown or expired session!");
+                return;
+            } else {
+                // let's check if the given state is the one associated with the sessionValues
+                String sessionState = (String)sessionValues.get(Constants.STATE.getKey());
+                if (!state.equals(sessionState)) {
+                    LOGGER.warning("Sessions at FakeProvider are mixed up!");
+                    response.sendError(400, "Sessions at FakeProvider are mixed up!");
+                    return;
+                }
+                // let's check if the given action is the one we expect (unless it is 'cancel')
+                String actionExpected = (String)sessionValues.get(Constants.ACTION_EXPECTED.getKey());
+                if (!actionExpected.equals(action) && !"cancel".equalsIgnoreCase(action)) {
+                    LOGGER.warning("The current action was not expected! Given: '" + action + "', expected: '" + actionExpected + "'");
+                    response.sendError(400, "The current action was not expected!");
+                    return;
+                }
+            }
+        } else {
+            LOGGER.warning("Invalid or missing state parameter!");
+            response.sendError(400, "Invalid of missing state parameter!");
+            return;
+        }
+
         try {
             // Handle the provided 'email address'. In a real life scenario it would have to be validated
             if (path.endsWith("/login")) {
                 String email = request.getParameter("email");
                 if (email != null && email.trim().length() > 0) {
-
                     // add the email to the current session, but also check if it is the expected one
-                    if (state != null && state.trim().length() > 0) {
-                        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get("fakeProvider_".concat(state));
-                        if (sessionValues != null) {
+                    sessionValues.put("email", email);
+                    sessionValues.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_AUTHENTICATE.getKey());
+                    LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues);
+                    request.getRequestDispatcher("exampleProviderAuthenticate.jsp").forward(request, response);
+                } // TODO: else { ... return an error and request the email-address or allow to cancel ... }
+                else if("cancel".equalsIgnoreCase(action)) {
 
-                            // let's check if the given state is the one associated with the sessionValues
-                            String sessionState = (String)sessionValues.get(Constants.STATE.getKey());
-                            if (state.equals(sessionState)) {
-                                sessionValues.put("email", email);
-                                LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues);
-                                request.getRequestDispatcher("exampleProviderAuthenticate.jsp").forward(request, response);
-                            }
-                        }
+                    String clientRedirectUri = (String)sessionValues.get(Constants.REDIRECT_URI.getKey());
+                    String clientState = (String)sessionValues.get(Constants.STATE.getKey());
+
+                    if (clientRedirectUri.contains("?")) {
+                        clientRedirectUri += "&state=" + clientState;
                     } else {
-                        LOGGER.warning("Invalid or missing state parameter!");
+                        clientRedirectUri += "?state=" + clientState;
                     }
+                    clientRedirectUri += "&error=login_cancelled&error_description=the+resource_owner+cancelled+the+login+process";
+                    response.sendRedirect(clientRedirectUri);
                 }
             } else if (path.endsWith("/authenticate")) {
                 String password = request.getParameter("password");
                 if (password != null && password.trim().length() > 0) {
-                    if (state != null && state.trim().length() > 0) {
-                        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get("fakeProvider_".concat(state));
-                        if (sessionValues != null) {
+                    sessionValues.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_GRANT.getKey());
+                    LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues);
+                    request.getRequestDispatcher("exampleProviderConsent.jsp").forward(request, response);
+                } // TODO: else { ... return an error and request the password or allow to cancel ... }
+                else if("cancel".equalsIgnoreCase(action)) {
 
-                            String sessionState = (String)sessionValues.get(Constants.STATE.getKey());
-                            if (state.equals(sessionState)) {
-                                LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues);
-                                request.getRequestDispatcher("exampleProviderConsent.jsp").forward(request, response);
-                            }
-                        }
+                    String clientRedirectUri = (String)sessionValues.get(Constants.REDIRECT_URI.getKey());
+                    String clientState = (String)sessionValues.get(Constants.STATE.getKey());
+
+                    if (clientRedirectUri.contains("?")) {
+                        clientRedirectUri += "&state=" + clientState;
                     } else {
-                        LOGGER.warning("Invalid or missing state parameter!");
+                        clientRedirectUri += "?state=" + clientState;
                     }
+                    clientRedirectUri += "&error=login_cancelled&error_description=the+resource_owner+cancelled+the+authentication+process";
+                    response.sendRedirect(clientRedirectUri);
                 }
             } else if (path.endsWith("/consent")) {
-                String action = request.getParameter("action");
                 if ("grant".equals(action)) {
-                    if (state != null && state.trim().length() > 0) {
-                        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get("fakeProvider_".concat(state));
-                        if (sessionValues != null) {
-                            String sessionState = (String)sessionValues.get(Constants.STATE.getKey());
-                            if (state.equals(sessionState)) {
 
-                                // now it is time to issue an authorization code
-                                String code = String.valueOf(UUID.randomUUID().toString());
+                    // now it is time to issue an authorization code
+                    String code = String.valueOf(UUID.randomUUID().toString());
 
-                                sessionValues.put("grant", String.valueOf(new Date().getTime())); // remember when this grant was given! If we had a 'grant' table, it would go in there
-                                LoginbuddyCache.getInstance().getCache().put(code, sessionValues);
+                    sessionValues.put("grant", String.valueOf(new Date().getTime())); // TODO: remember when this grant was given! If we had a 'grant' table, it would go in there
+                    LoginbuddyCache.getInstance().getCache().put(code, sessionValues);
 
-                                sessionState = URLEncoder.encode(sessionState, "UTF-8");
+                    String clientRedirectUri = (String)sessionValues.get(Constants.REDIRECT_URI.getKey());
+                    String clientState = (String)sessionValues.get(Constants.STATE.getKey());
 
-                                String redirectUri = (String)sessionValues.get(Constants.REDIRECT_URI.getKey());
-                                if (redirectUri.contains("?")) {
-                                    redirectUri += "&state=" + sessionState;
-                                } else {
-                                    redirectUri += "?state=" + sessionState;
-                                }
-                                redirectUri += "&code=" + URLEncoder.encode(code, "UTF-8");
-
-                                response.sendRedirect(redirectUri);
-                            }
-                        }
+                    if (clientRedirectUri.contains("?")) {
+                        clientRedirectUri += "&state=" + clientState;
                     } else {
-                        LOGGER.warning("Invalid or missing state parameter!");
+                        clientRedirectUri += "?state=" + clientState;
                     }
+                    clientRedirectUri += "&code=" + URLEncoder.encode(code, "UTF-8");
+
+                    response.sendRedirect(clientRedirectUri);
+                } // TODO: else { ... return an error and request the consent or allow to cancel ... }
+                else if("cancel".equalsIgnoreCase(action)) {
+
+                    String clientRedirectUri = (String)sessionValues.get(Constants.REDIRECT_URI.getKey());
+                    String clientState = (String)sessionValues.get(Constants.STATE.getKey());
+
+                    if (clientRedirectUri.contains("?")) {
+                        clientRedirectUri += "&state=" + clientState;
+                    } else {
+                        clientRedirectUri += "?state=" + clientState;
+                    }
+                    clientRedirectUri += "&error=access_denied&error_description=the+resource_owner+denied_access";
+                    response.sendRedirect(clientRedirectUri);
                 }
+            } else {
+                LOGGER.warning("Unknown API was called!");
+                response.sendError(400, "Unknown API was called!");
             }
         } catch (ServletException e) {
             e.printStackTrace();
+            LOGGER.warning("Something in the FakeProvider went badly wrong!");
+            response.sendError(500, "Something in the FakeProvider went badly wrong!");
         }
     }
 }

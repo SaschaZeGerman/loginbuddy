@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class LoginbuddyUserinfo extends HttpServlet {
+public class LoginbuddyProviderUserinfo extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -72,7 +72,7 @@ public class LoginbuddyUserinfo extends HttpServlet {
 
         String scope = "";
         if (!error) {
-            // Check for at least scope 'openid'
+            // Check for at least scope 'util'
             scope = (String) sessionValues.get(Constants.SCOPE.getKey());
             if (Stream.of(scope.split(" ")).noneMatch("openid"::equals)) {
                 fakeUserinfoResponse.put("error", "invalid_request");
@@ -83,7 +83,7 @@ public class LoginbuddyUserinfo extends HttpServlet {
 
         if (!error) {
 
-            // Let's build the response message depending on scope values other than 'openid'
+            // Let's build the response message depending on scope values other than 'util'
 
             String clientId = (String) sessionValues.get(Constants.CLIENT_ID.getKey());
             String email = (String) sessionValues.get("email");

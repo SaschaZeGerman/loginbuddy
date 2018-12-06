@@ -54,7 +54,7 @@
     </ol>
     <p><strong>NOTE: </strong>Loginbuddy is an OAuth client of supported social platforms. That means, loginbuddy will <strong>NEVER</strong> see any users passwords!</p>
     <p>Below is an example form, give it a try:</p>
-    <form action="providers.jsp" method="post" enctype="application/x-www-form-urlencoded">
+    <form action="providers" method="post" enctype="application/x-www-form-urlencoded">
         <div class="form-group">
             <label for="redirect_uri">Redirect_URI</label>
             <input type="text" id="redirect_uri" name="redirect_uri" size="80" class="form-control"

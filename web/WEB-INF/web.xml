@@ -11,6 +11,14 @@
         <servlet-class>net.loginbuddy.oauth.server.Initialize</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>Providers</servlet-name>
+        <servlet-class>net.loginbuddy.oauth.server.Providers</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Exchange</servlet-name>
+        <servlet-class>net.loginbuddy.oauth.server.Token</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Callback</servlet-name>
         <servlet-class>net.loginbuddy.oauth.client.Callback</servlet-class>
     </servlet>
@@ -25,12 +33,21 @@
     </servlet>
     <servlet>
         <servlet-name>LoginbuddyUserinfo</servlet-name>
-        <servlet-class>net.loginbuddy.provider.LoginbuddyUserinfo</servlet-class>
+        <servlet-class>net.loginbuddy.provider.LoginbuddyProviderUserinfo</servlet-class>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>Initialize</servlet-name>
         <url-pattern>/initialize</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Providers</servlet-name>
+        <url-pattern>/providers</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>Exchange</servlet-name>
+        <url-pattern>/exchange</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Callback</servlet-name>
@@ -83,6 +100,10 @@
         <web-resource-collection>
             <web-resource-name>config.json</web-resource-name>
             <url-pattern>/config/*</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>internal_apis</web-resource-name>
+            <url-pattern>/iapis/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>

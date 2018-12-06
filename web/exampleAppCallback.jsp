@@ -1,4 +1,15 @@
-<%@ page import="java.util.Base64" %>
+<%@ page import="org.apache.http.client.HttpClient" %>
+<%@ page import="org.apache.http.impl.client.HttpClientBuilder" %>
+<%@ page import="net.loginbuddy.config.Constants" %>
+<%@ page import="org.apache.http.HttpResponse" %>
+<%@ page import="net.loginbuddy.oauth.util.MsgResponse" %>
+<%@ page import="org.apache.http.util.EntityUtils" %>
+<%@ page import="org.apache.http.NameValuePair" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="org.apache.http.message.BasicNameValuePair" %>
+<%@ page import="org.apache.http.client.methods.HttpPost" %>
+<%@ page import="org.apache.http.client.entity.UrlEncodedFormEntity" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%--
@@ -9,6 +20,47 @@
   ~
   --%>
 
+<%!
+    private String displayResult(String code, String state, String error, String error_description) {
+
+        // usually 'state' needs to be used to look up the session ... .
+
+        StringBuilder resp = new StringBuilder();
+
+        if(error != null) {
+            resp.append("<h2>An error occured</h2><p><strong>Error: </strong>").append(error).append(", <strong>error_description: </strong>");
+            if(error_description != null) {
+                resp.append(error_description);
+            } else {
+                resp.append("Unfortunately, no details are available");
+            }
+            resp.append("</p>");
+        } else if(code != null) {
+            // build POST request
+            List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
+            formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), code));
+            try {
+                HttpPost req = new HttpPost("https://"+System.getenv("HOSTNAME_LOGINBUDDY")+"/exchange"); // calling itself
+
+                HttpClient httpClient = HttpClientBuilder.create().build();
+                req.setEntity(new UrlEncodedFormEntity(formParameters));
+
+                HttpResponse response = httpClient.execute(req);
+                MsgResponse msgResp = new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+                if (msgResp.getMsg() != null) {
+                    resp.append(msgResp.getMsg()).append("</strong>");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            resp.append("<h2>NMothing returned</h2>");
+        }
+        return resp.toString();
+    }
+
+%>
 <html>
 <head>
     <meta charset="utf-8">
@@ -45,20 +97,7 @@
     <h2>Provider response</h2>
     <p>Below are the values returned by the social platform which the user has chosen.</p>
     <hr/>
-    <%
-        StringBuilder htmlPage = new StringBuilder();
-
-        if (request.getParameter("userinforesponse") != null) {
-            String userInfoResponse = request.getParameter("userinforesponse");
-            String idToken = request.getParameter("id_token");
-            String state = request.getParameter("state");
-            htmlPage.append("<p> UserInfo: ").append(new String(Base64.getDecoder().decode(userInfoResponse))).append("</p>");
-            htmlPage.append("<p> ID Token: ").append(idToken).append("</p>");
-            htmlPage.append("<p> State: ").append(state).append("</p>");
-        }
-    %>
-
-    <%=htmlPage%>
+    <%=displayResult(request.getParameter("code"), request.getParameter("state"), request.getParameter("error"), request.getParameter("error_description"))%>
     <hr/>
     <p><a href="exampleApp.jsp"><strong>Try it again!</strong></a></p>
 

@@ -16,6 +16,7 @@ public enum Constants {
     TOKEN_ENDPOINT("token_endpoint"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
     BEARER("Bearer "),
+    BASIC("Basic "),
     CLIENT_ID("client_id"),
     CLIENT_SECRET("client_secret"),
     CODE("code"),
@@ -29,8 +30,17 @@ public enum Constants {
     RESPONSE_TYPE("response_type"),
     SCOPE("scope"),
     STATE("state"),
+    ERROR("error"),
+    SESSION("session"),
+    ACTION_EXPECTED("action_expected"),
+    ACTION_LOGIN("login"),
+    ACTION_AUTHENTICATE("authenticate"),
+    ACTION_GRANT("grant"),
     NONCE("nonce"),
-    OPENID_SCOPE("openid profile email");
+    OPENID_SCOPE("openid profile email"),
+    CLIENT_STATE("clientState"),
+    CLIENT_REDIRECT("clientRedirectUri"),
+    CLIENT_PROVIDER("clientProvider");
 
     private final String key;
 

@@ -84,20 +84,24 @@
     </welcome-file-list>
 
     <error-page>
+        <error-code>400</error-code>
+        <location>/iapis/error.jsp</location>
+    </error-page>
+    <error-page>
         <error-code>404</error-code>
-        <location>/error.jsp</location>
+        <location>/iapis/error.jsp</location>
     </error-page>
     <error-page>
         <error-code>403</error-code>
-        <location>/error.jsp</location>
+        <location>/iapis/error.jsp</location>
     </error-page>
     <error-page>
         <error-code>500</error-code>
-        <location>/error.jsp</location>
+        <location>/iapis/error.jsp</location>
     </error-page>
     <error-page>
         <exception-type>java.lang.Exception</exception-type>
-        <location>/error.jsp</location>
+        <location>/iapis/error.jsp</location>
     </error-page>
 
     <!-- Require HTTPS for everything except /img (favicon) and /css. -->

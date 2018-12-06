@@ -58,6 +58,13 @@
         </div>
         <button type="submit" class="btn btn-primary">Grant</button>
     </form>
+    <form action="consent" enctype="application/x-www-form-urlencoded" method="post">
+        <div class="form-group">
+            <input type="hidden" name="state" value="<%=request.getParameter("state")%>">
+            <input type="hidden" name="action" value="cancel">
+        </div>
+        <button type="submit" class="btn btn-primary">Cancel</button>
+    </form>
 </div>
 </body>
 </html>

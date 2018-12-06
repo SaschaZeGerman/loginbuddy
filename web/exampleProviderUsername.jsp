@@ -44,11 +44,19 @@
     <form action="login" enctype="application/x-www-form-urlencoded" method="post">
         <div class="form-group">
             <input type="hidden" name="state" value="<%=request.getParameter("state")%>">
+            <input type="hidden" name="action" value="login">
             <label for="email">Email address</label>
             <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter an email address" required>
             <small id="emailHelp" class="form-text text-muted">Any (fake) email, it is not used, just for demo purposes.</small>
         </div>
         <button type="submit" class="btn btn-primary">Next</button>
+    </form>
+    <form action="login" enctype="application/x-www-form-urlencoded" method="post">
+        <div class="form-group">
+            <input type="hidden" name="action" value="cancel">
+            <input type="hidden" name="state" value="<%=request.getParameter("state")%>">
+        </div>
+        <button type="submit" class="btn btn-primary">Cancel</button>
     </form>
 </div>
 </body>

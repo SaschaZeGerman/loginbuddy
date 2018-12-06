@@ -24,7 +24,7 @@ target/
 # SOAPUI
 apitest/soapui/project/*workspace.xml
 apitest/soapui/properties/*.properties
-!apitest/soapui/properties/template.properties
+!apitest/soapui/properties/template*.properties
 
 # test files
 apitest/tempfiles/*

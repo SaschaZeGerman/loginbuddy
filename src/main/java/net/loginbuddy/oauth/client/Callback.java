@@ -12,7 +12,8 @@ import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
 import net.loginbuddy.config.LoginbuddyConfig;
 import net.loginbuddy.config.ProviderConfig;
-import org.apache.http.HttpEntity;
+import net.loginbuddy.oauth.util.MsgResponse;
+import net.loginbuddy.oauth.util.ExchangeBean;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -30,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -43,54 +45,127 @@ public class Callback extends HttpServlet {
         doGet(req, resp);
     }
 
-    // handle provider response with 'code'
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException  {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         try {
 
-            String state = request.getParameter(Constants.STATE.getKey());
-            if (state == null || state.trim().length() == 0) {
-                throw new IllegalStateException("Missing session, cannot initiate the authorization flow!");
+            String session = request.getParameter(Constants.STATE.getKey());
+            if (session == null || session.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
+                response.sendError(400, "Missing or invalid state parameter");
+                return;
             }
 
-            Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(state);
-            if (sessionValues == null) {
-                throw new IllegalStateException("The current session is invalid or it has expired!");
+            Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(session);
+            if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
+                LOGGER.severe("The current session is invalid or it has expired! Given: '" + session + "'");
+                response.sendError(400, "The current session is invalid or it has expired!");
+                return;
             }
 
-            if (!state.equals(sessionValues.get(Constants.STATE.getKey()))) {
-                LOGGER.severe("authorization_code was received with invalid state!");
-                throw new IllegalAccessError("state does not match!");
+            String clientRedirectUri = (String) sessionValues.get(Constants.CLIENT_REDIRECT.getKey());
+            String clientState = (String) sessionValues.get(Constants.CLIENT_STATE.getKey());
+
+            String error = request.getParameter(Constants.ERROR.getKey());
+            String errorDescription = null;
+            if (error != null) {
+                errorDescription = request.getParameter("error_description");
+                if (errorDescription == null) {
+                    errorDescription = "An error was returned by the provider without any description";
+                }
+                error = URLEncoder.encode(error, "UTF-8");
+                errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
+                if (clientRedirectUri.contains("?")) {
+                    clientRedirectUri = clientRedirectUri.concat("&");
+
+                } else {
+                    clientRedirectUri = clientRedirectUri.concat("?");
+                }
+                clientRedirectUri = clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
+                response.sendRedirect(clientRedirectUri);
+                return;
             }
 
             String authCode = request.getParameter(Constants.CODE.getKey());
+            if (authCode == null || authCode.trim().length() == 0 || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
+                if (clientRedirectUri.contains("?")) {
+                    clientRedirectUri = clientRedirectUri.concat("&");
 
-            String provider = (String)sessionValues.get("clientProvider");
-            String redirectUrl = (String)sessionValues.get("clientRedirectUri");
-            String clientState = (String)sessionValues.get("clientState");
-            String code_verifier = (String)sessionValues.get("code_verifier");
+                } else {
+                    clientRedirectUri = clientRedirectUri.concat("?");
+                }
+                clientRedirectUri = clientRedirectUri.concat("error=invalid_request&error_description=Missing+or+invalid+code+parameter");
+                response.sendRedirect (clientRedirectUri);
+                return;
+            }
+
+            String provider = (String) sessionValues.get(Constants.CLIENT_PROVIDER.getKey());
+            String code_verifier = (String) sessionValues.get(Constants.CODE_VERIFIER.getKey());
 
             ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
 
             String tokenEndpoint = null;
             String userInfoEndpoint = null;
-            if(providerConfig.getOpenidConfigurationUri() != null) {
-                tokenEndpoint = (String)sessionValues.get("token_endpoint");
-                userInfoEndpoint = (String)sessionValues.get("userinfo_endpoint");
+            if (providerConfig.getOpenidConfigurationUri() != null) {
+                tokenEndpoint = (String) sessionValues.get(Constants.TOKEN_ENDPOINT.getKey());
+                userInfoEndpoint = (String) sessionValues.get(Constants.USERINFO_ENDPOINT.getKey());
             } else {
                 tokenEndpoint = providerConfig.getTokenEndpoint();
                 userInfoEndpoint = providerConfig.getUserinfoEndpoint();
             }
 
-            JSONObject tokenResponse = codeTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), authCode, tokenEndpoint, code_verifier);
-            String access_token = tokenResponse.get("access_token").toString();
-            String id_token = tokenResponse.get("id_token").toString();
+            ExchangeBean eb = new ExchangeBean();
+            eb.setIss("https://".concat(System.getenv("HOSTNAME_LOGINBUDDY")));
+            eb.setIat(new Date().getTime());
+            eb.setAud("a_client_id");
+            eb.setNonce("a_nonce_value");
+            eb.setProvider(provider);
 
-            JSONObject userinfo = getUserInfo(access_token, userInfoEndpoint);
+            String access_token = null;
 
-            String responsePostForm = buildAutoForm(id_token, Base64.getEncoder().encodeToString(userinfo.toJSONString().getBytes()),redirectUrl,clientState);
-            response.getWriter().println(responsePostForm);
+            MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), authCode, tokenEndpoint, code_verifier);
+            if (tokenResponse != null) {
+                if (tokenResponse.getStatus() == 200) {
+                    if (tokenResponse.getContentType().startsWith("application/json")) {
+                        JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
+                        access_token = tokenResponseObject.get("access_token").toString();
+                        eb.setIdToken(tokenResponseObject.get("id_token").toString());
+                    } else {
+                        // no sure what to do yet ... but it should also never happen!
+                    }
+                } else {
+                    // need to handle error cases
+//                    response.sendError(...);
+                }
+            }
+
+            // Call /userinfo only if it was configured in config.json
+            if (userInfoEndpoint != null && !"".equals(userInfoEndpoint)) {
+                MsgResponse userinfoResp = getProtectedAPI(access_token, userInfoEndpoint);
+                if (userinfoResp != null) {
+                    if (userinfoResp.getStatus() == 200) {
+                        if (userinfoResp.getContentType().startsWith("application/json")) {
+                            JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
+                            eb.setUserinfo(userinfoRespObject);
+                        }
+                    } else if (userinfoResp.getStatus() == 401) {
+                        // return error to client
+                    }
+                }
+            }
+
+            String pickUpCode = UUID.randomUUID().toString();
+            LoginbuddyCache.getInstance().getCache().put(pickUpCode, eb.toString());
+
+            if (clientRedirectUri.contains("?")) {
+                clientRedirectUri = clientRedirectUri.concat("&");
+
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("?");
+            }
+
+            clientRedirectUri = clientRedirectUri.concat("code=").concat(pickUpCode).concat("&state=").concat(clientState);
+            response.sendRedirect(clientRedirectUri);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -98,65 +173,45 @@ public class Callback extends HttpServlet {
         }
     }
 
-    private JSONObject codeTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode, String tokenEndpoint, String codeVerifier) {
+    private MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode, String tokenEndpoint, String codeVerifier) {
 
-        HttpClient httpClient = HttpClientBuilder.create().build();
+        // build POST request
+        List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
+        formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), authCode));
+        formParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), clientId));
+        formParameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), clientSecret));
+        formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), redirectUri));
+        formParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
+        formParameters.add(new BasicNameValuePair(Constants.CODE_VERIFIER.getKey(), codeVerifier));
 
         try {
+            HttpPost req = new HttpPost(tokenEndpoint);
 
-            HttpPost httpPost = new HttpPost(tokenEndpoint);
+            HttpClient httpClient = HttpClientBuilder.create().build();
+            req.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BASIC.getKey() + Arrays.toString(Base64.getEncoder().encode((clientId.concat(":").concat(clientSecret)).getBytes())));
+            req.setEntity(new UrlEncodedFormEntity(formParameters));
 
-            // build POST request
-            List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-            urlParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), authCode));
-            urlParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), clientId));
-            urlParameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), clientSecret));
-            urlParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), redirectUri));
-            urlParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
-            urlParameters.add(new BasicNameValuePair(Constants.CODE_VERIFIER.getKey(), codeVerifier));
-
-            // Post request
-            HttpEntity httpEntity = new UrlEncodedFormEntity(urlParameters);
-            httpPost.setEntity(httpEntity);
-            HttpResponse response = httpClient.execute(httpPost); // this will fail if loginbuddy tries to connect to a server that has a self signed certificate!
-
-            // assuming it is always JSON, not checking for content-type here
-            return (JSONObject)new JSONParser().parse(EntityUtils.toString(response.getEntity()));
-
+            HttpResponse response = httpClient.execute(req);
+            return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
         } catch (Exception e) {
             e.printStackTrace();
+            LOGGER.severe("token exchange request failed!");
+            return null;
         }
-        return null;
     }
 
-    private JSONObject getUserInfo(String accessToken, String userInfoEndpoint) throws Exception {
-        HttpClient httpClient = HttpClientBuilder.create().build();
-
+    private MsgResponse getProtectedAPI(String accessToken, String targetApi) {
         try {
+            HttpGet req = new HttpGet(targetApi);
+            HttpClient httpClient = HttpClientBuilder.create().build();
+            req.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BEARER.getKey() + accessToken);
 
-            HttpGet httpGet = new HttpGet(userInfoEndpoint);
-            httpGet.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BEARER.getKey() + accessToken);
-
-            // Execute get request
-            HttpResponse response = httpClient.execute(httpGet);
-
-            // assuming it is always JSON, not checking for content-type here
-            String s = EntityUtils.toString(response.getEntity());
-            return (JSONObject)new JSONParser().parse(s);
-
-        } catch (IOException e) {
-            LOGGER.severe("userinfo request failed");
-            throw e;
+            HttpResponse response = httpClient.execute(req);
+            return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.severe("Call to targetApi failed!");
+            return null;
         }
-    }
-
-    private String buildAutoForm(String idToken, String base64EncodedUserInfoResponse, String redirectUrl, String state) {
-        return new StringBuilder("<html><HEAD><META HTTP-EQUIV='PRAGMA' CONTENT='NO-CACHE'><META HTTP-EQUIV='CACHE-CONTROL' CONTENT='NO-CACHE'><TITLE>Login Buddy Auto-Form POST</TITLE></HEAD>")
-                .append("<body onLoad=\"document.forms[0].submit()\"><NOSCRIPT>Your browser does not support JavaScript.  Please click the 'Continue' button below to proceed. <br><br></NOSCRIPT>")
-                .append("<form action=\"").append(redirectUrl).append("\" method=\"POST\">")
-                .append("<input type=\"hidden\" name=\"userinforesponse\" value=\"").append(base64EncodedUserInfoResponse).append("\">")
-                .append("<input type=\"hidden\" name=\"id_token\" value=\"").append(idToken).append("\">")
-                .append("<input type=\"hidden\" name=\"state\" value=\"").append(state).append("\"><NOSCRIPT><INPUT TYPE=\"SUBMIT\" VALUE=\"Continue\"></NOSCRIPT></form>")
-                .append("</body></html>").toString();
     }
 }

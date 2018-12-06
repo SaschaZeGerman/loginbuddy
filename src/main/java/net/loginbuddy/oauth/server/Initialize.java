@@ -12,14 +12,10 @@ import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
 import net.loginbuddy.config.ProviderConfig;
 import net.loginbuddy.config.LoginbuddyConfig;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import net.loginbuddy.oauth.util.OpenIDConfiguration;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 
+@WebServlet(name = "Initialize")
 public class Initialize extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
@@ -44,39 +41,52 @@ public class Initialize extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String state = request.getParameter(Constants.STATE.getKey());
-        if (state == null || state.trim().length() == 0) {
-            throw new IllegalStateException("Missing session, cannot initiate the authorization flow!");
+        String session = request.getParameter("session");
+        if (session == null || session.trim().length() == 0 || request.getParameterValues("session").length > 1) {
+            response.sendError(400, "Missing session, cannot initiate the authorization flow!");
+            return;
         }
 
-        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(state);
-        if (sessionValues == null) {
-            throw new IllegalStateException("The current session is invalid or it has expired!");
+        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(session);
+        if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
+            response.sendError(400, "The current session is invalid or it has expired!");
+            return;
         }
 
-        String provider = (String)sessionValues.get("clientProvider");
-        if (provider == null) {
-            provider = request.getParameter(Constants.PROVIDER.getKey());
+        String providerSession = ((String)sessionValues.get("clientProvider")).trim();
+        if("".equals(providerSession)) {
+            providerSession = request.getParameter(Constants.PROVIDER.getKey());
+            if (providerSession != null && request.getParameterValues(Constants.PROVIDER.getKey()).length > 1) {
+                response.sendError(400, "Invalid provider parameter");
+                return;
+            }
+            if (providerSession == null || providerSession.trim().length() == 0) {
+                response.sendError(400, "No provider has been selected");
+                return;
+            }
         }
 
         ProviderConfig providerConfig = null;
         try {
-            providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
-        } catch(Exception e) {
-            throw new IllegalArgumentException("error=invalid_configuration&error_description=invalid provider configuration");
-        }
-        if (providerConfig == null) {
-            throw new IllegalStateException("error=invalid_request&error_description=invalid_provider");
+            providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(providerSession);
+            if (providerConfig == null) {
+                response.sendError(400, "The given provider is unknown or invalid");
+                return;
+            }
+        } catch (Exception e) {
+            // should never occur
+            LOGGER.severe("The system has not been configured yet!");
+            response.sendError(500, "The system has not been configured yet!");
+            return;
         }
 
-
-        sessionValues.put("clientProvider", provider);
+        sessionValues.put("clientProvider", providerSession);
 
         StringBuilder authorizeUrl = new StringBuilder();
 
-        // check for 'openid configuration' first
+        // check for 'util configuration' first
         if (providerConfig.getOpenidConfigurationUri() != null) {
-            JSONObject openIdConfig = getOpenIDConfiguration(providerConfig.getOpenidConfigurationUri());
+            JSONObject openIdConfig = OpenIDConfiguration.getOpenIDConfiguration(providerConfig.getOpenidConfigurationUri());
             if (openIdConfig != null) {
                 providerConfig.setAuthorizationEndpoint(openIdConfig.get("authorization_endpoint").toString());
                 sessionValues.put(Constants.TOKEN_ENDPOINT.getKey(), openIdConfig.get("token_endpoint").toString());
@@ -114,37 +124,11 @@ public class Initialize extends HttpServlet {
             .append("&").append("code_challenge=").append(code_challenge)
             .append("&").append("code_challenge_method=S256")
             .append("&").append(Constants.STATE.getKey())
-            .append("=").append(sessionValues.get(Constants.STATE.getKey()));
+            .append("=").append(sessionValues.get(Constants.SESSION.getKey()));
 
-        LoginbuddyCache.getInstance().getCache().put((String)sessionValues.get(Constants.STATE.getKey()), sessionValues);
+        LoginbuddyCache.getInstance().getCache().put((String)sessionValues.get(Constants.SESSION.getKey()), sessionValues);
 
         response.sendRedirect(authorizeUrl.toString());
 
-    }
-
-    /**
-     * Retrieve the openid-configuration of the given provider
-     *
-     * @param openidConfigUrl
-     */
-    private JSONObject getOpenIDConfiguration(String openidConfigUrl) {
-
-        HttpClient httpClient = HttpClientBuilder.create().build();
-
-        try {
-            HttpGet httpGet = new HttpGet(openidConfigUrl);
-            HttpResponse response = httpClient.execute(httpGet);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                // assuming it is always JSON, not checking for content-type here
-                return (JSONObject) new JSONParser().parse(EntityUtils.toString(response.getEntity()));
-            } else throw new Exception(EntityUtils.toString(response.getEntity()));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // should never get here
-        return null;
     }
 }
