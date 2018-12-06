@@ -58,7 +58,7 @@ public class Callback extends HttpServlet {
 
             Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(session);
             if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
-                LOGGER.severe("The given state does not match the expected one!");
+                LOGGER.severe("The current session is invalid or it has expired! Given: '" + session + "'");
                 response.sendError(400, "The current session is invalid or it has expired!");
                 return;
             }
@@ -67,8 +67,9 @@ public class Callback extends HttpServlet {
             String clientState = (String) sessionValues.get(Constants.CLIENT_STATE.getKey());
 
             String error = request.getParameter(Constants.ERROR.getKey());
+            String errorDescription = null;
             if (error != null) {
-                String errorDescription = request.getParameter("error_description");
+                errorDescription = request.getParameter("error_description");
                 if (errorDescription == null) {
                     errorDescription = "An error was returned by the provider without any description";
                 }
@@ -86,6 +87,17 @@ public class Callback extends HttpServlet {
             }
 
             String authCode = request.getParameter(Constants.CODE.getKey());
+            if (authCode == null || authCode.trim().length() == 0 || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
+                if (clientRedirectUri.contains("?")) {
+                    clientRedirectUri = clientRedirectUri.concat("&");
+
+                } else {
+                    clientRedirectUri = clientRedirectUri.concat("?");
+                }
+                clientRedirectUri = clientRedirectUri.concat("error=invalid_request&error_description=Missing+or+invalid+code+parameter");
+                response.sendRedirect (clientRedirectUri);
+                return;
+            }
 
             String provider = (String) sessionValues.get(Constants.CLIENT_PROVIDER.getKey());
             String code_verifier = (String) sessionValues.get(Constants.CODE_VERIFIER.getKey());

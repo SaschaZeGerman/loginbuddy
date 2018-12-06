@@ -52,12 +52,19 @@
     <form action="authenticate" enctype="application/x-www-form-urlencoded" method="post">
         <div class="form-group">
             <input type="hidden" name="state" value="<%=request.getParameter("state")%>">
+            <input type="hidden" name="action" value="authenticate">
             <label for="password">Password</label>
             <input type="password" class="form-control" name="password" id="password" aria-describedby="passwordHelp" placeholder="Enter your password" required>
             <small id="passwordHelp" class="form-text text-muted">Any (fake) password, it is not used, just for demo purposes.</small>
         </div>
-
         <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <form action="authenticate" enctype="application/x-www-form-urlencoded" method="post">
+        <div class="form-group">
+            <input type="hidden" name="state" value="<%=request.getParameter("state")%>">
+            <input type="hidden" name="action" value="cancel">
+        </div>
+        <button type="submit" class="btn btn-primary">Cancel</button>
     </form>
 </div>
 </body>
