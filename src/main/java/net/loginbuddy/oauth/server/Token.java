@@ -27,6 +27,8 @@ public class Token extends HttpServlet {
 
         // Whatever happens, we'll return JSON
         response.setContentType("application/json");
+        response.addHeader("Cache-Control", "no-store");
+        response.addHeader("Pragma", "no-cache");
         JSONObject resp = new JSONObject();
 
         String code = request.getParameter("code");
@@ -34,7 +36,8 @@ public class Token extends HttpServlet {
         if(code == null || code.trim().length() == 0 || request.getParameterValues("code").length > 1) {
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code parameter is invalid or was provided multiple times");
-            response.sendError(400, resp.toJSONString());
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
             return;
         }
 
@@ -42,7 +45,9 @@ public class Token extends HttpServlet {
         if(providerResponse == null) {
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code is invalid or has expired");
-            response.sendError(400, resp.toJSONString());
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
+            return;
         } else {
             response.getWriter().write(providerResponse);
         }
