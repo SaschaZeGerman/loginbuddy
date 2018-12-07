@@ -40,6 +40,8 @@ public enum Constants {
     OPENID_SCOPE("openid profile email"),
     CLIENT_STATE("clientState"),
     CLIENT_REDIRECT("clientRedirectUri"),
+    CLIENT_CODE_CHALLENGE("clientCodeChallenge"),
+    CLIENT_CODE_CHALLENGE_METHOD("clientCodeChallengeMethod"),
     CLIENT_PROVIDER("clientProvider");
 
     private final String key;

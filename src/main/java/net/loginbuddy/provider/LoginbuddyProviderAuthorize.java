@@ -14,6 +14,8 @@ package net.loginbuddy.provider;
 
 import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
+import net.loginbuddy.oauth.util.Pkce;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -75,7 +77,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
 
             // We always require S256
             String code_challenge_method = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
-            if(!"S256".equalsIgnoreCase(code_challenge_method)) {
+            if(!Pkce.CODE_CHALLENGE_METHOD_S256.equalsIgnoreCase(code_challenge_method)) {
                 throw new IllegalArgumentException("The given code_challenge_method is not supported!");
             }
 

@@ -135,7 +135,25 @@ public class Callback extends HttpServlet {
                     }
                 } else {
                     // need to handle error cases
-//                    response.sendError(...);
+                    if(tokenResponse.getContentType().startsWith("application/json")) {
+                        JSONObject err = (JSONObject)new JSONParser().parse(tokenResponse.getMsg());
+                        error = (String)err.get("error");
+                        errorDescription = (String)err.get("error_description");
+                        if (errorDescription == null) {
+                            errorDescription = "An error was returned by the provider without any description";
+                        }
+                        error = URLEncoder.encode(error, "UTF-8");
+                        errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
+                        if (clientRedirectUri.contains("?")) {
+                            clientRedirectUri = clientRedirectUri.concat("&");
+
+                        } else {
+                            clientRedirectUri = clientRedirectUri.concat("?");
+                        }
+                        clientRedirectUri = clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
+                        response.sendRedirect(clientRedirectUri);
+                        return;
+                    }
                 }
             }
 
@@ -155,7 +173,8 @@ public class Callback extends HttpServlet {
             }
 
             String pickUpCode = UUID.randomUUID().toString();
-            LoginbuddyCache.getInstance().getCache().put(pickUpCode, eb.toString());
+            sessionValues.put("eb", eb.toString());
+            LoginbuddyCache.getInstance().getCache().put(pickUpCode, sessionValues);
 
             if (clientRedirectUri.contains("?")) {
                 clientRedirectUri = clientRedirectUri.concat("&");

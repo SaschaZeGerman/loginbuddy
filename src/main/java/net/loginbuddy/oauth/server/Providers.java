@@ -11,6 +11,7 @@ package net.loginbuddy.oauth.server;
 import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
 import net.loginbuddy.config.LoginbuddyConfig;
+import net.loginbuddy.oauth.util.Pkce;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -38,8 +39,9 @@ public class Providers extends HttpServlet {
         String clientState = request.getParameter(Constants.STATE.getKey());
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
+        String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
 
-        if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues("redirect_uri").length > 1) {
+        if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
             response.sendError(400, "Missing or invalid redirect_uri parameter");
             return;
         }
@@ -56,14 +58,14 @@ public class Providers extends HttpServlet {
             return;
         }
 
-        if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues("state").length > 1) {
+        if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
             if (clientRedirectUri.contains("?")) {
                 clientRedirectUri = clientRedirectUri.concat("&");
 
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
-            response.sendRedirect(clientRedirectUri.concat("error=invalid_request&error_description=".concat(URLEncoder.encode("Missing or invalid state parameter", "UTF-8"))));
+            response.sendRedirect(clientRedirectUri.concat("error=invalid_request&error_description=missing+or+invalid+state+parameter"));
             return;
         }
 
@@ -74,7 +76,7 @@ public class Providers extends HttpServlet {
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
-            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=".concat(URLEncoder.encode("Invalid provider parameter", "UTF-8"))));
+            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+provider+parameter"));
             return;
         }
 
@@ -82,11 +84,24 @@ public class Providers extends HttpServlet {
             clientProvider = "";
         }
 
+        if (clientCodeChallenge != null && request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1) {
+            if (clientRedirectUri.contains("?")) {
+                clientRedirectUri = clientRedirectUri.concat("&");
+
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("?");
+            }
+            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge+parameter"));
+            return;
+        }
+
         // Set Attributes that were given by the client
         Map<String, Object> sessionValues = new HashMap<>();
         sessionValues.put(Constants.CLIENT_STATE.getKey(), clientState);
         sessionValues.put(Constants.CLIENT_REDIRECT.getKey(), clientRedirectUri);
         sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), clientProvider);
+        sessionValues.put(Constants.CLIENT_CODE_CHALLENGE.getKey(), clientCodeChallenge);
+        sessionValues.put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), Pkce.CODE_CHALLENGE_METHOD_S256);
 
         // Set Attributes that need to be part of the authorization request
         String nonce = UUID.randomUUID().toString();

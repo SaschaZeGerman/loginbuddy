@@ -13,6 +13,8 @@ import net.loginbuddy.config.Constants;
 import net.loginbuddy.config.ProviderConfig;
 import net.loginbuddy.config.LoginbuddyConfig;
 import net.loginbuddy.oauth.util.OpenIDConfiguration;
+import net.loginbuddy.oauth.util.Pkce;
+import net.loginbuddy.oauth.util.PkcePair;
 import org.json.simple.JSONObject;
 
 import javax.servlet.annotation.WebServlet;
@@ -88,27 +90,14 @@ public class Initialize extends HttpServlet {
         if (providerConfig.getOpenidConfigurationUri() != null) {
             JSONObject openIdConfig = OpenIDConfiguration.getOpenIDConfiguration(providerConfig.getOpenidConfigurationUri());
             if (openIdConfig != null) {
-                providerConfig.setAuthorizationEndpoint(openIdConfig.get("authorization_endpoint").toString());
-                sessionValues.put(Constants.TOKEN_ENDPOINT.getKey(), openIdConfig.get("token_endpoint").toString());
-                sessionValues.put(Constants.USERINFO_ENDPOINT.getKey(), openIdConfig.get("userinfo_endpoint").toString());
+                providerConfig.setAuthorizationEndpoint(openIdConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()).toString());
+                sessionValues.put(Constants.TOKEN_ENDPOINT.getKey(), openIdConfig.get(Constants.TOKEN_ENDPOINT.getKey()).toString());
+                sessionValues.put(Constants.USERINFO_ENDPOINT.getKey(), openIdConfig.get(Constants.USERINFO_ENDPOINT.getKey()).toString());
             }
         }
 
-        // RFC 7636, generate PKCE values
-        String code_verifier = UUID.randomUUID().toString().replace("-", "");
-        code_verifier = new String(Base64.getEncoder().encode(code_verifier.getBytes())).replace("=", "");
-        sessionValues.put("code_verifier", code_verifier);
-
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            // this should never ever happen!
-            throw new IOException(e.getCause());
-        }
-
-        byte[] encodedhash = digest.digest(code_verifier.getBytes(StandardCharsets.UTF_8));
-        String code_challenge = new String(Base64.getUrlEncoder().encode(encodedhash)).replace("=", "");
+        PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
+        sessionValues.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
 
         authorizeUrl.append(providerConfig.getAuthorizationEndpoint())
             .append("?").append(Constants.CLIENT_ID.getKey())
@@ -121,7 +110,7 @@ public class Initialize extends HttpServlet {
             .append("=").append(sessionValues.get(Constants.NONCE.getKey()))
             .append("&").append(Constants.REDIRECT_URI.getKey())
             .append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
-            .append("&").append("code_challenge=").append(code_challenge)
+            .append("&").append("code_challenge=").append(pair.getChallenge()) // won't produce null unless we ask for method=plain
             .append("&").append("code_challenge_method=S256")
             .append("&").append(Constants.STATE.getKey())
             .append("=").append(sessionValues.get(Constants.SESSION.getKey()));

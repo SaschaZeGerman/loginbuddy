@@ -10,6 +10,7 @@ package net.loginbuddy.provider;
 
 import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
+import net.loginbuddy.oauth.util.Pkce;
 import org.json.simple.JSONObject;
 
 import javax.servlet.http.HttpServlet;
@@ -37,10 +38,19 @@ public class LoginbuddyProviderToken extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+        response.setContentType("application/json");
+        response.addHeader("Cache-Control", "no-store");
+        response.addHeader("Pragma", "no-cache");
+        JSONObject resp = new JSONObject();
+
         // TODO: Handle multiple grant_types. But, since this is all fake, we'll just support 'authorization_code'
         String grant_type = request.getParameter(Constants.GRANT_TYPE.getKey());
         if(!"authorization_code".equalsIgnoreCase(grant_type)) {
-            throw new UnsupportedOperationException("The given grant_type is not supported or the parameter is missing");
+            resp.put("error_description", "The given grant_type is not supported or the parameter is missing");
+            resp.put("error", "invalid_request");
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
+            return;
         }
 
         String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
@@ -49,36 +59,48 @@ public class LoginbuddyProviderToken extends HttpServlet {
         // find the session and fail if it is unknown
         Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().getCache().get(code);
         if (sessionValues == null) {
-            throw new IllegalStateException("The given authorization_code is invalid or has expired or none was given");
+            resp.put("error_description", "The given authorization_code is invalid or has expired or none was given");
+            resp.put("error", "invalid_request");
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
+            return;
         }
 
         // Need to check if the given clientId is the one associated with the given authorization_code
         if (clientId == null || !clientId.equals(sessionValues.get(Constants.CLIENT_ID.getKey())) ) {
-            throw new IllegalStateException("The given client_id is not valid for the given authorization_code");
+            resp.put("error_description", "The given client_id is not valid for the given authorization_code");
+            resp.put("error", "invalid_request");
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
+            return;
         }
 
         // TODO: Validate the client_secret. But, since this is all fake, we'll just check if it exists
         if(request.getParameter(Constants.CLIENT_SECRET.getKey()) == null) {
-            throw new IllegalArgumentException("The client_secret is missing");
+            resp.put("error_description", "The client_secret is missing");
+            resp.put("error", "invalid_request");
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
+            return;
         }
 
         // Validate 'code_verifier' if PKCE was used (which is the default for loginbuddy)
         String code_challenge = (String)sessionValues.get(Constants.CODE_CHALLENGE.getKey());
         if(code_challenge != null) {
             String code_verifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
-            if (code_verifier == null) {
-                throw new IllegalArgumentException("Missing code_verifier");
+            if (code_verifier == null || "".equals(code_verifier.trim()) || request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length > 1) {
+                resp.put("error_description", "Missing code_verifier");
+                resp.put("error", "invalid_request");
+                response.setStatus(400);
+                response.getWriter().write(resp.toJSONString());
+                return;
             } else {
-                MessageDigest digest = null;
-                try {
-                    digest = MessageDigest.getInstance("SHA-256"); // the only algorithm this fake provider supports
-                } catch (NoSuchAlgorithmException e) {
-                    // this should never ever happen!
-                    throw new IOException(e.getCause());
-                }
-                byte[] encodedhash = digest.digest(code_verifier.getBytes(StandardCharsets.UTF_8));
-                if (!code_challenge.equals(new String(Base64.getUrlEncoder().encode(encodedhash)).replace("=", ""))) {
-                    throw new IllegalArgumentException("The given code_verifier is invalid");
+                if (!Pkce.validate(code_challenge, (String)sessionValues.get(Constants.CODE_CHALLENGE_METHOD.getKey()), code_verifier)) {
+                    resp.put("error_description", "The given code_verifier is invalid");
+                    resp.put("error", "invalid_request");
+                    response.setStatus(400);
+                    response.getWriter().write(resp.toJSONString());
+                    return;
                 }
             }
         }
@@ -110,7 +132,6 @@ public class LoginbuddyProviderToken extends HttpServlet {
         fakeProviderResponse.put("id_token", id_token);
 
         response.setStatus(200);
-        response.setContentType("application/json");
         response.getWriter().println(fakeProviderResponse);
     }
 }

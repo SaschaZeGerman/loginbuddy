@@ -10,6 +10,7 @@ package net.loginbuddy.oauth.server;
 
 import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
+import net.loginbuddy.oauth.util.Pkce;
 import org.json.simple.JSONObject;
 
 import javax.servlet.ServletException;
@@ -33,7 +34,7 @@ public class Token extends HttpServlet {
 
         String code = request.getParameter("code");
 
-        if(code == null || code.trim().length() == 0 || request.getParameterValues("code").length > 1) {
+        if(code == null || code.trim().length() == 0 || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code parameter is invalid or was provided multiple times");
             response.setStatus(400);
@@ -41,15 +42,34 @@ public class Token extends HttpServlet {
             return;
         }
 
-        String providerResponse = (String)LoginbuddyCache.getInstance().getCache().get(code);
-        if(providerResponse == null) {
+        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().getCache().get(code);
+        if(sessionValues == null) {
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code is invalid or has expired");
             response.setStatus(400);
             response.getWriter().write(resp.toJSONString());
             return;
         } else {
-            response.getWriter().write(providerResponse);
+            String clientCodeChallenge = (String)sessionValues.get(Constants.CLIENT_CODE_CHALLENGE.getKey());
+            if(clientCodeChallenge != null) {
+                String clientCodeVerifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
+                if(clientCodeVerifier != null && request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length == 1) {
+                    if(!Pkce.validate(clientCodeChallenge, (String)sessionValues.get(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey()), clientCodeVerifier)) {
+                        resp.put("error", "invalid_request");
+                        resp.put("error_description", "The code_verifier is invalid!");
+                        response.setStatus(400);
+                        response.getWriter().write(resp.toJSONString());
+                        return;
+                    }
+                } else {
+                    resp.put("error", "invalid_request");
+                    resp.put("error_description", "The code_verifier parameter is invalid!");
+                    response.setStatus(400);
+                    response.getWriter().write(resp.toJSONString());
+                    return;
+                }
+            }
+            response.getWriter().write((String)sessionValues.get("eb"));
         }
 
         // TODO: no matter what, code has to be invalidated once it has been used in this API
