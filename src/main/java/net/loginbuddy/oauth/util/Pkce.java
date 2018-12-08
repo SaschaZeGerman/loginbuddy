@@ -76,4 +76,8 @@ public class Pkce {
         }
         return null;
     }
+
+    public static boolean verifyChallenge(String code_challenge) {
+        return code_challenge != null && code_challenge.length() >= 43 && code_challenge.length() <= 128 && !code_challenge.contains("=");
+    }
 }

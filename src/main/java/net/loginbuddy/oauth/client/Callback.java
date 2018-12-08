@@ -167,7 +167,17 @@ public class Callback extends HttpServlet {
                             eb.setUserinfo(userinfoRespObject);
                         }
                     } else if (userinfoResp.getStatus() == 401) {
-                        // return error to client
+                        if (userinfoResp.getContentType().startsWith("application/json")) {
+                            JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
+                            error = (String) err.get("error");
+                            errorDescription = (String) err.get("error_description");
+                            if (errorDescription == null) {
+                                errorDescription = "An error was returned by the provider without any description";
+                            }
+                            err.put("error", error);
+                            err.put("error_description", errorDescription);
+                            eb.setUserinfo(err);
+                        }
                     }
                 }
             }
@@ -195,7 +205,7 @@ public class Callback extends HttpServlet {
     private MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode, String tokenEndpoint, String codeVerifier) {
 
         // build POST request
-        List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
+        List<NameValuePair> formParameters = new ArrayList<>();
         formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), authCode));
         formParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), clientId));
         formParameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), clientSecret));
@@ -207,7 +217,6 @@ public class Callback extends HttpServlet {
             HttpPost req = new HttpPost(tokenEndpoint);
 
             HttpClient httpClient = HttpClientBuilder.create().build();
-            req.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BASIC.getKey() + Arrays.toString(Base64.getEncoder().encode((clientId.concat(":").concat(clientSecret)).getBytes())));
             req.setEntity(new UrlEncodedFormEntity(formParameters));
 
             HttpResponse response = httpClient.execute(req);

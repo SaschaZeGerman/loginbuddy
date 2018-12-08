@@ -40,6 +40,7 @@ public class Providers extends HttpServlet {
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
         String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
+        String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
 
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
             response.sendError(400, "Missing or invalid redirect_uri parameter");
@@ -84,14 +85,25 @@ public class Providers extends HttpServlet {
             clientProvider = "";
         }
 
-        if (clientCodeChallenge != null && request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1) {
+        if (clientCodeChallenge != null && (request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1 || !Pkce.verifyChallenge(clientCodeChallenge))) {
             if (clientRedirectUri.contains("?")) {
                 clientRedirectUri = clientRedirectUri.concat("&");
 
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
-            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge+parameter"));
+            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge"));
+            return;
+        }
+
+        if ( (clientCodeChallengeMethod != null && request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()).length > 1) || Pkce.CODE_CHALLENGE_METHOD_PLAIN.equals(clientCodeChallengeMethod)) {
+            if (clientRedirectUri.contains("?")) {
+                clientRedirectUri = clientRedirectUri.concat("&");
+
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("?");
+            }
+            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
             return;
         }
 
@@ -101,7 +113,7 @@ public class Providers extends HttpServlet {
         sessionValues.put(Constants.CLIENT_REDIRECT.getKey(), clientRedirectUri);
         sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), clientProvider);
         sessionValues.put(Constants.CLIENT_CODE_CHALLENGE.getKey(), clientCodeChallenge);
-        sessionValues.put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), Pkce.CODE_CHALLENGE_METHOD_S256);
+        sessionValues.put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), clientCodeChallengeMethod);
 
         // Set Attributes that need to be part of the authorization request
         String nonce = UUID.randomUUID().toString();
