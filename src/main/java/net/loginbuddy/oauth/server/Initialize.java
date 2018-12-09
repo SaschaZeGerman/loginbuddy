@@ -49,7 +49,7 @@ public class Initialize extends HttpServlet {
             return;
         }
 
-        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(session);
+        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().get(session);
         if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
             response.sendError(400, "The current session is invalid or it has expired!");
             return;
@@ -115,7 +115,7 @@ public class Initialize extends HttpServlet {
             .append("&").append(Constants.STATE.getKey())
             .append("=").append(sessionValues.get(Constants.SESSION.getKey()));
 
-        LoginbuddyCache.getInstance().getCache().put((String)sessionValues.get(Constants.SESSION.getKey()), sessionValues);
+        LoginbuddyCache.getInstance().put((String)sessionValues.get(Constants.SESSION.getKey()), sessionValues);
 
         response.sendRedirect(authorizeUrl.toString());
 

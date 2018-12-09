@@ -123,7 +123,7 @@ public class Providers extends HttpServlet {
         sessionValues.put(Constants.NONCE.getKey(), nonce);
         sessionValues.put(Constants.SESSION.getKey(), session);
 
-        LoginbuddyCache.getInstance().getCache().put(session, sessionValues);
+        LoginbuddyCache.getInstance().put(session, sessionValues);
 
         if ("".equals(clientProvider)) {
             request.getRequestDispatcher("/iapis/providers.jsp?session=".concat(session)).forward(request, response);

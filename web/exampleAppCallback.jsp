@@ -10,6 +10,7 @@
 <%@ page import="org.apache.http.message.BasicNameValuePair" %>
 <%@ page import="org.apache.http.client.methods.HttpPost" %>
 <%@ page import="org.apache.http.client.entity.UrlEncodedFormEntity" %>
+<%@ page import="net.loginbuddy.cache.LoginbuddyCache" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%--
@@ -55,7 +56,7 @@
                 return null;
             }
         } else {
-            resp.append("<h2>NMothing returned</h2>");
+            resp.append("<h2>Nothing returned</h2>");
         }
         return resp.toString();
     }

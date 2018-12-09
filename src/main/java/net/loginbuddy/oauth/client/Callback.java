@@ -56,7 +56,7 @@ public class Callback extends HttpServlet {
                 return;
             }
 
-            Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(session);
+            Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().remove(session);
             if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
                 LOGGER.severe("The current session is invalid or it has expired! Given: '" + session + "'");
                 response.sendError(400, "The current session is invalid or it has expired!");
@@ -184,7 +184,7 @@ public class Callback extends HttpServlet {
 
             String pickUpCode = UUID.randomUUID().toString();
             sessionValues.put("eb", eb.toString());
-            LoginbuddyCache.getInstance().getCache().put(pickUpCode, sessionValues);
+            LoginbuddyCache.getInstance().put(pickUpCode, sessionValues);
 
             if (clientRedirectUri.contains("?")) {
                 clientRedirectUri = clientRedirectUri.concat("&");

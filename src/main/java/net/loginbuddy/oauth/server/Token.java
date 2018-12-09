@@ -42,7 +42,7 @@ public class Token extends HttpServlet {
             return;
         }
 
-        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().getCache().get(code);
+        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(code);
         if(sessionValues == null) {
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code is invalid or has expired");
@@ -71,9 +71,6 @@ public class Token extends HttpServlet {
             }
             response.getWriter().write((String)sessionValues.get("eb"));
         }
-
-        // TODO: no matter what, code has to be invalidated once it has been used in this API
-        LoginbuddyCache.getInstance().getCache().remove(code);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

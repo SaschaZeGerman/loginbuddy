@@ -6,7 +6,7 @@
               path="webapps/ROOT/config/config.json"/>
 
     <Resource name="bean/CacheFactory" auth="Container"
-              type="net.loginbuddy.cache.Cache"
+              type="net.loginbuddy.cache.DefaultCache"
               factory="org.apache.naming.factory.BeanFactory"/>
 
 </Context>

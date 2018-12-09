@@ -53,7 +53,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
         Map<String, Object> sessionValues = null;
         if (!error) {
             // Let's see if we know this access_token
-            sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get(access_token);
+            sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().get(access_token);
             if (sessionValues == null || !access_token.equals(sessionValues.get(Constants.ACCESS_TOKEN.getKey()))) {
                 fakeUserinfoResponse.put("error", "invalid_request");
                 fakeUserinfoResponse.put("error_description", "the access_token is invalid");

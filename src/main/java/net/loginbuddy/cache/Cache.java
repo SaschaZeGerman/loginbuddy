@@ -8,39 +8,17 @@
 
 package net.loginbuddy.cache;
 
-import java.util.HashMap;
-import java.util.Map;
+public interface Cache {
 
-public class Cache {
+    void flush();
 
-    private Map<String, Object> cache;
+    Object put(String key, Object value);
 
-    public Cache() {
-        cache = new HashMap<>();
-    }
+    Object remove(String key);
 
-    public void flush() {
-        cache = new HashMap<>();
-    }
+    void delete(String key);
 
-    public boolean put(String key, Object value) {
-        return cache.put(key,value) == null;
-    }
+    Object get(String key);
 
-    public boolean remove(String key) {
-        return cache.remove(key) == null;
-    }
-
-    public Object get(String key)
-    {
-        return cache.get(key);
-    }
-
-    public Map<String, Object> getCache() {
-        return cache;
-    }
-
-    public void setCache(Map<String, Object> cache) {
-        this.cache = cache;
-    }
+    int getSize();
 }

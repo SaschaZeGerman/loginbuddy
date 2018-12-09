@@ -2,6 +2,7 @@
 <%@ page import="net.loginbuddy.config.ProviderConfig" %>
 <%@ page import="java.util.*" %>
 <%@ page import="java.util.logging.Logger" %>
+<%@ page import="net.loginbuddy.cache.LoginbuddyCache" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 

@@ -99,7 +99,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
             sessionValues.put(Constants.STATE.getKey(), state);
             sessionValues.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_LOGIN.getKey());
 
-            LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues); // adding 'fakeProvider_' to not overlap with Loginbuddy client values
+            LoginbuddyCache.getInstance().put("fakeProvider_".concat(state), sessionValues); // adding 'fakeProvider_' to not overlap with Loginbuddy client values
 
             // forward to a fake login page
             request.getRequestDispatcher("exampleProviderUsername.jsp").forward(request, response);
@@ -120,7 +120,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
 
         Map<String, Object> sessionValues = null;
         if (state != null && state.trim().length() > 0) {
-            sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().getCache().get("fakeProvider_".concat(state));
+            sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().remove("fakeProvider_".concat(state));
             if (sessionValues == null) {
                 LOGGER.warning("Unknown or expired session!");
                 response.sendError(400, "Unknown or expired session!");
@@ -155,7 +155,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
                     // add the email to the current session, but also check if it is the expected one
                     sessionValues.put("email", email);
                     sessionValues.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_AUTHENTICATE.getKey());
-                    LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues);
+                    LoginbuddyCache.getInstance().put("fakeProvider_".concat(state), sessionValues);
                     request.getRequestDispatcher("exampleProviderAuthenticate.jsp").forward(request, response);
                 } // TODO: else { ... return an error and request the email-address or allow to cancel ... }
                 else if("cancel".equalsIgnoreCase(action)) {
@@ -175,7 +175,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
                 String password = request.getParameter("password");
                 if (password != null && password.trim().length() > 0) {
                     sessionValues.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_GRANT.getKey());
-                    LoginbuddyCache.getInstance().getCache().put("fakeProvider_".concat(state), sessionValues);
+                    LoginbuddyCache.getInstance().put("fakeProvider_".concat(state), sessionValues);
                     request.getRequestDispatcher("exampleProviderConsent.jsp").forward(request, response);
                 } // TODO: else { ... return an error and request the password or allow to cancel ... }
                 else if("cancel".equalsIgnoreCase(action)) {
@@ -198,7 +198,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
                     String code = String.valueOf(UUID.randomUUID().toString());
 
                     sessionValues.put("grant", String.valueOf(new Date().getTime())); // TODO: remember when this grant was given! If we had a 'grant' table, it would go in there
-                    LoginbuddyCache.getInstance().getCache().put(code, sessionValues);
+                    LoginbuddyCache.getInstance().put(code, sessionValues);
 
                     String clientRedirectUri = (String)sessionValues.get(Constants.REDIRECT_URI.getKey());
                     String clientState = (String)sessionValues.get(Constants.STATE.getKey());

@@ -57,7 +57,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         String code = request.getParameter(Constants.CODE.getKey());
 
         // find the session and fail if it is unknown
-        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().getCache().get(code);
+        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(code);
         if (sessionValues == null) {
             resp.put("error_description", "The given authorization_code is invalid or has expired or none was given");
             resp.put("error", "invalid_request");
@@ -118,10 +118,10 @@ public class LoginbuddyProviderToken extends HttpServlet {
         sessionValues.put("refresh_token_expiration", String.valueOf(new Date().getTime()+7200000)); // getTime should be 10-digits (seconds) but it is millis (13-digits)
 
         // Remove the code as key, it should be usable once only! And that was now
-        LoginbuddyCache.getInstance().getCache().remove(code);
+//        LoginbuddyCache.getInstance().remove(code);
 
         // associate with access_token. We'll ignore the fresh_token for now. Remember, this is all 'fake'
-        LoginbuddyCache.getInstance().getCache().put(access_token, sessionValues);
+        LoginbuddyCache.getInstance().put(access_token, sessionValues);
 
         // create the response message that includes the issued token
         JSONObject fakeProviderResponse = new JSONObject();

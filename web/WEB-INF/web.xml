@@ -92,7 +92,7 @@
     <resource-env-ref>
         <description>Object factory for Cache instances</description>
         <resource-env-ref-name>bean/CacheFactory</resource-env-ref-name>
-        <resource-env-ref-type>net.loginbuddy.cache.Cache</resource-env-ref-type>
+        <resource-env-ref-type>net.loginbuddy.cache.DefaultCache</resource-env-ref-type>
     </resource-env-ref>
 
     <security-constraint>
