@@ -35,7 +35,7 @@ public class LoginbuddyCache {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             cache = (DefaultCache) envCtx.lookup("bean/CacheFactory");
-//            removeExpiredEntries();
+            removeExpiredEntries();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -45,12 +45,15 @@ public class LoginbuddyCache {
         TimerTask repeatedTask = new TimerTask() {
             public void run() {
                 long now = new Date().getTime();
+                List<Long> expired = new ArrayList<>();
                 for (long next : listOfExpirations.keySet()) {
-                    if (next > now) {
+                    if (next < now) {
                         cache.delete(listOfExpirations.get(next));
+                        expired.add(next);
                     }
                 }
-                System.out.println("Cache size: " + cache.getSize() + ", ListOfExpirations: " + listOfExpirations.size());
+                listOfExpirations.keySet().removeAll(expired);
+                expired = null;
             }
         };
         Timer timer = new Timer("LoginbuddyCacheMaintainerTimer");
@@ -60,10 +63,14 @@ public class LoginbuddyCache {
     }
 
     public Object put(String key, Object obj) {
-        return putWithExpiration(key, obj, 15L);
+        return putWithExpiration(key, obj, 60L);
     }
 
     private Object putWithExpiration(String key, Object obj, Long lifetimeInSeconds) {
+
+        if(lifetimeInSeconds == null || lifetimeInSeconds > 3600 || lifetimeInSeconds <=0) {
+            lifetimeInSeconds = 60L;
+        }
 
         listOfExpirations.put(new Date().getTime() + lifetimeInSeconds*1000, key);
 
