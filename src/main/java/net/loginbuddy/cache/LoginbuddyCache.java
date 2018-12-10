@@ -11,6 +11,7 @@ package net.loginbuddy.cache;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LoginbuddyCache {
 
@@ -22,7 +23,7 @@ public class LoginbuddyCache {
 
     public static LoginbuddyCache getInstance() {
         if(listOfExpirations == null) {
-            listOfExpirations = new HashMap<>();
+            listOfExpirations = new ConcurrentHashMap<>();
         }
         if(instance == null) {
             instance = new LoginbuddyCache();
