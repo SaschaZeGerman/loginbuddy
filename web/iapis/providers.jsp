@@ -21,6 +21,7 @@
     private String createProvidersTable(HttpServletRequest request) {
 
         if(request.getParameter("session") == null || request.getParameterValues("session").length > 1 || request.getParameter("session").equals(request.getSession().getId())) {
+            LOGGER.warning("The current session is invalid or it has expired!");
             throw new IllegalStateException("The current session is invalid or it has expired!");
         }
         String session = request.getParameter("session");

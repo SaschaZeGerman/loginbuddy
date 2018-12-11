@@ -52,13 +52,14 @@ public class Callback extends HttpServlet {
 
             String session = request.getParameter(Constants.STATE.getKey());
             if (session == null || session.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
+                LOGGER.warning("Missing or invalid state parameter returned from provider!");
                 response.sendError(400, "Missing or invalid state parameter");
                 return;
             }
 
             Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().remove(session);
             if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
-                LOGGER.severe("The current session is invalid or it has expired! Given: '" + session + "'");
+                LOGGER.warning("The current session is invalid or it has expired! Given: '" + session + "'");
                 response.sendError(400, "The current session is invalid or it has expired!");
                 return;
             }
@@ -197,8 +198,9 @@ public class Callback extends HttpServlet {
             response.sendRedirect(clientRedirectUri);
 
         } catch (Exception e) {
+            LOGGER.warning("authorization request failed!");
             e.printStackTrace();
-            response.getWriter().println("authorization request failed");
+            response.getWriter().println("authorization request failed!");
         }
     }
 
@@ -222,8 +224,8 @@ public class Callback extends HttpServlet {
             HttpResponse response = httpClient.execute(req);
             return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
         } catch (Exception e) {
+            LOGGER.warning("Token exchange request failed!");
             e.printStackTrace();
-            LOGGER.severe("token exchange request failed!");
             return null;
         }
     }
@@ -237,8 +239,8 @@ public class Callback extends HttpServlet {
             HttpResponse response = httpClient.execute(req);
             return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
         } catch (Exception e) {
+            LOGGER.warning("Call to targetApi failed!");
             e.printStackTrace();
-            LOGGER.severe("Call to targetApi failed!");
             return null;
         }
     }

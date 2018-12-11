@@ -51,15 +51,9 @@
         if (servletName == null) { servletName = "Unknown"; }
         String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri");
         if (requestUri == null) { requestUri = "Unknown"; }
-
-        // Set response content type
-//        response.setContentType("text/html");
-
-//        response.getWriter().write("<html><head><title>Exception/Error Details</title></head><body>");
         if(statusCode != 500){
         %>
             <%="<h3>Error Details</h3>"%>
-            <%--<%="<strong>Status Code</strong>:"+statusCode+"<br>"%>--%>
             <%="<strong>Requested URI:</strong> " + requestUri + "<br>"%>
             <%="<strong>Error Message:</strong> " + errorMsg + "<br>"%>
         <%
@@ -71,10 +65,6 @@
             response.getWriter().write("<li>Exception Message:"+throwable.getMessage()+"</li>");
             response.getWriter().write("</ul>");
         }
-
-//        response.getWriter().write("<br><br>");
-//        response.getWriter().write("<a href=\"index.html\">Home Page</a>");
-//        response.getWriter().write("</body></html>");
 
     %>
     <a href="../index.html">Click here to start over again</a>

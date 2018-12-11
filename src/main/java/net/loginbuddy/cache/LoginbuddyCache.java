@@ -12,8 +12,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 public class LoginbuddyCache {
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyCache.class));
 
     private Cache cache;
 
@@ -38,6 +41,7 @@ public class LoginbuddyCache {
             cache = (DefaultCache) envCtx.lookup("bean/CacheFactory");
             removeExpiredEntries();
         } catch (Exception e) {
+            LOGGER.severe("LoginbuddyCache could not be loaded!");
             e.printStackTrace();
         }
     }
@@ -49,6 +53,7 @@ public class LoginbuddyCache {
                 List<Long> expired = new ArrayList<>();
                 for (long next : listOfExpirations.keySet()) {
                     if (next < now) {
+                        // TODO: use 'delete' and not 'cache.delete'
                         cache.delete(listOfExpirations.get(next));
                         expired.add(next);
                     }

@@ -8,6 +8,7 @@
 
 package net.loginbuddy.oauth.util;
 
+import net.loginbuddy.provider.LoginbuddyProviderUserinfo;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -16,7 +17,12 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.util.logging.Logger;
+
+
 public class OpenIDConfiguration {
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(OpenIDConfiguration.class));
 
     /**
      * Retrieve the util-configuration of the given provider

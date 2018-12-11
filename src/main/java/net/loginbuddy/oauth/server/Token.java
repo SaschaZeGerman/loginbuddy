@@ -10,6 +10,7 @@ package net.loginbuddy.oauth.server;
 
 import net.loginbuddy.cache.LoginbuddyCache;
 import net.loginbuddy.config.Constants;
+import net.loginbuddy.oauth.client.Callback;
 import net.loginbuddy.oauth.util.Pkce;
 import org.json.simple.JSONObject;
 
@@ -20,9 +21,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @WebServlet(name = "Token")
 public class Token extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Token.class));
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -35,6 +39,7 @@ public class Token extends HttpServlet {
         String code = request.getParameter("code");
 
         if(code == null || code.trim().length() == 0 || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
+            LOGGER.warning("The given code parameter is invalid or was provided multiple times");
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code parameter is invalid or was provided multiple times");
             response.setStatus(400);
@@ -44,6 +49,7 @@ public class Token extends HttpServlet {
 
         Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(code);
         if(sessionValues == null) {
+            LOGGER.warning("The given code is invalid or has expired");
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code is invalid or has expired");
             response.setStatus(400);
@@ -55,6 +61,7 @@ public class Token extends HttpServlet {
                 String clientCodeVerifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
                 if(clientCodeVerifier != null && request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length == 1) {
                     if(!Pkce.validate(clientCodeChallenge, (String)sessionValues.get(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey()), clientCodeVerifier)) {
+                        LOGGER.warning("The code_verifier is invalid!");
                         resp.put("error", "invalid_request");
                         resp.put("error_description", "The code_verifier is invalid!");
                         response.setStatus(400);
@@ -62,6 +69,7 @@ public class Token extends HttpServlet {
                         return;
                     }
                 } else {
+                    LOGGER.warning("The code_verifier parameter is invalid!");
                     resp.put("error", "invalid_request");
                     resp.put("error_description", "The code_verifier parameter is invalid!");
                     response.setStatus(400);

@@ -45,12 +45,14 @@ public class Initialize extends HttpServlet {
 
         String session = request.getParameter("session");
         if (session == null || session.trim().length() == 0 || request.getParameterValues("session").length > 1) {
+            LOGGER.warning("Missing session, cannot initiate the authorization flow!");
             response.sendError(400, "Missing session, cannot initiate the authorization flow!");
             return;
         }
 
         Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().get(session);
         if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
+            LOGGER.warning("The current session is invalid or it has expired!");
             response.sendError(400, "The current session is invalid or it has expired!");
             return;
         }
@@ -59,10 +61,12 @@ public class Initialize extends HttpServlet {
         if("".equals(providerSession)) {
             providerSession = request.getParameter(Constants.PROVIDER.getKey());
             if (providerSession != null && request.getParameterValues(Constants.PROVIDER.getKey()).length > 1) {
+                LOGGER.warning("Invalid provider parameter");
                 response.sendError(400, "Invalid provider parameter");
                 return;
             }
             if (providerSession == null || providerSession.trim().length() == 0) {
+                LOGGER.warning("No provider has been selected");
                 response.sendError(400, "No provider has been selected");
                 return;
             }
@@ -72,6 +76,7 @@ public class Initialize extends HttpServlet {
         try {
             providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(providerSession);
             if (providerConfig == null) {
+                LOGGER.warning("The given provider is unknown or invalid");
                 response.sendError(400, "The given provider is unknown or invalid");
                 return;
             }

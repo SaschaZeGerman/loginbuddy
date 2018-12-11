@@ -10,8 +10,11 @@ package net.loginbuddy.config;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import java.util.logging.Logger;
 
 public class LoginbuddyConfig {
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyConfig.class));
 
     private ConfigUtil configUtil;
 
@@ -30,6 +33,7 @@ public class LoginbuddyConfig {
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             configUtil = (ConfigUtil) envCtx.lookup("bean/ConfigUtilFactory");
         } catch (Exception e) {
+            LOGGER.severe("LoginbuddyConfiguration could not be loaded!");
             e.printStackTrace();
         }
     }

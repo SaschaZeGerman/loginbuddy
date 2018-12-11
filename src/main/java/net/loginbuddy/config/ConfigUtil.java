@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 public class ConfigUtil {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(ConfigUtil.class));
+
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
     private String loginbuddy = "loginbuddy";
     private String clients = "clients";
@@ -44,7 +45,7 @@ public class ConfigUtil {
             return node.get(loginbuddy);
 
         } catch (IOException e) {
-            LOGGER.severe("Failed to read config file ::" + e.getMessage());
+            LOGGER.severe("LoginBuddyConfiguration file could not be loaded!");
             throw e;
         }
     }
@@ -53,12 +54,14 @@ public class ConfigUtil {
         JsonNode clientsNode = getConfig().get(clients);
 
         if (clientsNode == null || !clientsNode.isArray()) {
-            throw new Exception("Fail to read provider from config file");
+            LOGGER.severe("Fail to read provider from config file!");
+            throw new Exception("Fail to read provider from config file!");
         }
 
         try {
             return Arrays.asList(MAPPER.readValue(clientsNode.toString(), ClientConfig[].class));
         } catch (Exception e) {
+            LOGGER.severe("Fail to map clients [" + clientsNode.toString() + "]");
             throw new Exception("Fail to map clients [" + clientsNode.toString() + "]");
         }
     }
@@ -67,12 +70,14 @@ public class ConfigUtil {
         JsonNode providerNode = getConfig().get(providers);
 
         if (providerNode == null || !providerNode.isArray()) {
-            throw new Exception("Fail to read provider from config file");
+            LOGGER.severe("Fail to read provider from config file!");
+            throw new Exception("Fail to read provider from config file!");
         }
 
         try {
             return Arrays.asList(MAPPER.readValue(providerNode.toString(), ProviderConfig[].class));
         } catch (Exception e) {
+            LOGGER.severe("Fail to map providers [" + providerNode.toString() + "]");
             throw new Exception("Fail to map providers [" + providerNode.toString() + "]");
         }
     }

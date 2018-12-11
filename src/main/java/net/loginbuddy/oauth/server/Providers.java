@@ -43,12 +43,14 @@ public class Providers extends HttpServlet {
         String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
 
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
-            response.sendError(400, "Missing or invalid redirect_uri parameter");
+            LOGGER.warning("Missing or invalid redirect_uri parameter!");
+            response.sendError(400, "Missing or invalid redirect_uri parameter!");
             return;
         }
 
         try {
             if (LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByRedirectUri(clientRedirectUri) == null) {
+                LOGGER.warning("The given redirect_uri is unknown or invalid");
                 response.sendError(400, "The given redirect_uri is unknown or invalid");
                 return;
             }
@@ -66,6 +68,7 @@ public class Providers extends HttpServlet {
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
+            LOGGER.warning("Missing or invalid state parameter!");
             response.sendRedirect(clientRedirectUri.concat("error=invalid_request&error_description=missing+or+invalid+state+parameter"));
             return;
         }
@@ -77,6 +80,7 @@ public class Providers extends HttpServlet {
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
+            LOGGER.warning("Invalid provider parameter!");
             response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+provider+parameter"));
             return;
         }
@@ -92,6 +96,7 @@ public class Providers extends HttpServlet {
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
+            LOGGER.warning("Invalid code_challenge!");
             response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge"));
             return;
         }
@@ -103,6 +108,7 @@ public class Providers extends HttpServlet {
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
+            LOGGER.warning("Invalid or unsupported code_challenge_method parameter or value!");
             response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
             return;
         }

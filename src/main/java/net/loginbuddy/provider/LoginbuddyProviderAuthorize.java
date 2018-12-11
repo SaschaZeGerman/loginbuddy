@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 public class LoginbuddyProviderAuthorize extends HttpServlet {
+
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyProviderAuthorize.class));
 
     @Override
@@ -104,8 +105,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
             // forward to a fake login page
             request.getRequestDispatcher("exampleProviderUsername.jsp").forward(request, response);
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.severe("The authorization request was invalid");
+            e.printStackTrace();
         }
     }
 
@@ -230,8 +231,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
                 response.sendError(400, "Unknown API was called!");
             }
         } catch (ServletException e) {
-            e.printStackTrace();
             LOGGER.warning("Something in the FakeProvider went badly wrong!");
+            e.printStackTrace();
             response.sendError(500, "Something in the FakeProvider went badly wrong!");
         }
     }

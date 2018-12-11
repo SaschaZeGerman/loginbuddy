@@ -10,7 +10,6 @@
 <%@ page import="org.apache.http.message.BasicNameValuePair" %>
 <%@ page import="org.apache.http.client.methods.HttpPost" %>
 <%@ page import="org.apache.http.client.entity.UrlEncodedFormEntity" %>
-<%@ page import="net.loginbuddy.cache.LoginbuddyCache" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%--

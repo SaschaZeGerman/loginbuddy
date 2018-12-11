@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 public class LoginbuddyProviderToken extends HttpServlet {
+
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyProviderToken.class));
 
     @Override
@@ -46,6 +47,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         // TODO: Handle multiple grant_types. But, since this is all fake, we'll just support 'authorization_code'
         String grant_type = request.getParameter(Constants.GRANT_TYPE.getKey());
         if(!"authorization_code".equalsIgnoreCase(grant_type)) {
+            LOGGER.warning("The given grant_type is not supported or the parameter is missing");
             resp.put("error_description", "The given grant_type is not supported or the parameter is missing");
             resp.put("error", "invalid_request");
             response.setStatus(400);
@@ -59,6 +61,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         // find the session and fail if it is unknown
         Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(code);
         if (sessionValues == null) {
+            LOGGER.warning("The given authorization_code is invalid or has expired or none was given");
             resp.put("error_description", "The given authorization_code is invalid or has expired or none was given");
             resp.put("error", "invalid_request");
             response.setStatus(400);
@@ -68,6 +71,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
 
         // Need to check if the given clientId is the one associated with the given authorization_code
         if (clientId == null || !clientId.equals(sessionValues.get(Constants.CLIENT_ID.getKey())) ) {
+            LOGGER.warning("The given client_id is not valid for the given authorization_code");
             resp.put("error_description", "The given client_id is not valid for the given authorization_code");
             resp.put("error", "invalid_request");
             response.setStatus(400);
@@ -77,6 +81,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
 
         // TODO: Validate the client_secret. But, since this is all fake, we'll just check if it exists
         if(request.getParameter(Constants.CLIENT_SECRET.getKey()) == null) {
+            LOGGER.warning("The client_secret is missing");
             resp.put("error_description", "The client_secret is missing");
             resp.put("error", "invalid_request");
             response.setStatus(400);
@@ -89,6 +94,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         if(code_challenge != null) {
             String code_verifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
             if (code_verifier == null || "".equals(code_verifier.trim()) || request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length > 1) {
+                LOGGER.warning("Missing code_verifier");
                 resp.put("error_description", "Missing code_verifier");
                 resp.put("error", "invalid_request");
                 response.setStatus(400);
@@ -96,6 +102,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
                 return;
             } else {
                 if (!Pkce.validate(code_challenge, (String)sessionValues.get(Constants.CODE_CHALLENGE_METHOD.getKey()), code_verifier)) {
+                    LOGGER.warning("The given code_verifier is invalid");
                     resp.put("error_description", "The given code_verifier is invalid");
                     resp.put("error", "invalid_request");
                     response.setStatus(400);

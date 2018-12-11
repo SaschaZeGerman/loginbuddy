@@ -13,8 +13,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 public class ExchangeBean implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ExchangeBean.class));
 
     private String iss, aud, nonce, provider, idToken;
     private JSONObject userinfo;
