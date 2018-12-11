@@ -33,7 +33,7 @@ I have only used loginbuddy on a MacBook, if you run it on Windows, some instruc
   - this will pull the latest image from docker hub
   - this will also create a private key, within the container, on the fly, used for testing and development purposes. See 'docker-build/add-ons/local/loginbuddy.sh' for details
   - the private key's subject is **CN=local.loginbuddy.net**. The subject alternative name is **server.loginbuddy.net** to simulate a provider
-  - this will use ports 80 (http), 443 (https), 8000 (debugging)
+  - this will use ports 80 (http), 443 (https)
 - Open a browser
   - go to **http://local.loginbuddy.net** and follow the prompts
   - the following screen will display an image saying **fake** which is the demo provider. Just click it ...

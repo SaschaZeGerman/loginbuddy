@@ -16,9 +16,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8000:8000"
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
       - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
     volumes:
       - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
