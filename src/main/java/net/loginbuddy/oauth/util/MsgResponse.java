@@ -10,6 +10,9 @@ package net.loginbuddy.oauth.util;
 
 import java.io.Serializable;
 
+/**
+ * The data model that is returned to Loginbuddy after receiving a response from providers.
+ */
 public class MsgResponse implements Serializable {
 
     private String contentType, msg;

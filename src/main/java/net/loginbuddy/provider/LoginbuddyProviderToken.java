@@ -32,8 +32,9 @@ public class LoginbuddyProviderToken extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyProviderToken.class));
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        throw new UnsupportedOperationException("GET is not supported for this operation");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setHeader("Allow", "POST");
+        response.sendError(405, "Method not allowed");
     }
 
     @Override
@@ -124,10 +125,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         sessionValues.put("access_token_expiration", String.valueOf(new Date().getTime()+3600000)); // getTime should be 10-digits (seconds) but it is millis (13-digits)
         sessionValues.put("refresh_token_expiration", String.valueOf(new Date().getTime()+7200000)); // getTime should be 10-digits (seconds) but it is millis (13-digits)
 
-        // Remove the code as key, it should be usable once only! And that was now
-//        LoginbuddyCache.getInstance().remove(code);
-
-        // associate with access_token. We'll ignore the fresh_token for now. Remember, this is all 'fake'
+        // associate with access_token. We'll ignore the refresh_token for now. Remember, this is all 'fake'
         LoginbuddyCache.getInstance().put(access_token, sessionValues);
 
         // create the response message that includes the issued token

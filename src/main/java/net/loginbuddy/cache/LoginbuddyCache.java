@@ -53,8 +53,7 @@ public class LoginbuddyCache {
                 List<Long> expired = new ArrayList<>();
                 for (long next : listOfExpirations.keySet()) {
                     if (next < now) {
-                        // TODO: use 'delete' and not 'cache.delete'
-                        cache.delete(listOfExpirations.get(next));
+                        delete(listOfExpirations.get(next));
                         expired.add(next);
                     }
                 }
@@ -68,11 +67,26 @@ public class LoginbuddyCache {
         timer.scheduleAtFixedRate(repeatedTask, delay, period);
     }
 
+    /**
+     * Any value added has a default lifetime of 60s. For other lifetimes, use {@link #putWithExpiration(String, Object, Long)}.
+     *
+     * @param key
+     * @param obj
+     * @return
+     */
     public Object put(String key, Object obj) {
         return putWithExpiration(key, obj, 60L);
     }
 
-    private Object putWithExpiration(String key, Object obj, Long lifetimeInSeconds) {
+    /**
+     * Any added value has a lifetime matching the given value. The max. lifetime is 3600s.
+     *
+     * @param key
+     * @param obj
+     * @param lifetimeInSeconds for 'null' the lifetime is set to 60s
+     * @return
+     */
+    public Object putWithExpiration(String key, Object obj, Long lifetimeInSeconds) {
 
         if(lifetimeInSeconds == null || lifetimeInSeconds > 3600 || lifetimeInSeconds <=0) {
             lifetimeInSeconds = 60L;
@@ -83,18 +97,21 @@ public class LoginbuddyCache {
         return cache.put(key, obj);
     }
 
+    // TODO: do not return expired values
     public Object remove(String key) {
         return cache.remove(key);
     }
 
     public void delete(String key) {
-        cache.remove(key);
+        remove(key);
     }
 
+    // TODO: do not return expired values
     public Object get(String key) {
         return cache.get(key);
     }
 
+    // TODO: do not include expired values
     public int getSize() {
         return cache.getSize();
     }

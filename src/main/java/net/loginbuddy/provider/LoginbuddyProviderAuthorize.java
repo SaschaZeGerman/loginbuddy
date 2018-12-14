@@ -105,7 +105,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
             // forward to a fake login page
             request.getRequestDispatcher("exampleProviderUsername.jsp").forward(request, response);
         } catch (Exception e) {
-            LOGGER.severe("The authorization request was invalid");
+            LOGGER.warning("The authorization request was invalid");
             e.printStackTrace();
         }
     }

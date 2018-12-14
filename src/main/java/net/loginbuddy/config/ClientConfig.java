@@ -11,10 +11,15 @@ package net.loginbuddy.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ClientConfig {
+
     @JsonProperty("redirect_uri")
     private String redirectUri;
+
     @JsonProperty("client_uri")
     private String clientUri;
+
+    @JsonProperty("client_id")
+    private String clientId;
 
     public String getRedirectUri() {
         return redirectUri;
@@ -31,4 +36,8 @@ public class ClientConfig {
     public void setClientUri(String clientUri) {
         this.clientUri = clientUri;
     }
+
+    public String getClientId() { return clientId; }
+
+    public void setClientId(String clientId) { this.clientId = clientId; }
 }

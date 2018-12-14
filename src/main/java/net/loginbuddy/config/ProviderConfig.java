@@ -14,23 +14,32 @@ public class ProviderConfig {
 
     private String provider;
     private String issuer;
+    private String scope;
+
     @JsonProperty("client_id")
     private String clientId;
+
     @JsonProperty("client_secret")
     private String clientSecret;
+
     @JsonProperty("redirect_uri")
     private String redirectUri;
+
     @JsonProperty("authorization_endpoint")
     private String authorizationEndpoint;
+
     @JsonProperty("openid_configuration_uri")
     private String openidConfigurationUri;
+
     @JsonProperty("token_endpoint")
     private String tokenEndpoint;
+
     @JsonProperty("userinfo_endpoint")
     private String userinfoEndpoint;
+
     @JsonProperty("jwks_uri")
     private String jwksUri;
-    private String scope;
+
     @JsonProperty("response_type")
     private String responseType;
 

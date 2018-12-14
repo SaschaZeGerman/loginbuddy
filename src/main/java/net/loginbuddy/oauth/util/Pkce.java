@@ -46,8 +46,8 @@ public class Pkce {
             } else return true;
         } catch (NoSuchAlgorithmException e) {
             // this should never ever happen!
-            e.printStackTrace();
             LOGGER.severe("This should never happen, must be the java implementation!");
+            e.printStackTrace();
         }
         return false;
     }
@@ -71,8 +71,8 @@ public class Pkce {
             return new PkcePair(code_verifier, new String(Base64.getUrlEncoder().encode(encodedhash)).replace("=", ""));
         } catch (NoSuchAlgorithmException e) {
             // this should never ever happen!
-            e.printStackTrace();
             LOGGER.severe("This should never happen, must be the java implementation!");
+            e.printStackTrace();
         }
         return null;
     }

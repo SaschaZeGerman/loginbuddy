@@ -8,7 +8,6 @@
 
 package net.loginbuddy.oauth.util;
 
-import net.loginbuddy.provider.LoginbuddyProviderUserinfo;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -25,7 +24,7 @@ public class OpenIDConfiguration {
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(OpenIDConfiguration.class));
 
     /**
-     * Retrieve the util-configuration of the given provider
+     * Retrieve the openid-configuration of the given provider
      *
      * @param openidConfigUrl
      */
@@ -38,11 +37,12 @@ public class OpenIDConfiguration {
             HttpResponse response = httpClient.execute(httpGet);
 
             if (response.getStatusLine().getStatusCode() == 200) {
-                // assuming it is always JSON, not checking for content-type here
+                // TODO: Handle other status and contentTypes
                 return (JSONObject) new JSONParser().parse(EntityUtils.toString(response.getEntity()));
             } else throw new Exception(EntityUtils.toString(response.getEntity()));
 
         } catch (Exception e) {
+            LOGGER.warning("The openid-configuration could not be retrieved. Given URL: '" + openidConfigUrl + "'");
             e.printStackTrace();
         }
 

@@ -15,6 +15,9 @@ import org.json.simple.parser.ParseException;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
+/**
+ * The data model that is returned to the client (application)
+ */
 public class ExchangeBean implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(ExchangeBean.class));
@@ -109,6 +112,7 @@ public class ExchangeBean implements Serializable {
         try {
             return (JSONObject)new JSONParser().parse(idTokenPayload);
         } catch (ParseException e) {
+            LOGGER.warning("The id_token payload could not be decoded!");
             e.printStackTrace();
             return null;
         }

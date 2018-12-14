@@ -89,6 +89,13 @@ public class ConfigUtil {
                 .orElse(null);
     }
 
+    public ClientConfig getClientConfigByClientId(String clientId) throws Exception {
+        return getClients().stream()
+                .filter(clientConfig -> clientConfig.getClientId().equals(clientId))
+                .findFirst()
+                .orElse(null);
+    }
+
     public ProviderConfig getProviderConfigByProvider(String loginHint) throws Exception {
         return getProviders().stream()
                 .filter(provider -> provider.getProvider().equals(loginHint))
