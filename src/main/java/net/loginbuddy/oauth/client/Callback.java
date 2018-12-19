@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.logging.Logger;
@@ -65,36 +66,25 @@ public class Callback extends HttpServlet {
             }
 
             String clientRedirectUri = (String) sessionValues.get(Constants.CLIENT_REDIRECT.getKey());
+            if (clientRedirectUri.contains("?")) {
+                clientRedirectUri = clientRedirectUri.concat("&");
+
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("?");
+            }
             String clientState = (String) sessionValues.get(Constants.CLIENT_STATE.getKey());
 
             String error = request.getParameter(Constants.ERROR.getKey());
             String errorDescription = null;
             if (error != null) {
                 errorDescription = request.getParameter("error_description");
-                if (errorDescription == null) {
-                    errorDescription = "An error was returned by the provider without any description";
-                }
-                error = URLEncoder.encode(error, "UTF-8");
-                errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
-                if (clientRedirectUri.contains("?")) {
-                    clientRedirectUri = clientRedirectUri.concat("&");
-
-                } else {
-                    clientRedirectUri = clientRedirectUri.concat("?");
-                }
-                clientRedirectUri = clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
+                clientRedirectUri = getErrorForRedirect(clientRedirectUri, clientState, error, errorDescription);
                 response.sendRedirect(clientRedirectUri);
                 return;
             }
 
             String authCode = request.getParameter(Constants.CODE.getKey());
             if (authCode == null || authCode.trim().length() == 0 || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
-                if (clientRedirectUri.contains("?")) {
-                    clientRedirectUri = clientRedirectUri.concat("&");
-
-                } else {
-                    clientRedirectUri = clientRedirectUri.concat("?");
-                }
                 clientRedirectUri = clientRedirectUri.concat("error=invalid_request&error_description=Missing+or+invalid+code+parameter");
                 response.sendRedirect (clientRedirectUri);
                 return;
@@ -140,22 +130,15 @@ public class Callback extends HttpServlet {
                         JSONObject err = (JSONObject)new JSONParser().parse(tokenResponse.getMsg());
                         error = (String)err.get("error");
                         errorDescription = (String)err.get("error_description");
-                        if (errorDescription == null) {
-                            errorDescription = "An error was returned by the provider without any description";
-                        }
-                        error = URLEncoder.encode(error, "UTF-8");
-                        errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
-                        if (clientRedirectUri.contains("?")) {
-                            clientRedirectUri = clientRedirectUri.concat("&");
-
-                        } else {
-                            clientRedirectUri = clientRedirectUri.concat("?");
-                        }
-                        clientRedirectUri = clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
+                        clientRedirectUri = getErrorForRedirect(clientRedirectUri, clientState, error, errorDescription);
                         response.sendRedirect(clientRedirectUri);
                         return;
                     }
                 }
+            } else {
+                clientRedirectUri = clientRedirectUri.concat("error=invalid_request&error_description=The+code+exchange+failed.+An+access_token+could+not+be+retrieved");
+                response.sendRedirect (clientRedirectUri);
+                return;
             }
 
             // Call /userinfo only if it was configured in config.json
@@ -179,6 +162,8 @@ public class Callback extends HttpServlet {
                             err.put("error_description", errorDescription);
                             eb.setUserinfo(err);
                         }
+                    } else {
+                        eb.setUserinfo((JSONObject)new JSONParser().parse("{\"error\":\"unknown_error\"}"));
                     }
                 }
             }
@@ -186,13 +171,6 @@ public class Callback extends HttpServlet {
             String pickUpCode = UUID.randomUUID().toString();
             sessionValues.put("eb", eb.toString());
             LoginbuddyCache.getInstance().put(pickUpCode, sessionValues);
-
-            if (clientRedirectUri.contains("?")) {
-                clientRedirectUri = clientRedirectUri.concat("&");
-
-            } else {
-                clientRedirectUri = clientRedirectUri.concat("?");
-            }
 
             clientRedirectUri = clientRedirectUri.concat("code=").concat(pickUpCode).concat("&state=").concat(clientState);
             response.sendRedirect(clientRedirectUri);
@@ -202,6 +180,15 @@ public class Callback extends HttpServlet {
             e.printStackTrace();
             response.getWriter().println("authorization request failed!");
         }
+    }
+
+    private String getErrorForRedirect(String clientRedirectUri, String clientState, String error, String errorDescription) throws UnsupportedEncodingException {
+        if (errorDescription == null) {
+            errorDescription = "An error was returned by the provider without any description";
+        }
+        error = URLEncoder.encode(error, "UTF-8");
+        errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
+        return clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
     }
 
     private MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode, String tokenEndpoint, String codeVerifier) {
