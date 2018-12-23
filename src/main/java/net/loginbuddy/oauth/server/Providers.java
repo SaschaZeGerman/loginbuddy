@@ -47,6 +47,13 @@ public class Providers extends HttpServlet {
             response.sendError(400, "Missing or invalid redirect_uri parameter!");
             return;
         }
+        String clientRedirectUriError;
+        if (clientRedirectUri.contains("?")) {
+            clientRedirectUriError = clientRedirectUri.concat("&");
+
+        } else {
+            clientRedirectUriError = clientRedirectUri.concat("?");
+        }
 
         try {
             if (LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByRedirectUri(clientRedirectUri) == null) {
@@ -62,26 +69,14 @@ public class Providers extends HttpServlet {
         }
 
         if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
-            if (clientRedirectUri.contains("?")) {
-                clientRedirectUri = clientRedirectUri.concat("&");
-
-            } else {
-                clientRedirectUri = clientRedirectUri.concat("?");
-            }
             LOGGER.warning("Missing or invalid state parameter!");
-            response.sendRedirect(clientRedirectUri.concat("error=invalid_request&error_description=missing+or+invalid+state+parameter"));
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=missing+or+invalid+state+parameter"));
             return;
         }
 
         if (clientProvider != null && request.getParameterValues("provider").length > 1) {
-            if (clientRedirectUri.contains("?")) {
-                clientRedirectUri = clientRedirectUri.concat("&");
-
-            } else {
-                clientRedirectUri = clientRedirectUri.concat("?");
-            }
             LOGGER.warning("Invalid provider parameter!");
-            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+provider+parameter"));
+            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+provider+parameter"));
             return;
         }
 
@@ -90,26 +85,14 @@ public class Providers extends HttpServlet {
         }
 
         if (clientCodeChallenge != null && (request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1 || !Pkce.verifyChallenge(clientCodeChallenge))) {
-            if (clientRedirectUri.contains("?")) {
-                clientRedirectUri = clientRedirectUri.concat("&");
-
-            } else {
-                clientRedirectUri = clientRedirectUri.concat("?");
-            }
             LOGGER.warning("Invalid code_challenge!");
-            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge"));
+            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge"));
             return;
         }
 
         if ( (clientCodeChallengeMethod != null && request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()).length > 1) || Pkce.CODE_CHALLENGE_METHOD_PLAIN.equals(clientCodeChallengeMethod)) {
-            if (clientRedirectUri.contains("?")) {
-                clientRedirectUri = clientRedirectUri.concat("&");
-
-            } else {
-                clientRedirectUri = clientRedirectUri.concat("?");
-            }
             LOGGER.warning("Invalid or unsupported code_challenge_method parameter or value!");
-            response.sendRedirect(clientRedirectUri.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
+            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
             return;
         }
 

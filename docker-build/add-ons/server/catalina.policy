@@ -196,6 +196,7 @@ grant {
 // [Loginbuddy]: adding permissions for loginbuddy to connect to more servers
 grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.util.PropertyPermission "user.dir", "read";
+    permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY", "read";
     permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";

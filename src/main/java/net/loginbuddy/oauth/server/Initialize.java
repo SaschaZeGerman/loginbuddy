@@ -109,6 +109,7 @@ public class Initialize extends HttpServlet {
                 authorizeUrl.append(msg.get(Constants.AUTHORIZATION_ENDPOINT.getKey()).toString());
                 sessionValues.put(Constants.TOKEN_ENDPOINT.getKey(), msg.get(Constants.TOKEN_ENDPOINT.getKey()).toString());
                 sessionValues.put(Constants.USERINFO_ENDPOINT.getKey(), msg.get(Constants.USERINFO_ENDPOINT.getKey()).toString());
+                sessionValues.put(Constants.JWKS_URI.getKey(), msg.get(Constants.JWKS_URI.getKey()).toString());
             } else {
                 LOGGER.warning("The OpenID Connect configuration could not be retrieved. Given URL: '" + providerConfig.getOpenidConfigurationUri() + "'");
                 response.sendError(400, "The OpenID Connect configuration coud not be retrieved");

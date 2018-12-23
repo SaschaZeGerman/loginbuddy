@@ -23,7 +23,7 @@ public class ExchangeBean implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(ExchangeBean.class));
 
     private String iss, aud, nonce, provider, idToken;
-    private JSONObject userinfo;
+    private JSONObject userinfo, idTokenPayload;
     private long iat;
 
     public ExchangeBean() {
@@ -78,6 +78,14 @@ public class ExchangeBean implements Serializable {
         this.idToken = idToken;
     }
 
+    public JSONObject getIdTokenPayload() {
+        return idTokenPayload;
+    }
+
+    public void setIdTokenPayload(JSONObject idTokenPayload) {
+        this.idTokenPayload = idTokenPayload;
+    }
+
     public long getIat() {
         return iat;
     }
@@ -95,7 +103,7 @@ public class ExchangeBean implements Serializable {
         data.put("provider", provider);
         data.put("userinfo", userinfo);
         data.put("id_token", idToken);
-        data.put("id_token_payload", getIdTokenPayload(idToken));
+        data.put("id_token_payload", idTokenPayload);
 
         output.put("iss", iss);
         output.put("iat", iat);
@@ -104,17 +112,5 @@ public class ExchangeBean implements Serializable {
         output.put("data", data);
 
         return output.toJSONString();
-    }
-
-    // TODO: implement
-    private JSONObject getIdTokenPayload(String idToken) {
-        String idTokenPayload = "{\"id_token\":\"payload\"}";
-        try {
-            return (JSONObject)new JSONParser().parse(idTokenPayload);
-        } catch (ParseException e) {
-            LOGGER.warning("The id_token payload could not be decoded!");
-            e.printStackTrace();
-            return null;
-        }
     }
 }

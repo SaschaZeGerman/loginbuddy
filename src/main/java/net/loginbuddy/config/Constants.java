@@ -14,7 +14,6 @@ public enum Constants {
     ACCESS_TOKEN("access_token"),
     AUTHORIZATION("Authorization"),
     AUTHORIZATION_CODE("authorization_code"),
-    AUTHORIZATION_ENDPOINT("authorization_endpoint"),
     BASIC("Basic "),
     BEARER("Bearer "),
     CLIENT_ID("client_id"),
@@ -34,8 +33,10 @@ public enum Constants {
     SESSION("session"),
     SCOPE("scope"),
     STATE("state"),
+    AUTHORIZATION_ENDPOINT("authorization_endpoint"),
     TOKEN_ENDPOINT("token_endpoint"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
+    JWKS_URI("jwks_uri"),
 
     // used with example provider
     ACTION_EXPECTED("action_expected"),

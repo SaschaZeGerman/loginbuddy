@@ -14,6 +14,7 @@ import net.loginbuddy.config.LoginbuddyConfig;
 import net.loginbuddy.config.ProviderConfig;
 import net.loginbuddy.oauth.util.MsgResponse;
 import net.loginbuddy.oauth.util.ExchangeBean;
+import net.loginbuddy.util.Jwt;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -97,12 +98,16 @@ public class Callback extends HttpServlet {
 
             String tokenEndpoint = null;
             String userInfoEndpoint = null;
+            String jwksUri = null;
+
             if (providerConfig.getOpenidConfigurationUri() != null) {
                 tokenEndpoint = (String) sessionValues.get(Constants.TOKEN_ENDPOINT.getKey());
                 userInfoEndpoint = (String) sessionValues.get(Constants.USERINFO_ENDPOINT.getKey());
+                jwksUri = (String) sessionValues.get(Constants.JWKS_URI.getKey());
             } else {
                 tokenEndpoint = providerConfig.getTokenEndpoint();
                 userInfoEndpoint = providerConfig.getUserinfoEndpoint();
+                jwksUri = providerConfig.getJwksUri();
             }
 
             ExchangeBean eb = new ExchangeBean();
@@ -113,6 +118,7 @@ public class Callback extends HttpServlet {
             eb.setProvider(provider);
 
             String access_token = null;
+            String id_token = null;
 
             MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), authCode, tokenEndpoint, code_verifier);
             if (tokenResponse != null) {
@@ -120,7 +126,7 @@ public class Callback extends HttpServlet {
                     if (tokenResponse.getContentType().startsWith("application/json")) {
                         JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
                         access_token = tokenResponseObject.get("access_token").toString();
-                        eb.setIdToken(tokenResponseObject.get("id_token").toString());
+                        id_token = tokenResponseObject.get("id_token").toString();
                     } else {
                         // no sure what to do yet ... but it should also never happen!
                     }
@@ -140,6 +146,22 @@ public class Callback extends HttpServlet {
                 response.sendRedirect (clientRedirectUri);
                 return;
             }
+
+            try {
+                MsgResponse jwks = getAPI(jwksUri);
+                JSONObject idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(), (String) sessionValues.get(Constants.NONCE.getKey()));
+                eb.setIdTokenPayload(idTokenPayload);
+                eb.setIdToken(id_token);
+            } catch (Exception e) {
+                JSONObject err = new JSONObject();
+                error = "invalid_id_token";
+                errorDescription = "The given id_token was invalid!";
+                err.put("error", error);
+                err.put("error_description", errorDescription);
+                eb.setIdTokenPayload(err);
+                eb.setIdToken("INVALID_" + id_token);
+            }
+
 
             // Call /userinfo only if it was configured in config.json
             if (userInfoEndpoint != null && !"".equals(userInfoEndpoint)) {
@@ -231,4 +253,19 @@ public class Callback extends HttpServlet {
             return null;
         }
     }
+
+    private MsgResponse getAPI(String targetApi) {
+        try {
+            HttpGet req = new HttpGet(targetApi);
+            HttpClient httpClient = HttpClientBuilder.create().build();
+
+            HttpResponse response = httpClient.execute(req);
+            return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+        } catch (Exception e) {
+            LOGGER.warning("The API response could not be retrieved. Given URL: '" + targetApi + "'");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
