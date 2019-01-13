@@ -83,7 +83,8 @@ public class Jwt {
                             VerificationJwkSelector jwkSelector = new VerificationJwkSelector();
                             JsonWebKey jwk = jwkSelector.select(jws, jsonWebKeySet.getJsonWebKeys());
                             jws.setKey(jwk.getKey());
-                            if(jwk.getAlgorithm().equals(jws.getAlgorithmHeaderValue())) {
+                            String jwkAlg = jwk.getAlgorithm() == null ? "RS256" : jwk.getAlgorithm(); // since 'alg' in JWKS is optional, we use RS256 as the default value
+                            if(jwkAlg.equalsIgnoreCase(jws.getAlgorithmHeaderValue())) {
                                 if (jws.verifySignature()) {
                                     return jo;
                                 } else {
