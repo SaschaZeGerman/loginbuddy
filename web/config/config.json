@@ -2,10 +2,12 @@
   "loginbuddy": {
     "clients": [
       {
+        "client_id": "clientIdForTestingPurposes",
         "client_uri": "https://local.loginbuddy.net",
         "redirect_uri": "https://local.loginbuddy.net/exampleAppCallback.jsp"
       },
       {
+        "client_id": "clientIdForSoapUiTestingPurposes",
         "client_uri": "https://local.soapui.com",
         "redirect_uri": "https://local.soapui.com/redirect"
       }

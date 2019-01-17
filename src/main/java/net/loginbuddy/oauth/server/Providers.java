@@ -9,6 +9,7 @@
 package net.loginbuddy.oauth.server;
 
 import net.loginbuddy.cache.LoginbuddyCache;
+import net.loginbuddy.config.ClientConfig;
 import net.loginbuddy.config.Constants;
 import net.loginbuddy.config.LoginbuddyConfig;
 import net.loginbuddy.oauth.util.Pkce;
@@ -38,9 +39,16 @@ public class Providers extends HttpServlet {
 
         String clientState = request.getParameter(Constants.STATE.getKey());
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
+        String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
         String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
         String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
         String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
+
+        if (clientId == null || clientId.trim().length() == 0 || request.getParameterValues(Constants.CLIENT_ID.getKey()).length > 1) {
+            LOGGER.warning("Missing or invalid client_id parameter!");
+            response.sendError(400, "Missing or invalid client_id parameter!");
+            return;
+        }
 
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
             LOGGER.warning("Missing or invalid redirect_uri parameter!");
@@ -56,9 +64,10 @@ public class Providers extends HttpServlet {
         }
 
         try {
-            if (LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByRedirectUri(clientRedirectUri) == null) {
-                LOGGER.warning("The given redirect_uri is unknown or invalid");
-                response.sendError(400, "The given redirect_uri is unknown or invalid");
+            ClientConfig clientConfig = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
+            if (clientConfig == null || !clientConfig.getRedirectUri().matches(clientRedirectUri)) {
+                LOGGER.warning("The given client_id or redirect_uri is unknown or invalid");
+                response.sendError(400, "The given client_id or redirect_uri is unknown or invalid");
                 return;
             }
         } catch (Exception e) {
@@ -100,6 +109,7 @@ public class Providers extends HttpServlet {
         Map<String, Object> sessionValues = new HashMap<>();
         sessionValues.put(Constants.CLIENT_STATE.getKey(), clientState);
         sessionValues.put(Constants.CLIENT_REDIRECT.getKey(), clientRedirectUri);
+        sessionValues.put(Constants.CLIENT_ID.getKey(), clientId);
         sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), clientProvider);
         sessionValues.put(Constants.CLIENT_CODE_CHALLENGE.getKey(), clientCodeChallenge);
         sessionValues.put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), clientCodeChallengeMethod);

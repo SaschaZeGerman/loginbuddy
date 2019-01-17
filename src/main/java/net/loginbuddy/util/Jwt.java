@@ -106,7 +106,9 @@ public class Jwt {
                 LOGGER.warning("Unexpected iss. Expected: '" + expectedIss + "', actual: '" + jo.get("iss") + "'");
             }
         } catch (Exception e) {
+            LOGGER.warning("No sure what went wrong ... check the stacktrace below ... ");
             e.printStackTrace();
+            throw new IllegalArgumentException("The given JWT could not be parsed or decoded!");
         }
         throw new IllegalArgumentException("The given JWT could not be parsed or decoded!");
     }

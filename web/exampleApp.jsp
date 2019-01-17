@@ -46,8 +46,9 @@
     details of the current user.</p>
     <p>These are required parameters, submitted as a form POST message ('*' indicates required parameters):</p>
     <ol>
+        <li><strong>client_id *: </strong>This must match the registered client_id.</li>
         <li><strong>redirect_uri *: </strong>This must match the registered redirect_uri. Loginbuddy will return user details to that location</li>
-        <li><strong>state *: </strong>A opaque value for loginbuddy, but required to match sessions, keep them aligned</li>
+        <li><strong>state *: </strong>An opaque value for loginbuddy, but required to match sessions, keep them aligned</li>
         <li><strong>provider: </strong>If this value is included, loginbuddy will not display a provider list to the user. Loginbuddy will forward the
             authentication request to that platform. The value has to match one of the configured provider IDs, an error will be returned otherwise. For testing
         purposes, use 'server_loginbuddy'. The value matches what has been configured at '/web/config/config.json'.</li>
@@ -55,6 +56,11 @@
     <p><strong>NOTE: </strong>Loginbuddy is an OAuth client of supported social platforms. That means, loginbuddy will <strong>NEVER</strong> see any users passwords!</p>
     <p>Below is an example form, give it a try:</p>
     <form action="providers" method="post" enctype="application/x-www-form-urlencoded">
+        <div class="form-group">
+            <label for="client_id">Client_ID</label>
+            <input type="text" id="client_id" name="client_id" size="80" class="form-control"
+                   value="clientIdForTestingPurposes">
+        </div>
         <div class="form-group">
             <label for="redirect_uri">Redirect_URI</label>
             <input type="text" id="redirect_uri" name="redirect_uri" size="80" class="form-control"
