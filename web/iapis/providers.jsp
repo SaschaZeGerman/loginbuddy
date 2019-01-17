@@ -1,11 +1,3 @@
-<%@ page import="net.loginbuddy.config.LoginbuddyConfig" %>
-<%@ page import="net.loginbuddy.config.ProviderConfig" %>
-<%@ page import="java.util.*" %>
-<%@ page import="java.util.logging.Logger" %>
-<%@ page import="net.loginbuddy.cache.LoginbuddyCache" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
-
 <%--
   ~ Copyright (c) 2018. . All rights reserved.
   ~
@@ -13,6 +5,12 @@
   ~ See http://www.apache.org/licenses/LICENSE-2.0 for details.
   ~
   --%>
+<%@ page import="net.loginbuddy.config.LoginbuddyConfig" %>
+<%@ page import="net.loginbuddy.config.ProviderConfig" %>
+<%@ page import="java.util.*" %>
+<%@ page import="java.util.logging.Logger" %>
+<%@ page import="net.loginbuddy.cache.LoginbuddyCache" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!
 
@@ -49,7 +47,7 @@
             providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(session).append("\">");
             providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
             providers.append("<button type=\"submit\">");
-            providers.append("<img width=\"100\" margin=\"0\" src=\"images/");
+            providers.append("<img alt=\"").append(nextProvider.getProvider()).append("\" width=\"100\" margin=\"0\" src=\"images/");
             providers.append(nextProvider.getProvider());
             providers.append(".png\"/></button></form></td>");
             if (count % 3 == 2) {
