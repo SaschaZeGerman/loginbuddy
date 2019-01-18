@@ -50,6 +50,6 @@ To find out more details on how to build and configure Loginbuddy, please visit 
 
 # License
 
-Copyright (c) 2018 CA. All rights reserved.
+Copyright (c) 2019. All rights reserved.
 
 This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](/LICENSE) file for details.
