@@ -4,7 +4,6 @@
 # - it creates a private key (via loginbuddy.sh)
 # - it updates the containers JAVA truststore to accept its own self-signed certificate a trust anchor
 # - it uses a permission file (docker-build/add-ons/local/catalina.policy) that accepts socket connections to a few prominent platforms (and to itself)
-# - it enables remote debugging
 #
 # NOTE: use this only for local development purposes!
 #
@@ -18,8 +17,10 @@ services:
       - "443:443"
     environment:
       - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
+      - "JAVA_OPTS=-Dorg.jose4j.jws.default-allow-none=false"
     volumes:
-      - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
       - ./docker-build/add-ons/local/catalina.policy:/usr/local/tomcat/conf/catalina.policy
+      - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
+      - ./docker-build/add-ons/local/server.xml:/usr/local/tomcat/conf/server.xml
     entrypoint:
       - /opt/docker/loginbuddy.sh

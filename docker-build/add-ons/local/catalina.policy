@@ -78,7 +78,7 @@ grant codeBase "file:${catalina.home}/bin/tomcat-juli.jar" {
         permission java.lang.RuntimePermission "getClassLoader";
         permission java.lang.RuntimePermission "setContextClassLoader";
 
-        // [SPR]: added next line
+        // [Loginbuddy]: added next line
         permission java.lang.management.ManagementPermission "monitor";
 
         permission java.util.logging.LoggingPermission "control";
@@ -86,7 +86,7 @@ grant codeBase "file:${catalina.home}/bin/tomcat-juli.jar" {
         permission java.util.PropertyPermission "java.util.logging.config.class", "read";
         permission java.util.PropertyPermission "java.util.logging.config.file", "read";
 
-        // [SPR]: added next 3 lines
+        // [Loginbuddy]: added next 3 lines
         permission java.util.PropertyPermission "org.apache.juli.AsyncLoggerPollInterval", "read";
         permission java.util.PropertyPermission "org.apache.juli.AsyncMaxRecordCount", "read";
         permission java.util.PropertyPermission "org.apache.juli.AsyncOverflowDropType", "read";
@@ -201,7 +201,4 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY", "read";
     permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";
     permission java.net.SocketPermission "server.loginbuddy.net", "connect,resolve";
-    permission java.net.SocketPermission "login.microsoftonline.com", "connect,resolve";
-    permission java.net.SocketPermission "accounts.google.com", "connect,resolve";
-    permission java.net.SocketPermission "www.googleapis.com", "connect,resolve";
 };

@@ -5,6 +5,7 @@
 # - it updates the containers JAVA truststore to accept its own self-signed certificate a trust anchor
 # - it uses a permission file (docker-build/add-ons/local/catalina.policy) that accepts socket connections to a few prominent platforms (and to itself)
 # - it enables remote debugging
+# - it enables JMX support
 #
 # NOTE: use this only for local development purposes!
 #
@@ -20,10 +21,11 @@ services:
       - "8000:8000"
       - "9010:9010"
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y -Dorg.jose4j.jws.default-allow-none=false -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
       - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y -Dorg.jose4j.jws.default-allow-none=false -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
     volumes:
-      - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
       - ./docker-build/add-ons/local/catalina.policy:/usr/local/tomcat/conf/catalina.policy
+      - ./docker-build/add-ons/local/loginbuddy.sh:/opt/docker/loginbuddy.sh
+      - ./docker-build/add-ons/local/server.xml:/usr/local/tomcat/conf/server.xml
     entrypoint:
       - /opt/docker/loginbuddy.sh

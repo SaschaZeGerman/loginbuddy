@@ -44,6 +44,15 @@
                         certificateKeyAlias="loginbuddy"
                         certificateVerification="false"/>
             </SSLHostConfig>
+            <SSLHostConfig hostName="server.loginbuddy.net"
+                           protocols="TLSv1,TLSv1.1,TLSv1.2"
+                           sslProtocol="TLS">
+                <Certificate
+                        certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
+                        certificateKeystorePassword="changeit"
+                        certificateKeyAlias="loginbuddy-server"
+                        certificateVerification="false"/>
+            </SSLHostConfig>
         </Connector>
 
         <Engine name="Catalina" defaultHost="localhost">

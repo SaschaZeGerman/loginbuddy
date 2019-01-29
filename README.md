@@ -31,8 +31,9 @@ I have only used loginbuddy on a MacBook, if you run it on Windows, some instruc
   - Switch into the directory *.../loginbuddy*
 - Run ```docker-compose -f docker-compose-start.yml up -d```
   - this will pull the latest image from docker hub
-  - this will also create a private key, within the container, on the fly, used for testing and development purposes. See 'docker-build/add-ons/local/loginbuddy.sh' for details
-  - the private key's subject is **CN=local.loginbuddy.net**. The subject alternative name is **server.loginbuddy.net** to simulate a provider
+  - this will also create two private keys within the container, on the fly, used for testing and development purposes. See 'docker-build/add-ons/local/loginbuddy.sh' for details
+  - the private key's subject for 'local.loginbuddy.net' is **CN=local.loginbuddy.net**
+  - the private key's subject for 'server.loginbuddy.net' (the 'fake' OpenID Provider) is **CN=server.loginbuddy.net**
   - this will use ports 80 (http), 443 (https)
 - Open a browser
   - go to **http://local.loginbuddy.net** and follow the prompts
