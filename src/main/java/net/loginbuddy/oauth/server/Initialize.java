@@ -91,7 +91,7 @@ public class Initialize extends HttpServlet {
             return;
         }
 
-        sessionValues.put("clientProvider", providerSession);
+        sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), providerSession);
 
         StringBuilder authorizeUrl = new StringBuilder();
 

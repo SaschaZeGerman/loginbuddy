@@ -79,7 +79,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
 
         String scope = "";
         if (!error) {
-            // Check for at least scope 'util'
+            // Check for at least scope 'openid'
             scope = (String) sessionValues.get(Constants.SCOPE.getKey());
             if (Stream.of(scope.split(" ")).noneMatch("openid"::equals)) {
                 LOGGER.warning("The given access_token has not been granted to access this API");
@@ -91,7 +91,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
 
         if (!error) {
 
-            // Let's build the response message depending on scope values other than 'util'
+            // Let's build the response message depending on scope values other than 'openid'
 
             String clientId = (String) sessionValues.get(Constants.CLIENT_ID.getKey());
             String email = (String) sessionValues.get("email");

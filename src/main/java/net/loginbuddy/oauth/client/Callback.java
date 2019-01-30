@@ -113,8 +113,8 @@ public class Callback extends HttpServlet {
             ExchangeBean eb = new ExchangeBean();
             eb.setIss("https://".concat(System.getenv("HOSTNAME_LOGINBUDDY")));
             eb.setIat(new Date().getTime()/1000);
-            eb.setAud("a_client_id");
-            eb.setNonce("a_nonce_value");
+            eb.setAud((String)sessionValues.get(Constants.CLIENT_ID.getKey()));
+            eb.setNonce(UUID.randomUUID().toString());
             eb.setProvider(provider);
 
             String access_token = null;

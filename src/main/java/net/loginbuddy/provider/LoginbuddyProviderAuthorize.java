@@ -70,7 +70,6 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
                 throw new IllegalArgumentException("The scope is missing");
             }
 
-            // TODO: Validate it, needs to be 43-128 characters
             String code_challenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
             if (!Pkce.verifyChallenge(code_challenge)) {
                 throw new IllegalArgumentException("invalid code_challenge");
