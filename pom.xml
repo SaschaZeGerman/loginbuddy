@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>net.loginbuddy</groupId>
     <artifactId>net.loginbuddy</artifactId>
     <version>LATEST</version>
@@ -11,11 +10,8 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jackson-annotations-version>2.9.0</jackson-annotations-version>
         <webXmlPath>web/WEB-INF/web.xml</webXmlPath>
-        <distWeb>docker-build/add-ons/web</distWeb>
-        <distFrom>target/net.loginbuddy-LATEST</distFrom>
-        <keySecret>changeit</keySecret>
+        <jackson.version>2.9.8</jackson.version>
     </properties>
     <build>
         <plugins>
@@ -28,38 +24,6 @@
                     <warSourceDirectory>web</warSourceDirectory>
                 </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
-                        <id>cleanWebDir</id>
-                        <phase>clean</phase>
-                        <configuration>
-                            <target>
-                                <delete dir="${distWeb}"/>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>copyWebDir</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <copy todir="${distWeb}" overwrite="yes">
-                                    <fileset dir="${distFrom}"/>
-                                </copy>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -68,20 +32,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-            <scope>provided</scope>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson-annotations-version}</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>[2.9.8,)</version>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -99,22 +62,36 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.59</version>
         </dependency>
+        <!--https://bitbucket.org/b_c/jose4j/wiki/Home-->
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+            <version>0.6.5</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
             <version>1.8.2</version>
+            <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-war-plugin -->
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-war-plugin</artifactId>
             <version>3.2.2</version>
+            <scope>provided</scope>
         </dependency>
-        <!--https://bitbucket.org/b_c/jose4j/wiki/Home-->
         <dependency>
-            <groupId>org.bitbucket.b_c</groupId>
-            <artifactId>jose4j</artifactId>
-            <version>0.6.4</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
