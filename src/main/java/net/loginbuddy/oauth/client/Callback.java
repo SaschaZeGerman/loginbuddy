@@ -118,15 +118,22 @@ public class Callback extends HttpServlet {
             eb.setProvider(provider);
 
             String access_token = null;
-            String id_token = null;
+            String id_token = "none_issued";
 
             MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), authCode, tokenEndpoint, code_verifier);
             if (tokenResponse != null) {
                 if (tokenResponse.getStatus() == 200) {
                     if (tokenResponse.getContentType().startsWith("application/json")) {
                         JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
+                        LOGGER.info(tokenResponseObject.toJSONString());
                         access_token = tokenResponseObject.get("access_token").toString();
-                        id_token = tokenResponseObject.get("id_token").toString();
+                        // in cases where id_token were not issued
+                        try {
+                            id_token = tokenResponseObject.get("id_token").toString();
+                        } catch (Exception e) {
+                            LOGGER.warning("No id_token was issued!");
+                            e.printStackTrace();
+                        }
                     } else {
                         // no sure what to do yet ... but it should also never happen!
                     }
@@ -155,7 +162,7 @@ public class Callback extends HttpServlet {
             } catch (Exception e) {
                 JSONObject err = new JSONObject();
                 error = "invalid_id_token";
-                errorDescription = "The given id_token was invalid!";
+                errorDescription = "The given id_token was invalid or could not be validated!";
                 err.put("error", error);
                 err.put("error_description", errorDescription);
                 eb.setIdTokenPayload(err);
@@ -229,6 +236,7 @@ public class Callback extends HttpServlet {
 
             HttpClient httpClient = HttpClientBuilder.create().build();
             req.setEntity(new UrlEncodedFormEntity(formParameters));
+            req.addHeader("Accept", "application/json");
 
             HttpResponse response = httpClient.execute(req);
             return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(), EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
