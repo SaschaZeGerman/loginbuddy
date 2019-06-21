@@ -26,9 +26,16 @@ apitest/soapui/project/*workspace.xml
 apitest/soapui/properties/*.properties
 !apitest/soapui/properties/template*.properties
 
-# test files
+# temporary test files
 apitest/tempfiles/*
 
 # Loginbuddy
 docker-build/add-ons/web/*
 docker-build/add-ons/local/dev_*
+
+# personal docker-compose file
+docker-compose-sascha.yml
+
+# images - logos
+web/images/*.png
+!web/images/server_loginbuddy.png
