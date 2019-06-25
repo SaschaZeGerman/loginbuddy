@@ -37,5 +37,5 @@ docker-build/add-ons/local/dev_*
 docker-compose-sascha.yml
 
 # images - logos
-web/images/*.png
-!web/images/server_loginbuddy.png
+*/web/images/*.png
+!*/web/images/server_loginbuddy.png

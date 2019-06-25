@@ -1,0 +1,75 @@
+<!DOCTYPE web-app PUBLIC
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+
+    <display-name>Loginbuddy</display-name>
+
+    <servlet>
+        <servlet-name>Initialize</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Initialize</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Providers</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Providers</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Exchange</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Token</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Callback</servlet-name>
+        <servlet-class>net.loginbuddy.service.client.Callback</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Initialize</servlet-name>
+        <url-pattern>/initialize</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Providers</servlet-name>
+        <url-pattern>/providers</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>Exchange</servlet-name>
+        <url-pattern>/exchange</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Callback</servlet-name>
+        <url-pattern>/callback</url-pattern>
+    </servlet-mapping>
+
+    <resource-env-ref>
+        <description>Object factory for ConfigUtil instances</description>
+        <resource-env-ref-name>bean/ConfigUtilFactory</resource-env-ref-name>
+        <resource-env-ref-type>net.loginbuddy.service.config.ConfigUtil</resource-env-ref-type>
+    </resource-env-ref>
+
+    <resource-env-ref>
+        <description>Object factory for Cache instances</description>
+        <resource-env-ref-name>bean/CacheFactory</resource-env-ref-name>
+        <resource-env-ref-type>net.loginbuddy.common.cache.DefaultCache</resource-env-ref-type>
+    </resource-env-ref>
+
+    <security-constraint>
+        <display-name>Security for Loginbuddy configuration</display-name>
+        <web-resource-collection>
+            <web-resource-name>config.json</web-resource-name>
+            <url-pattern>/config/*</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>internal_apis</web-resource-name>
+            <url-pattern>/iapis/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <security-role>
+        <role-name>admin</role-name>
+    </security-role>
+
+</web-app>
