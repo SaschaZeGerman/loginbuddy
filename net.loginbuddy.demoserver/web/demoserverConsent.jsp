@@ -42,12 +42,8 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to Loginbuddy!</h1>
-    <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy"
-                                                          target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
+    <h1>Login with Loginbuddy-Demoserver!</h1>
     <hr/>
-    <h2>Fake-Provider</h2>
     <h3>Consent</h3>
     <p>Application <strong>Loginbuddy Test Client</strong> would like to access the following information:</p>
     <code>Your email-address, your profile and your ID (remember, this is completely fake for this demo!)</code>

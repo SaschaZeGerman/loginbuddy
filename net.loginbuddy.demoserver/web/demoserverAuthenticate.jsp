@@ -42,13 +42,9 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to Loginbuddy!</h1>
-    <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy"
-                                                          target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
+    <h1>Login with Loginbuddy-Demoserver!</h1>
     <hr/>
-    <h2>Fake-Provider</h2>
-    <h3></h3>Welcome <strong><%=request.getParameter("email")%></strong>,  please povide your password:</h3>
+    <h3></h3>Welcome <strong><%=request.getParameter("email")%></strong>,  please provide your password:</h3>
     <form action="authenticate" enctype="application/x-www-form-urlencoded" method="post">
         <div class="form-group">
             <input type="hidden" name="session" value="<%=request.getParameter("session")%>">

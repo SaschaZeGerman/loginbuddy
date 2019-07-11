@@ -18,12 +18,13 @@ COPY net.loginbuddy.democlient/target/democlient-1.0.0 /usr/local/tomcat/webapps
 # overwrite some configuration to 'harden' tomat. 'logindbuddy.xml' is required since we run tomcat with security manager
 # without 'loginbuddy.xml' we would use a 'META-INF/context.xml' file
 #
-COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml
-COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/localhost/demoserver.xml
-COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/localhost/democlient.xml
+#COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/local.loginbuddy.net/ROOT.xml
+#COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/demoserver.loginbuddy.net/demoserver.xml
+#COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/democlient.loginbuddy.net/democlient.xml
+
 COPY docker-build/add-ons/demosetup/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
-COPY docker-build/add-ons/server/web.xml /usr/local/tomcat/conf/web.xml
+COPY docker-build/add-ons/demosetup/web.xml /usr/local/tomcat/conf/web.xml
 
 # create non-priviliged user (with its own group) to run tomcat
 #

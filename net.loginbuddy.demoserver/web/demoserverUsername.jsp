@@ -34,12 +34,9 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to Loginbuddy!</h1>
-    <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy"
-                                                          target="_blank"><strong>Loginbuddy</strong></a>.
-        It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
+    <h1>Login with Loginbuddy-Demoserver!</h1>
+    <p>This is a demo social login provider called 'Fake-Provider'! This page asks for a username, the next one for a password and after that it displays a consent screen. All fake, just for demo!</p>
     <hr/>
-    <h2>Welcome to Fake-Provider</h2>
     <h3>Please login using your email address:</h3>
     <form action="login" enctype="application/x-www-form-urlencoded" method="post">
         <div class="form-group">

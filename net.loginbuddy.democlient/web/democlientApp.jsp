@@ -38,7 +38,7 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to Loginbuddy!</h1>
+    <h1>Welcome to Loginbuddy-Democlient!</h1>
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
         It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
@@ -54,7 +54,6 @@
             authentication request to that platform. The value has to match one of the configured provider IDs, an error will be returned otherwise. For testing
         purposes, use 'server_loginbuddy'. The value matches what has been configured at '/web/config/config.json'.</li>
     </ol>
-    <p><strong>NOTE: </strong>Loginbuddy is an OAuth client of supported social platforms. That means, loginbuddy will <strong>NEVER</strong> see any users passwords!</p>
     <p>Below is an example form, give it a try:</p>
     <form action="initialize" method="post" enctype="application/x-www-form-urlencoded">
         <div class="form-group">
@@ -63,14 +62,14 @@
         </div>
         <div class="form-group">
             <label for="redirect_uri">Redirect_URI</label>
-            <input type="text" id="redirect_uri" name="redirect_uri" size="80" class="form-control" value="https://<%=System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT")%>/democlient/callback">
+            <input type="text" id="redirect_uri" name="redirect_uri" size="80" class="form-control" value="https://<%=System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT")%>/callback">
         </div>
         <div class="form-group">
             <label for="state">State</label>
             <input type="text" id="state" name="state" size="80" class="form-control" value="<%=UUID.randomUUID().toString()%>">
         </div>
         <div class="form-group">
-            <label for="provider">Provider</label>
+            <label for="provider">Provider (optional)</label>
             <input type="text" id="provider" name="provider" class="form-control" size="80">
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
