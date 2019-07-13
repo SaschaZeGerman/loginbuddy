@@ -1,31 +1,6 @@
 {
   "loginbuddy": {
-    "clients": [
-      {
-        "client_id": "clientIdForTestingPurposes",
-        "client_uri": "https://dmeoclient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/democlient/callback"
-      },
-      {
-        "client_id": "clientIdForSoapUiTestingPurposes",
-        "client_uri": "https://local.soapui.com",
-        "redirect_uri": "https://local.soapui.com/redirect"
-      }
-    ],
-    "providers": [
-      {
-        "provider": "server_loginbuddy",
-        "issuer": "https://demoserver.loginbuddy.com/server",
-        "client_id": "loginbuddy_demoId",
-        "client_secret": "loginbuddy_demoSecret",
-        "authorization_endpoint": "https://demoserver.loginbuddy.net/demoserver/authorize",
-        "token_endpoint": "https://demoserver.loginbuddy.net/demoserver/token",
-        "userinfo_endpoint": "https://demoserver.loginbuddy.net/demoserver/userinfo",
-        "jwks_uri": "https://demoserver.loginbuddy.net/demoserver/jwks.json",
-        "scope": "openid profile email",
-        "response_type": "code",
-        "redirect_uri": "https://local.loginbuddy.net/callback"
-      }
-    ]
+    "clients": [],
+    "providers": []
   }
 }

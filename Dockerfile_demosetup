@@ -15,19 +15,17 @@ COPY net.loginbuddy.demoserver/target/demoserver-1.0.0 /usr/local/tomcat/webapps
 # Demo Client
 COPY net.loginbuddy.democlient/target/democlient-1.0.0 /usr/local/tomcat/webapps/democlient
 
-# overwrite some configuration to 'harden' tomat. 'logindbuddy.xml' is required since we run tomcat with security manager
-# without 'loginbuddy.xml' we would use a 'META-INF/context.xml' file
-#
-#COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/local.loginbuddy.net/ROOT.xml
-#COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/demoserver.loginbuddy.net/demoserver.xml
-#COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/democlient.loginbuddy.net/democlient.xml
-
-COPY docker-build/add-ons/demosetup/catalina.policy /usr/local/tomcat/conf/catalina.policy
-COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/demosetup/web.xml /usr/local/tomcat/conf/web.xml
+COPY docker-build/add-ons/demosetup/loginbuddy.sh /opt/docker/loginbuddy.sh
+COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
+COPY docker-build/add-ons/demosetup/catalina.policy /usr/local/tomcat/conf/catalina.policy
+COPY docker-build/add-ons/demosetup/config.json /usr/local/tomcat/webapps/ROOT/config/config.json
+COPY docker-build/add-ons/demosetup/server_loginbuddy.png /usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
 
 # create non-priviliged user (with its own group) to run tomcat
 #
 RUN addgroup tomcat
 RUN adduser -SG tomcat tomcat
 RUN chown -R tomcat:tomcat /usr/local/tomcat/
+
+ENTRYPOINT ["/opt/docker/loginbuddy.sh"]

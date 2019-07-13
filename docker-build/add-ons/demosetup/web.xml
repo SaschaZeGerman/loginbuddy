@@ -59,17 +59,12 @@
     <servlet-mapping>
         <servlet-name>jsp</servlet-name>
         <url-pattern>*.jsp</url-pattern>
-        <url-pattern>*.jspx</url-pattern>
     </servlet-mapping>
 
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
 
-    <mime-mapping>
-        <extension>htm</extension>
-        <mime-type>text/html</mime-type>
-    </mime-mapping>
     <mime-mapping>
         <extension>html</extension>
         <mime-type>text/html</mime-type>
@@ -78,34 +73,5 @@
         <extension>json</extension>
         <mime-type>application/json</mime-type>
     </mime-mapping>
-
-<!--    <resource-env-ref>-->
-<!--        <description>Object factory for Cache instances</description>-->
-<!--        <resource-env-ref-name>bean/CacheFactory</resource-env-ref-name>-->
-<!--        <resource-env-ref-type>net.loginbuddy.common.cache.DefaultCache</resource-env-ref-type>-->
-<!--    </resource-env-ref>-->
-
-    <!-- Require HTTPS for everything except /img (favicon) and /css. -->
-<!--    <security-constraint>-->
-<!--        <web-resource-collection>-->
-<!--            <web-resource-name>HTTPSOnly</web-resource-name>-->
-<!--            <url-pattern>/*</url-pattern>-->
-<!--        </web-resource-collection>-->
-<!--        <user-data-constraint>-->
-<!--            <transport-guarantee>CONFIDENTIAL</transport-guarantee>-->
-<!--        </user-data-constraint>-->
-<!--    </security-constraint>-->
-<!--    <security-constraint>-->
-<!--        <web-resource-collection>-->
-<!--            <web-resource-name>HTTPSOrHTTP</web-resource-name>-->
-<!--            <url-pattern>/favicon.ico</url-pattern>-->
-<!--            <url-pattern>/images/*</url-pattern>-->
-<!--            <url-pattern>/css/*</url-pattern>-->
-<!--            <url-pattern>/fonts/*</url-pattern>-->
-<!--        </web-resource-collection>-->
-<!--        <user-data-constraint>-->
-<!--            <transport-guarantee>NONE</transport-guarantee>-->
-<!--        </user-data-constraint>-->
-<!--    </security-constraint>-->
 
 </web-app>
