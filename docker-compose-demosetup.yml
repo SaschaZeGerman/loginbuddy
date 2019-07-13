@@ -13,21 +13,12 @@ version: '3.4'
 services:
   loginbuddy-demosetup:
     image: loginbuddy:demosetup-latest
-#    build:
-#      context: .
-#      dockerfile: Dockerfile_demosetup
     restart: always
     ports:
       - "80:80"
       - "443:443"
-      - "8000:8000"
-      - "9010:9010"
     environment:
       - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
       - "HOSTNAME_LOGINBUDDY_DEMOSERVER=demoserver.loginbuddy.net"
       - "HOSTNAME_LOGINBUDDY_DEMOCLIENT=democlient.loginbuddy.net"
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y -Dorg.jose4j.jws.default-allow-none=false -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
-    volumes:
-      - ./docker-build/add-ons/demosetup/loginbuddy.sh:/opt/docker/loginbuddy.sh
-    entrypoint:
-      - /opt/docker/loginbuddy.sh
+      - "JAVA_OPTS=-Dorg.jose4j.jws.default-allow-none=false"

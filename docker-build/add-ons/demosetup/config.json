@@ -1,0 +1,26 @@
+{
+  "loginbuddy": {
+    "clients": [
+      {
+        "client_id": "clientIdForTestingPurposes",
+        "client_uri": "https://democlient.loginbuddy.net",
+        "redirect_uri": "https://democlient.loginbuddy.net/callback"
+      }
+    ],
+    "providers": [
+      {
+        "provider": "server_loginbuddy",
+        "issuer": "https://demoserver.loginbuddy.com/server",
+        "client_id": "loginbuddy_demoId",
+        "client_secret": "loginbuddy_demoSecret",
+        "authorization_endpoint": "https://demoserver.loginbuddy.net/authorize",
+        "token_endpoint": "https://demoserver.loginbuddy.net/token",
+        "userinfo_endpoint": "https://demoserver.loginbuddy.net/userinfo",
+        "jwks_uri": "https://demoserver.loginbuddy.net/jwks.json",
+        "scope": "openid profile email",
+        "response_type": "code",
+        "redirect_uri": "https://local.loginbuddy.net/callback"
+      }
+    ]
+  }
+}

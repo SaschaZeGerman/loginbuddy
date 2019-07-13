@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #
-# For development purposes, this script generates two private keys on the fly. One for the test client, one for the test server.
-# SNI (Server Name Indication) is used to lookup the matching certificate (private key).
+# For development purposes, this script generates a private key on the fly.
+# SNI (Server Name Indication) is used to lookup the matching certificate (private key), simulating different servers.
 
 # Create a directory for ssl certificates
 #
