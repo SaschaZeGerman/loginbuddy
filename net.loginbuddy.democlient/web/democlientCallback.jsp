@@ -3,6 +3,7 @@
 <%@ page import="net.loginbuddy.common.util.MsgResponse" %>
 <%@ page import="org.json.simple.JSONObject" %>
 <%@ page import="org.json.simple.parser.JSONParser" %>
+<%@ page import="net.loginbuddy.common.config.Constants" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <html>
@@ -43,13 +44,23 @@
     <hr/>
     <%
         String result = "{\"error\":\"session_expired\"}";
-        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(request.getParameter("state"));
-        if(sessionValues != null) {
-          MsgResponse msgResp = (MsgResponse)sessionValues.get("msgResponse");
-          result = ((JSONObject)new JSONParser().parse(msgResp.getMsg())).toJSONString();
+
+        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance()
+                .remove(request.getParameter("state"));
+
+        String error = request.getParameter(Constants.ERROR.getKey());
+        String error_description = request.getParameter(Constants.ERROR_DESCRIPTION.getKey());
+
+        if (error != null) {
+            result = String.format("{\"error\":\"%s\", \"error_description\":\"%s\"}", error, error_description);
+        } else if (sessionValues != null) {
+            MsgResponse msgResp = (MsgResponse) sessionValues.get("msgResponse");
+            result = ((JSONObject) new JSONParser().parse(msgResp.getMsg())).toJSONString();
         }
     %>
-    <div><pre><code class="language-json" id="idProviderResponse"><%=result%></code></pre></div>
+    <div>
+        <pre><code class="language-json" id="idProviderResponse"><%=result%></code></pre>
+    </div>
     <hr/>
     <p><a href="democlientApp.jsp"><strong>Try it again!</strong></a></p>
 

@@ -1,6 +1,7 @@
 package net.loginbuddy.democlient;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,8 @@ public class Callback extends HttpServlet {
 
     String clientState = request.getParameter(Constants.STATE.getKey());
     String code = request.getParameter(Constants.CODE.getKey());
+    String error = request.getParameter(Constants.ERROR.getKey());
+    String error_description = request.getParameter(Constants.ERROR_DESCRIPTION.getKey());
 
     if (code != null) {
 
@@ -55,6 +58,9 @@ public class Callback extends HttpServlet {
       } catch (Exception e) {
         e.printStackTrace();
       }
+    } else if (error != null) {
+      response.sendRedirect(String.format("democlientCallback.jsp?state=%s&error=%s&error_description=%s", clientState,
+          URLEncoder.encode(error, "UTF-8"), URLEncoder.encode(error_description, "UTF-8")));
     }
   }
 

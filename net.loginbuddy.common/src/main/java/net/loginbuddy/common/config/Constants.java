@@ -23,6 +23,7 @@ public enum Constants {
     CODE_CHALLENGE("code_challenge"),
     CODE_CHALLENGE_METHOD("code_challenge_method"),
     ERROR("error"),
+    ERROR_DESCRIPTION("error_description"),
     GRANT_TYPE("grant_type"),
     ID_TOKEN("id_token"),
     NONCE("nonce"),

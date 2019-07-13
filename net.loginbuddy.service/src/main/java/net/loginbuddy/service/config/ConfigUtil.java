@@ -98,7 +98,7 @@ public class ConfigUtil {
 
     public ProviderConfig getProviderConfigByProvider(String loginHint) throws Exception {
         return getProviders().stream()
-                .filter(provider -> provider.getProvider().equals(loginHint))
+                .filter(provider -> provider.getProvider().equalsIgnoreCase(loginHint))
                 .findFirst()
                 .orElse(null);
     }
