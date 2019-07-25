@@ -68,14 +68,14 @@ public class LoginbuddyCache {
     }
 
     /**
-     * Any value added has a default lifetime of 60s. For other lifetimes, use {@link #putWithExpiration(String, Object, Long)}.
+     * Any value added has a default lifetime of 120. For other lifetimes, use {@link #putWithExpiration(String, Object, Long)}.
      *
      * @param key
      * @param obj
      * @return
      */
     public Object put(String key, Object obj) {
-        return putWithExpiration(key, obj, 60L);
+        return putWithExpiration(key, obj, 120L);
     }
 
     /**
@@ -83,13 +83,13 @@ public class LoginbuddyCache {
      *
      * @param key
      * @param obj
-     * @param lifetimeInSeconds for 'null' the lifetime is set to 60s
+     * @param lifetimeInSeconds for 'null' the lifetime is set to 120
      * @return
      */
     public Object putWithExpiration(String key, Object obj, Long lifetimeInSeconds) {
 
         if(lifetimeInSeconds == null || lifetimeInSeconds > 3600 || lifetimeInSeconds <=0) {
-            lifetimeInSeconds = 60L;
+            lifetimeInSeconds = 120L;
         }
 
         listOfExpirations.put(new Date().getTime() + lifetimeInSeconds*1000, key);

@@ -54,10 +54,10 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
             }
         }
 
-        Map<String, Object> sessionValues = null;
+        SessionContext sessionValues = null;
         if (!error) {
             // Let's see if we know this access_token
-            sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().get(access_token);
+            sessionValues = (SessionContext) LoginbuddyCache.getInstance().get(access_token);
             if (sessionValues == null || !access_token.equals(sessionValues.get(Constants.ACCESS_TOKEN.getKey()))) {
                 LOGGER.warning("the access_token is invalid");
                 fakeUserinfoResponse.put("error", "invalid_request");
@@ -68,7 +68,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
 
         if (!error) {
             // Check if the access_token has not expired yet
-            long expiration = Long.valueOf((String) sessionValues.get("access_token_expiration"));
+            long expiration = sessionValues.getLong("access_token_expiration");
             if (new Date().getTime() > expiration) {
                 LOGGER.warning("the given access_token has expired");
                 fakeUserinfoResponse.put("error", "invalid_request");
@@ -79,7 +79,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
         String scope = "";
         if (!error) {
             // Check for at least scope 'openid'
-            scope = (String) sessionValues.get(Constants.SCOPE.getKey());
+            scope = sessionValues.getString(Constants.SCOPE.getKey());
             if (Stream.of(scope.split(" ")).noneMatch("openid"::equals)) {
                 LOGGER.warning("The given access_token has not been granted to access this API");
                 fakeUserinfoResponse.put("error", "invalid_request");
@@ -92,8 +92,8 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
 
             // Let's build the response message depending on scope values other than 'openid'
 
-            String clientId = (String) sessionValues.get(Constants.CLIENT_ID.getKey());
-            String email = (String) sessionValues.get("email");
+            String clientId = sessionValues.getString(Constants.CLIENT_ID.getKey());
+            String email = sessionValues.getString("email");
 
             // Create a fake PPID to be used with 'sub'
             String ppidSub = "fakeProviderSalt".concat(clientId).concat(email);

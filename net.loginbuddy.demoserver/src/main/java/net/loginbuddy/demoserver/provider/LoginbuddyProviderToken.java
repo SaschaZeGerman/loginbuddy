@@ -9,8 +9,6 @@
 package net.loginbuddy.demoserver.provider;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
@@ -54,7 +52,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         String code = request.getParameter(Constants.CODE.getKey());
 
         // find the session and fail if it is unknown
-        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(code);
+        SessionContext sessionValues = (SessionContext)LoginbuddyCache.getInstance().remove(code);
         if (sessionValues == null) {
             LOGGER.warning("The given authorization_code is invalid or has expired or none was given");
             resp.put("error_description", "The given authorization_code is invalid or has expired or none was given");
@@ -85,7 +83,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         }
 
         // Validate 'code_verifier' if PKCE was used (which is the default for loginbuddy)
-        String code_challenge = (String)sessionValues.get(Constants.CODE_CHALLENGE.getKey());
+        String code_challenge = sessionValues.getString(Constants.CODE_CHALLENGE.getKey());
         if(code_challenge != null) {
             String code_verifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
             if (code_verifier == null || "".equals(code_verifier.trim()) || request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length > 1) {
@@ -96,7 +94,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
                 response.getWriter().write(resp.toJSONString());
                 return;
             } else {
-                if (!Pkce.validate(code_challenge, (String)sessionValues.get(Constants.CODE_CHALLENGE_METHOD.getKey()), code_verifier)) {
+                if (!Pkce.validate(code_challenge, sessionValues.getString(Constants.CODE_CHALLENGE_METHOD.getKey()), code_verifier)) {
                     LOGGER.warning("The given code_verifier is invalid");
                     resp.put("error_description", "The given code_verifier is invalid");
                     resp.put("error", "invalid_request");
@@ -113,21 +111,18 @@ public class LoginbuddyProviderToken extends HttpServlet {
         String id_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJoZWxsbyI6ImxvZ2luYnVkZHkifQ.z9r5WoqNycrF7YLOZTZpMarwUeTopU1UZzRAU7beFTc"; // completely fake
 
         // Add to the sessionValues
-        sessionValues.put("access_token", access_token);
-        sessionValues.put("refresh_token",refresh_token);
-        sessionValues.put("id_token",id_token);
-        sessionValues.put("access_token_expiration", String.valueOf(new Date().getTime()+3600000)); // getTime should be 10-digits (seconds) but it is millis (13-digits)
-        sessionValues.put("refresh_token_expiration", String.valueOf(new Date().getTime()+7200000)); // getTime should be 10-digits (seconds) but it is millis (13-digits)
+        long accessTokenLifetime = sessionValues.sessionToken(access_token, refresh_token, id_token);
 
         // associate with access_token. We'll ignore the refresh_token for now. Remember, this is all 'fake'
-        LoginbuddyCache.getInstance().put(access_token, sessionValues);
+        LoginbuddyCache.getInstance().putWithExpiration(access_token, sessionValues, accessTokenLifetime);
+        LoginbuddyCache.getInstance().putWithExpiration(refresh_token, sessionValues, sessionValues.get("refresh_token_expiration", Long.class));
 
         // create the response message that includes the issued token
         JSONObject fakeProviderResponse = new JSONObject();
-        fakeProviderResponse.put("access_token", access_token);
+        fakeProviderResponse.put(Constants.ACCESS_TOKEN.getKey(), access_token);
         fakeProviderResponse.put("refresh_token", refresh_token);
         fakeProviderResponse.put("token_type", "Bearer");
-        fakeProviderResponse.put("expires_in", 3600);
+        fakeProviderResponse.put("expires_in", accessTokenLifetime);
         fakeProviderResponse.put("id_token", id_token);
 
         response.setStatus(200);
