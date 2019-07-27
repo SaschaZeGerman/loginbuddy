@@ -38,19 +38,29 @@ public enum Constants {
     TOKEN_ENDPOINT("token_endpoint"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
     JWKS_URI("jwks_uri"),
+    PROMPT("prompt"),
+    LOGIN_HINT("login_hint"),
+    ID_TOKEN_HINT("id_login_hint"),
 
     // used with example provider
     ACTION_EXPECTED("action_expected"),
     ACTION_LOGIN("login"),
     ACTION_AUTHENTICATE("authenticate"),
     ACTION_GRANT("grant"),
+    ACTION_INITIALIZE("initialize"),
 
     // references client (application) values
     CLIENT_STATE("clientState"),
     CLIENT_REDIRECT("clientRedirectUri"),
     CLIENT_CODE_CHALLENGE("clientCodeChallenge"),
     CLIENT_CODE_CHALLENGE_METHOD("clientCodeChallengeMethod"),
-    CLIENT_PROVIDER("clientProvider");
+    CLIENT_PROVIDER("clientProvider"),
+    CLIENT_SCOPE("clientScope"),
+    CLIENT_RESPONSE_TYPE("clientResponseType"),
+    CLIENT_NONCE("clientNONCE"),
+    CLIENT_PROMPT("clientPrompt"),
+    CLIENT_LOGIN_HINT("clientLoginHint"),
+    CLIENT_ID_TOKEN_HINT("clientIdtokenHint");
 
     private final String key;
 

@@ -21,7 +21,7 @@
             LOGGER.warning("The current session is invalid or it has expired!");
             throw new IllegalStateException("The current session is invalid or it has expired!");
         }
-        String session = request.getParameter("session");
+        String sessionId = request.getParameter("session");
 
         List<ProviderConfig> providerConfigs = null;
         try {
@@ -43,7 +43,7 @@
                 providers.append("<td style=\"text-align: center; vertical-align: middle;\">");
             }
             providers.append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
-            providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(session).append("\">");
+            providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(sessionId).append("\">");
             providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
             providers.append("<button type=\"submit\">");
             providers.append("<img alt=\"").append(nextProvider.getProvider()).append("\" width=\"100\" margin=\"0\" src=\"images/");

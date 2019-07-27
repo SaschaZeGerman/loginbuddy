@@ -24,6 +24,7 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.util.SessionContext;
 
 @WebServlet(name = "Providers")
 public class Providers extends HttpServlet {
@@ -36,13 +37,8 @@ public class Providers extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        String clientState = request.getParameter(Constants.STATE.getKey());
-        String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
-        String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
-        String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
-        String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
-
+        String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         if (clientId == null || clientId.trim().length() == 0 || request.getParameterValues(Constants.CLIENT_ID.getKey()).length > 1) {
             LOGGER.warning("Missing or invalid client_id parameter!");
             response.sendError(400, "Missing or invalid client_id parameter!");
@@ -61,7 +57,6 @@ public class Providers extends HttpServlet {
         } else {
             clientRedirectUriError = clientRedirectUri.concat("?");
         }
-
         try {
             ClientConfig clientConfig = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
             if (clientConfig == null || !clientConfig.getRedirectUri().matches(clientRedirectUri)) {
@@ -75,58 +70,50 @@ public class Providers extends HttpServlet {
             response.sendError(500, "The system has not been configured yet!");
             return;
         }
-
+        String clientState = request.getParameter(Constants.STATE.getKey());
         if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
             LOGGER.warning("Missing or invalid state parameter!");
             response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=missing+or+invalid+state+parameter"));
             return;
         }
-
+        String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
         if (clientProvider != null && request.getParameterValues("provider").length > 1) {
             LOGGER.warning("Invalid provider parameter!");
             response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+provider+parameter"));
             return;
         }
-
         if (clientProvider == null || clientProvider.trim().length() == 0) {
             clientProvider = "";
         }
-
+        String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
         if (clientCodeChallenge != null && (request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1 || !Pkce.verifyChallenge(clientCodeChallenge))) {
             LOGGER.warning("Invalid code_challenge!");
             response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge"));
             return;
         }
-
+        String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
         if ( (clientCodeChallengeMethod != null && request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()).length > 1) || Pkce.CODE_CHALLENGE_METHOD_PLAIN.equals(clientCodeChallengeMethod)) {
             LOGGER.warning("Invalid or unsupported code_challenge_method parameter or value!");
             response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
             return;
         }
 
-        // Set Attributes that were given by the client
-        Map<String, Object> sessionValues = new HashMap<>();
-        sessionValues.put(Constants.CLIENT_STATE.getKey(), clientState);
-        sessionValues.put(Constants.CLIENT_REDIRECT.getKey(), clientRedirectUri);
-        sessionValues.put(Constants.CLIENT_ID.getKey(), clientId);
-        sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), clientProvider);
-        sessionValues.put(Constants.CLIENT_CODE_CHALLENGE.getKey(), clientCodeChallenge);
-        sessionValues.put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), clientCodeChallengeMethod);
+        String clientScope = request.getParameter(Constants.SCOPE.getKey());
+        String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
+        String clientNonce = request.getParameter(Constants.NONCE.getKey());
+        String clientPrompt = request.getParameter(Constants.PROMPT.getKey());
+        String clientLoginHint = request.getParameter(Constants.LOGIN_HINT.getKey());
+        String clientIdTokenHint = request.getParameter(Constants.ID_TOKEN_HINT.getKey());
 
-        // Set Attributes that need to be part of the authorization request
-        String nonce = UUID.randomUUID().toString();
-        String session = UUID.randomUUID().toString();
+        SessionContext sessionCtx = new SessionContext();
+        sessionCtx.sessionInit(clientId, clientScope, clientResponseType, clientCodeChallenge, clientCodeChallengeMethod, clientRedirectUri, clientNonce, clientState, clientProvider, clientPrompt, clientLoginHint, clientIdTokenHint);
 
-        // Remember these values as part of our session
-        sessionValues.put(Constants.NONCE.getKey(), nonce);
-        sessionValues.put(Constants.SESSION.getKey(), session);
-
-        LoginbuddyCache.getInstance().put(session, sessionValues);
+        LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 
         if ("".equals(clientProvider)) {
-            request.getRequestDispatcher("/iapis/providers.jsp?session=".concat(session)).forward(request, response);
+            request.getRequestDispatcher("/iapis/providers.jsp?session=".concat(sessionCtx.getId())).forward(request, response);
         } else {
-            response.sendRedirect("initialize?session=".concat(session).concat("&provider=").concat(URLEncoder.encode(clientProvider, "UTF-8")));
+            response.sendRedirect("initialize?session=".concat(sessionCtx.getId()).concat("&provider=").concat(URLEncoder.encode(clientProvider, "UTF-8")));
         }
     }
 }

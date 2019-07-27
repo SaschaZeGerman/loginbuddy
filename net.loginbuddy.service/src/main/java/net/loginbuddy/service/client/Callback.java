@@ -28,6 +28,7 @@ import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.MsgResponse;
+import net.loginbuddy.service.util.SessionContext;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -55,28 +56,28 @@ public class Callback extends HttpServlet {
 
         try {
 
-            String session = request.getParameter(Constants.STATE.getKey());
-            if (session == null || session.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
+            String sessionId = request.getParameter(Constants.STATE.getKey());
+            if (sessionId == null || sessionId.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
                 LOGGER.warning("Missing or invalid state parameter returned from provider!");
                 response.sendError(400, "Missing or invalid state parameter");
                 return;
             }
 
-            Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().remove(session);
-            if (sessionValues == null || !session.equals(sessionValues.get(Constants.SESSION.getKey()))) {
-                LOGGER.warning("The current session is invalid or it has expired! Given: '" + session + "'");
+            SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionId);
+            if (sessionCtx == null || !sessionId.equals(sessionCtx.getId())) {
+                LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionId + "'");
                 response.sendError(400, "The current session is invalid or it has expired!");
                 return;
             }
 
-            String clientRedirectUri = (String) sessionValues.get(Constants.CLIENT_REDIRECT.getKey());
+            String clientRedirectUri = sessionCtx.getString(Constants.CLIENT_REDIRECT.getKey());
             if (clientRedirectUri.contains("?")) {
                 clientRedirectUri = clientRedirectUri.concat("&");
 
             } else {
                 clientRedirectUri = clientRedirectUri.concat("?");
             }
-            String clientState = (String) sessionValues.get(Constants.CLIENT_STATE.getKey());
+            String clientState = sessionCtx.getString(Constants.CLIENT_STATE.getKey());
 
             String error = request.getParameter(Constants.ERROR.getKey());
             String errorDescription = null;
@@ -94,8 +95,8 @@ public class Callback extends HttpServlet {
                 return;
             }
 
-            String provider = (String) sessionValues.get(Constants.CLIENT_PROVIDER.getKey());
-            String code_verifier = (String) sessionValues.get(Constants.CODE_VERIFIER.getKey());
+            String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
+            String code_verifier = sessionCtx.getString(Constants.CODE_VERIFIER.getKey());
 
             ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
 
@@ -104,9 +105,9 @@ public class Callback extends HttpServlet {
             String jwksUri = null;
 
             if (providerConfig.getOpenidConfigurationUri() != null) {
-                tokenEndpoint = (String) sessionValues.get(Constants.TOKEN_ENDPOINT.getKey());
-                userInfoEndpoint = (String) sessionValues.get(Constants.USERINFO_ENDPOINT.getKey());
-                jwksUri = (String) sessionValues.get(Constants.JWKS_URI.getKey());
+                tokenEndpoint = sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey());
+                userInfoEndpoint = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
+                jwksUri = sessionCtx.getString(Constants.JWKS_URI.getKey());
             } else {
                 tokenEndpoint = providerConfig.getTokenEndpoint();
                 userInfoEndpoint = providerConfig.getUserinfoEndpoint();
@@ -116,7 +117,7 @@ public class Callback extends HttpServlet {
             ExchangeBean eb = new ExchangeBean();
             eb.setIss("https://".concat(System.getenv("HOSTNAME_LOGINBUDDY")));
             eb.setIat(new Date().getTime()/1000);
-            eb.setAud((String)sessionValues.get(Constants.CLIENT_ID.getKey()));
+            eb.setAud(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
             eb.setNonce(UUID.randomUUID().toString());
             eb.setProvider(provider);
 
@@ -159,7 +160,7 @@ public class Callback extends HttpServlet {
 
             try {
                 MsgResponse jwks = getAPI(jwksUri);
-                JSONObject idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(), (String) sessionValues.get(Constants.NONCE.getKey()));
+                JSONObject idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.NONCE.getKey()));
                 eb.setIdTokenPayload(idTokenPayload);
                 eb.setIdToken(id_token);
             } catch (Exception e) {
@@ -201,8 +202,8 @@ public class Callback extends HttpServlet {
             }
 
             String pickUpCode = UUID.randomUUID().toString();
-            sessionValues.put("eb", eb.toString());
-            LoginbuddyCache.getInstance().put(pickUpCode, sessionValues);
+            sessionCtx.put("eb", eb.toString());
+            LoginbuddyCache.getInstance().put(pickUpCode, sessionCtx);
 
             clientRedirectUri = clientRedirectUri.concat("code=").concat(pickUpCode).concat("&state=").concat(clientState);
             response.sendRedirect(clientRedirectUri);

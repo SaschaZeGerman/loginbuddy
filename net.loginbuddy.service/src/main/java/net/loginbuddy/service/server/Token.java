@@ -11,6 +11,7 @@ package net.loginbuddy.service.server;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Pkce;
+import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
 import javax.servlet.ServletException;
@@ -46,8 +47,8 @@ public class Token extends HttpServlet {
             return;
         }
 
-        Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(code);
-        if(sessionValues == null) {
+        SessionContext sessionCtx = (SessionContext)LoginbuddyCache.getInstance().remove(code);
+        if(sessionCtx == null) {
             LOGGER.warning("The given code is invalid or has expired");
             resp.put("error", "invalid_request");
             resp.put("error_description", "The given code is invalid or has expired");
@@ -55,11 +56,11 @@ public class Token extends HttpServlet {
             response.getWriter().write(resp.toJSONString());
             return;
         } else {
-            String clientCodeChallenge = (String)sessionValues.get(Constants.CLIENT_CODE_CHALLENGE.getKey());
+            String clientCodeChallenge = sessionCtx.getString(Constants.CLIENT_CODE_CHALLENGE.getKey());
             if(clientCodeChallenge != null) {
                 String clientCodeVerifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
                 if(clientCodeVerifier != null && request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length == 1) {
-                    if(!Pkce.validate(clientCodeChallenge, (String)sessionValues.get(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey()), clientCodeVerifier)) {
+                    if(!Pkce.validate(clientCodeChallenge, sessionCtx.getString(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey()), clientCodeVerifier)) {
                         LOGGER.warning("The code_verifier is invalid!");
                         resp.put("error", "invalid_request");
                         resp.put("error_description", "The code_verifier is invalid!");
@@ -76,7 +77,7 @@ public class Token extends HttpServlet {
                     return;
                 }
             }
-            response.getWriter().write((String)sessionValues.get("eb"));
+            response.getWriter().write(sessionCtx.getString("eb"));
         }
     }
 
