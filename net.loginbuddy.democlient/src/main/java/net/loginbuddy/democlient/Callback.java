@@ -39,7 +39,7 @@ public class Callback extends HttpServlet {
       List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
       formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), code));
       try {
-        HttpPost req = new HttpPost(String.format("https://%s/exchange", System.getenv("HOSTNAME_LOGINBUDDY")));
+        HttpPost req = new HttpPost(String.format("https://%s/token", System.getenv("HOSTNAME_LOGINBUDDY")));
 
         HttpClient httpClient = HttpClientBuilder.create().build();
         req.setEntity(new UrlEncodedFormEntity(formParameters));

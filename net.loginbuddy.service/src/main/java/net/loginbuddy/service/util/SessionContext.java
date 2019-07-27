@@ -37,8 +37,8 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_AUTHENTICATE.getKey());
   }
 
-  public void sessionAuthenticated() {
-    put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_GRANT.getKey());
+  public void sessionCallback() {
+    put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_CALLBACK.getKey());
   }
 
   public void sessionGranted() {

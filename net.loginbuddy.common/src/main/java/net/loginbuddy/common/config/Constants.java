@@ -48,6 +48,7 @@ public enum Constants {
     ACTION_AUTHENTICATE("authenticate"),
     ACTION_GRANT("grant"),
     ACTION_INITIALIZE("initialize"),
+    ACTION_CALLBACK("callback"),
 
     // references client (application) values
     CLIENT_STATE("clientState"),

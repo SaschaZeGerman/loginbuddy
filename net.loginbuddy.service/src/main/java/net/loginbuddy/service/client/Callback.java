@@ -70,6 +70,12 @@ public class Callback extends HttpServlet {
                 return;
             }
 
+            if (!Constants.ACTION_CALLBACK.getKey().equals(sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()))) {
+                LOGGER.warning("The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()) + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
+                response.sendError(400, "The current action was not expected!");
+                return;
+            }
+
             String clientRedirectUri = sessionCtx.getString(Constants.CLIENT_REDIRECT.getKey());
             if (clientRedirectUri.contains("?")) {
                 clientRedirectUri = clientRedirectUri.concat("&");

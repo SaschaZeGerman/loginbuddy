@@ -6,11 +6,10 @@
  *
  */
 
-package net.loginbuddy.service.server;
+package net.loginbuddy.service.client;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -58,6 +57,12 @@ public class Initialize extends HttpServlet {
         if (sessionCtx == null || !sessionId.equals(sessionCtx.getId())) {
             LOGGER.warning("The current session is invalid or it has expired!");
             response.sendError(400, "The current session is invalid or it has expired!");
+            return;
+        }
+
+        if (!Constants.ACTION_INITIALIZE.getKey().equals(sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()))) {
+            LOGGER.warning("The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()) + "', expected: '" + Constants.ACTION_INITIALIZE.getKey() + "'");
+            response.sendError(400, "The current action was not expected!");
             return;
         }
 
@@ -140,6 +145,8 @@ public class Initialize extends HttpServlet {
                 .append("&").append("code_challenge_method=S256")
                 .append("&").append(Constants.STATE.getKey())
                 .append("=").append(sessionCtx.getId());
+
+        sessionCtx.sessionCallback();
 
         LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 

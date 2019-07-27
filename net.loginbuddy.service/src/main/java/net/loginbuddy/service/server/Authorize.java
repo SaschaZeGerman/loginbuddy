@@ -10,9 +10,6 @@ package net.loginbuddy.service.server;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,9 +24,9 @@ import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.util.SessionContext;
 
 @WebServlet(name = "Providers")
-public class Providers extends HttpServlet {
+public class Authorize extends HttpServlet {
 
-    private static Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
+    private static Logger LOGGER = Logger.getLogger(String.valueOf(Authorize.class));
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);

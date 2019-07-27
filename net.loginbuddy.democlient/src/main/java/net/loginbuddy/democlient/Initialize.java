@@ -36,7 +36,7 @@ public class Initialize extends HttpServlet {
 
     LoginbuddyCache.getInstance().put(clientState, sessionValues);
 
-    response.sendRedirect(String.format("https://%s/providers?client_id=%s&redirect_uri=%s&state=%s&provider=%s",
+    response.sendRedirect(String.format("https://%s/authorize?client_id=%s&redirect_uri=%s&state=%s&provider=%s",
         System.getenv("HOSTNAME_LOGINBUDDY"),
         URLEncoder.encode(clientId, "UTF-8"),
         URLEncoder.encode(clientRedirectUri, "UTF-8"),

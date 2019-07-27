@@ -8,14 +8,14 @@
 
     <servlet>
         <servlet-name>Initialize</servlet-name>
-        <servlet-class>net.loginbuddy.service.server.Initialize</servlet-class>
+        <servlet-class>net.loginbuddy.service.client.Initialize</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>Providers</servlet-name>
-        <servlet-class>net.loginbuddy.service.server.Providers</servlet-class>
+        <servlet-name>Authorize</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Authorize</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>Exchange</servlet-name>
+        <servlet-name>Token</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Token</servlet-class>
     </servlet>
     <servlet>
@@ -28,13 +28,21 @@
         <url-pattern>/initialize</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>Providers</servlet-name>
+        <servlet-name>Authorize</servlet-name>
         <url-pattern>/providers</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Authorize</servlet-name>
+        <url-pattern>/authorize</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>Exchange</servlet-name>
+        <servlet-name>Token</servlet-name>
         <url-pattern>/exchange</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Token</servlet-name>
+        <url-pattern>/token</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Callback</servlet-name>
