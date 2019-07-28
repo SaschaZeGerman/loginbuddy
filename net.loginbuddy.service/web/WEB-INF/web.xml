@@ -11,6 +11,10 @@
         <servlet-class>net.loginbuddy.service.client.Initialize</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>Callback</servlet-name>
+        <servlet-class>net.loginbuddy.service.client.Callback</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Authorize</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Authorize</servlet-class>
     </servlet>
@@ -19,13 +23,21 @@
         <servlet-class>net.loginbuddy.service.server.Token</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>Callback</servlet-name>
-        <servlet-class>net.loginbuddy.service.client.Callback</servlet-class>
+        <servlet-name>Discovery</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Discovery</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Jwks</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Jwks</servlet-class>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>Initialize</servlet-name>
         <url-pattern>/initialize</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Callback</servlet-name>
+        <url-pattern>/callback</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Authorize</servlet-name>
@@ -35,7 +47,6 @@
         <servlet-name>Authorize</servlet-name>
         <url-pattern>/authorize</url-pattern>
     </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>Token</servlet-name>
         <url-pattern>/exchange</url-pattern>
@@ -45,15 +56,13 @@
         <url-pattern>/token</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>Callback</servlet-name>
-        <url-pattern>/callback</url-pattern>
+        <servlet-name>Discovery</servlet-name>
+        <url-pattern>/.well-known/openid-configuration</url-pattern>
     </servlet-mapping>
-
-    <resource-env-ref>
-        <description>Object factory for ConfigUtil instances</description>
-        <resource-env-ref-name>bean/ConfigUtilFactory</resource-env-ref-name>
-        <resource-env-ref-type>net.loginbuddy.service.config.ConfigUtil</resource-env-ref-type>
-    </resource-env-ref>
+    <servlet-mapping>
+        <servlet-name>Jwks</servlet-name>
+        <url-pattern>/jwks</url-pattern>
+    </servlet-mapping>
 
     <resource-env-ref>
         <description>Object factory for Cache instances</description>
@@ -61,12 +70,29 @@
         <resource-env-ref-type>net.loginbuddy.common.cache.DefaultCache</resource-env-ref-type>
     </resource-env-ref>
 
+    <error-page>
+        <error-code>400</error-code>
+        <location>/iapis/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/iapis/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/iapis/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/iapis/error.jsp</location>
+    </error-page>
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/iapis/error.jsp</location>
+    </error-page>
+
     <security-constraint>
         <display-name>Security for Loginbuddy configuration</display-name>
-        <web-resource-collection>
-            <web-resource-name>config.json</web-resource-name>
-            <url-pattern>/config/*</url-pattern>
-        </web-resource-collection>
         <web-resource-collection>
             <web-resource-name>internal_apis</web-resource-name>
             <url-pattern>/iapis/*</url-pattern>

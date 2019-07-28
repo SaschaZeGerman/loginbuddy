@@ -7,15 +7,11 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 # add our own application as the one and only
 #
 # Default loginbuddy services
-COPY net.loginbuddy.service/web /usr/local/tomcat/webapps/ROOT
-COPY net.loginbuddy.service/target/service-1.0.0.jar /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/service-1.0.0.jar
-
-COPY net.loginbuddy.common/target/common-1.0.0.jar /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/common-1.0.0.jar
+COPY net.loginbuddy.service/target/service-1.0.0 /usr/local/tomcat/webapps/ROOT
 
 # overwrite some configuration to 'harden' tomat. 'logindbuddy.xml' is required since we run tomcat with security manager
 # without 'loginbuddy.xml' we would use a 'META-INF/context.xml' file
 #
-COPY docker-build/add-ons/server/loginbuddy.xml /usr/local/tomcat/conf/Catalina/localhost/ROOT.xml
 COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/server/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/server/web.xml /usr/local/tomcat/conf/web.xml

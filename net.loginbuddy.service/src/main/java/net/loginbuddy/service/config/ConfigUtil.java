@@ -41,7 +41,7 @@ public class ConfigUtil {
 
     private JsonNode getConfig() throws IOException {
         try {
-            JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
+            JsonNode node = MAPPER.readValue(Thread.currentThread().getContextClassLoader().getResource("config.json"), JsonNode.class);
             return node.get(loginbuddy);
 
         } catch (IOException e) {

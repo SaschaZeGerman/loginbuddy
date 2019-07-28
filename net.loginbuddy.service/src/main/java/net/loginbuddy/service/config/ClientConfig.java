@@ -21,6 +21,12 @@ public class ClientConfig {
     @JsonProperty("client_id")
     private String clientId;
 
+    @JsonProperty("client_secret")
+    private String clientSecret;
+
+    @JsonProperty("client_type")
+    private String clientType;
+
     public String getRedirectUri() {
         return redirectUri;
     }
@@ -40,4 +46,20 @@ public class ClientConfig {
     public String getClientId() { return clientId; }
 
     public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public String getClientType() {
+        return clientType;
+    }
+
+    public void setClientType(String clientType) {
+        this.clientType = clientType;
+    }
 }
