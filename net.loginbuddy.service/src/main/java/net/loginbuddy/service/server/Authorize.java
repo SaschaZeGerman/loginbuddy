@@ -8,17 +8,16 @@
 
 package net.loginbuddy.service.server;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
@@ -27,10 +26,8 @@ import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.util.SessionContext;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
-@WebServlet(name = "Providers")
+@WebServlet(name = "Authorize")
 public class Authorize extends Overlord {
 
     private static Logger LOGGER = Logger.getLogger(String.valueOf(Authorize.class));
@@ -48,24 +45,12 @@ public class Authorize extends Overlord {
             return;
         }
 
-        String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
-        if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0 || request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
-            LOGGER.warning("Missing or invalid redirect_uri parameter!");
-            response.sendError(400, "Missing or invalid redirect_uri parameter!");
-            return;
-        }
-        String clientRedirectUriError;
-        if (clientRedirectUri.contains("?")) {
-            clientRedirectUriError = clientRedirectUri.concat("&");
-
-        } else {
-            clientRedirectUriError = clientRedirectUri.concat("?");
-        }
+        ClientConfig clientConfig=null;
         try {
-            ClientConfig clientConfig = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
-            if (clientConfig == null || !clientConfig.getRedirectUri().matches(clientRedirectUri)) {
-                LOGGER.warning("The given client_id or redirect_uri is unknown or invalid");
-                response.sendError(400, "The given client_id or redirect_uri is unknown or invalid");
+            clientConfig = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
+            if (clientConfig == null) {
+                LOGGER.warning("The given client_id is unknown or invalid");
+                response.sendError(400, "The given client_id is unknown or invalid");
                 return;
             }
         } catch (Exception e) {
@@ -75,17 +60,67 @@ public class Authorize extends Overlord {
             return;
         }
 
+        String clientType = clientConfig.getClientType();
+
+        String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
+        if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0) {
+            if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(clientType)) {
+                LOGGER.warning("Missing redirect_uri parameter!");
+                response.sendError(400, "Missing redirect_uri parameter!");
+                return;
+            } else {
+                // confidential clients only need a registered redirectUri and not need to request it
+                clientRedirectUri = clientConfig.getRedirectUri();
+            }
+        }
+        if(request.getParameterValues(Constants.REDIRECT_URI.getKey()) != null && request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
+            LOGGER.warning("Too many redirect_uri parameters given!");
+            response.sendError(400, "Too many redirect_uri parameters given!");
+            return;
+        }
+        if(Stream.of(clientConfig.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
+            LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
+            response.sendError(400, String.format("Invalid redirect_uri: %s", clientRedirectUri));
+            return;
+        }
+
+        String clientRedirectUriError;
+        if (clientRedirectUri.contains("?")) {
+            clientRedirectUriError = clientRedirectUri.concat("&");
+
+        } else {
+            clientRedirectUriError = clientRedirectUri.concat("?");
+        }
+
         String clientState = request.getParameter(Constants.STATE.getKey());
-        if (clientState == null || clientState.trim().length() == 0 || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
-            LOGGER.warning("Missing or invalid state parameter!");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=missing+or+invalid+state+parameter"));
+        if (clientState == null || clientState.trim().length() == 0) {
+            LOGGER.info("No state parameter received!");
+            clientState = "";
+        }
+        if (request.getParameterValues(Constants.STATE.getKey()) != null && request.getParameterValues(Constants.STATE.getKey()).length > 1) {
+            LOGGER.warning("Multiple state parameters received!");
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=multiple+state+parameters+received"));
+            return;
+        }
+
+        clientRedirectUriError = "".equals(clientState) ? clientRedirectUriError : clientRedirectUriError.concat("state=").concat(clientState).concat("&");
+
+        String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
+        if (clientResponseType == null || clientResponseType.trim().length() == 0
+            || request.getParameterValues(Constants.RESPONSE_TYPE.getKey()).length > 1) {
+            LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+response_type+parameter+or+value"));
+            return;
+        } else if (Stream.of(((String) oidcConfig.get("response_types_supported")).split(" ")).noneMatch(clientResponseType::equals)) {
+            LOGGER.warning(String.format("The given response_type is not supported: '%s'", clientResponseType));
+            response.sendRedirect(clientRedirectUriError.concat(String.format("error=invalid_request&error_description=unsupported+response_type:+%s", URLEncoder.encode(clientResponseType, "UTF-8"))));
             return;
         }
 
         String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
         if (clientProvider != null && request.getParameterValues("provider").length > 1) {
             LOGGER.warning("Invalid provider parameter!");
-            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+provider+parameter"));
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+provider+parameter"));
             return;
         }
         if (clientProvider == null || clientProvider.trim().length() == 0) {
@@ -95,30 +130,37 @@ public class Authorize extends Overlord {
         String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
         if (clientCodeChallenge != null && (request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1 || !Pkce.verifyChallenge(clientCodeChallenge))) {
             LOGGER.warning("Invalid code_challenge!");
-            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+code_challenge"));
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+code_challenge"));
             return;
         }
 
         String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
         if ( (clientCodeChallengeMethod != null && request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()).length > 1) || Pkce.CODE_CHALLENGE_METHOD_PLAIN.equals(clientCodeChallengeMethod)) {
             LOGGER.warning("Invalid or unsupported code_challenge_method parameter or value!");
-            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
-            return;
-        }
-
-        String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
-        if (clientResponseType == null || clientResponseType.trim().length() == 0
-            || request.getParameterValues(Constants.RESPONSE_TYPE.getKey()).length > 1) {
-            LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
-            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat("&error=invalid_request&error_description=invalid+or+unsupported+response_type+parameter+or+value"));
-            return;
-        } else if (Stream.of(((String) oidcConfig.get("response_types_supported")).split(" ")).noneMatch(clientResponseType::equals)) {
-            LOGGER.warning(String.format("The given response_type is not supported: '%s'", clientResponseType));
-            response.sendRedirect(clientRedirectUriError.concat("state=").concat(clientState).concat(String.format("&error=invalid_request&error_description=unsupported+response_type:+%s", URLEncoder.encode(clientResponseType, "UTF-8"))));
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
             return;
         }
 
         String clientScope = request.getParameter(Constants.SCOPE.getKey());
+        if ( (clientScope == null || clientScope.trim().length() == 0) || request.getParameterValues(Constants.SCOPE.getKey()).length > 1) {
+            if(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(clientType)) {
+                clientScope = (String)oidcConfig.get("scope");
+            } else {
+                LOGGER.warning("Invalid or unsupported scope parameter!");
+                response.sendRedirect(clientRedirectUriError
+                    .concat("error=invalid_request&error_description=invalid+or+unsupported+scope+parameter"));
+                return;
+            }
+        }
+
+        Set<String> scopes = new TreeSet<>(Arrays.asList(((String)oidcConfig.get("scopes_supported")).split(" ")));
+        scopes.retainAll(Arrays.asList(clientScope.split(" ")));
+        if(scopes.size() == 0) {
+            LOGGER.warning("Invalid or unsupported scope!");
+            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+scope+value"));
+            return;
+        }
+
         String clientNonce = request.getParameter(Constants.NONCE.getKey());
         String clientPrompt = request.getParameter(Constants.PROMPT.getKey());
         String clientLoginHint = request.getParameter(Constants.LOGIN_HINT.getKey());

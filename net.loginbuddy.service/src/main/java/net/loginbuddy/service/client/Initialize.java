@@ -129,7 +129,6 @@ public class Initialize extends HttpServlet {
         PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
         sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
 
-        // TODO: pass through additional OIDC parameters that were given initially
         authorizeUrl.append("?")
                 .append(Constants.CLIENT_ID.getKey())
                 .append("=").append(providerConfig.getClientId())
@@ -141,8 +140,11 @@ public class Initialize extends HttpServlet {
                 .append("=").append(sessionCtx.get(Constants.NONCE.getKey()))
                 .append("&").append(Constants.REDIRECT_URI.getKey())
                 .append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
-                .append("&").append("code_challenge=").append(pair.getChallenge()) // won't produce null unless we ask for method=plain which we do not do
-                .append("&").append("code_challenge_method=S256")
+                .append("&").append(Constants.CODE_CHALLENGE.getKey()).append("=").append(pair.getChallenge()) // won't produce null unless we ask for method=plain which we do not do
+                .append("&").append(Constants.CODE_CHALLENGE_METHOD.getKey()).append("=S256")
+                .append("&").append(Constants.PROMPT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
+                .append("&").append(Constants.LOGIN_HINT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()))
+                .append("&").append(Constants.ID_TOKEN_HINT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()))
                 .append("&").append(Constants.STATE.getKey())
                 .append("=").append(sessionCtx.getId());
 

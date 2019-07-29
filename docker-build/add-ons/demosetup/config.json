@@ -3,14 +3,9 @@
     "clients": [
       {
         "client_id": "clientIdForTestingPurposes",
-        "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback"
-      },{
-        "client_id": "clientIdForSoapUiTestingPurposes",
         "client_secret": "d5453153-e096-4672-bcb5-313d9847c8de",
-        "client_type": "confidential",
-        "redirect_uri": "https://local.soapui.com/redirect",
-        "client_uri": "https://local.soapui.com"
+        "client_uri": "https://democlient.loginbuddy.net",
+        "redirect_uri": "https://democlient.loginbuddy.net/callback https://local.soapui.com/redirect"
       }
     ],
     "providers": [

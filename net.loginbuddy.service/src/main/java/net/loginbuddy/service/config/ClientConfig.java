@@ -9,6 +9,7 @@
 package net.loginbuddy.service.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.loginbuddy.common.config.Constants;
 
 public class ClientConfig {
 
@@ -56,7 +57,7 @@ public class ClientConfig {
     }
 
     public String getClientType() {
-        return clientType;
+        return clientType == null ? Constants.CLIENT_TYPE_PUBLIC.getKey() : clientType;
     }
 
     public void setClientType(String clientType) {

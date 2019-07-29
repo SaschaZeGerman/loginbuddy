@@ -36,8 +36,14 @@ public class Callback extends HttpServlet {
 
     if (code != null) {
 
+      Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(clientState);
+
       List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
       formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), code));
+      formParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), (String)sessionValues.get(Constants.CLIENT_ID.getKey())));
+      formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), (String)sessionValues.get(Constants.REDIRECT_URI.getKey())));
+      formParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
+
       try {
         HttpPost req = new HttpPost(String.format("https://%s/token", System.getenv("HOSTNAME_LOGINBUDDY")));
 
@@ -48,7 +54,6 @@ public class Callback extends HttpServlet {
         MsgResponse msgResp = new MsgResponse(tokenResponse.getHeaders("Content-Type")[0].getValue(),
             EntityUtils.toString(tokenResponse.getEntity()), tokenResponse.getStatusLine().getStatusCode());
 
-        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance().remove(clientState);
         sessionValues.put("msgResponse", msgResp);
 
         LoginbuddyCache.getInstance().put(clientState, sessionValues);

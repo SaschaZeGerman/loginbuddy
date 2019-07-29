@@ -41,6 +41,8 @@ public enum Constants {
     PROMPT("prompt"),
     LOGIN_HINT("login_hint"),
     ID_TOKEN_HINT("id_login_hint"),
+    CLIENT_TYPE_CONFIDENTIAL("confidential"),
+    CLIENT_TYPE_PUBLIC("public"),
 
     // used with example provider
     ACTION_EXPECTED("action_expected"),
