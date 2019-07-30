@@ -20,33 +20,17 @@ public class ExchangeBean implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(ExchangeBean.class));
 
-    private long iat, expiresIn;
-    private String iss, aud, nonce, provider, idToken, accessToken, refreshToken, scope, tokenType;
+    private String iss, aud, nonce, provider;
+    private long iat;
 
-    private JSONObject userinfo, idTokenPayload;
+    private JSONObject userinfo, idTokenPayload, tokenResponse;
 
     public ExchangeBean() {
         userinfo = new JSONObject();
     }
 
-    public void setExpiresIn(Object expiresIn) {
-        this.expiresIn = expiresIn == null ? 0 : Long.parseLong(expiresIn.toString());
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public void setRefreshToken(Object refreshToken) {
-        this.refreshToken = refreshToken == null ? null : refreshToken.toString();
-    }
-
-    public void setScope(Object scope) {
-        this.scope = scope == null ? null : scope.toString();
-    }
-
-    public void setTokenType(Object tokenType) {
-        this.tokenType = tokenType == null ? null : tokenType.toString();
+    public void setTokenResponse(JSONObject tokenResponse) {
+        this.tokenResponse = tokenResponse;
     }
 
     public void setIss(String iss) {
@@ -70,10 +54,6 @@ public class ExchangeBean implements Serializable {
         this.userinfo = userinfo;
     }
 
-    public void setIdToken(Object idToken) {
-        this.idToken = idToken == null ? null : idToken.toString();
-    }
-
     public void setIdTokenPayload(JSONObject idTokenPayload) {
         this.idTokenPayload = idTokenPayload;
     }
@@ -85,23 +65,8 @@ public class ExchangeBean implements Serializable {
     @Override
     public String toString() {
 
-        JSONObject output = new JSONObject();
         JSONObject details_provider = new JSONObject();
         JSONObject details_loginbuddy = new JSONObject();
-
-        output.put("access_token", accessToken);
-        if(scope != null)
-            output.put("scope", scope);
-
-        output.put("expires_in", expiresIn);
-        output.put("token_type", tokenType);
-
-        if(refreshToken != null) {
-            output.put("refresh_token", refreshToken);
-        }
-        if(idToken != null) {
-            output.put("id_token", idToken);
-        }
 
         details_provider.put("provider", provider);
 
@@ -115,7 +80,7 @@ public class ExchangeBean implements Serializable {
         else
             details_provider.put("id_token_payload", new JSONObject());
 
-        output.put("details_provider", details_provider);
+        tokenResponse.put("details_provider", details_provider);
 
         details_loginbuddy.put("iss", iss);
 
@@ -125,8 +90,8 @@ public class ExchangeBean implements Serializable {
         details_loginbuddy.put("iat", iat);
         details_loginbuddy.put("aud", aud);
 
-        output.put("details_loginbuddy", details_loginbuddy);
+        tokenResponse.put("details_loginbuddy", details_loginbuddy);
 
-        return output.toJSONString();
+        return tokenResponse.toJSONString();
     }
 }
