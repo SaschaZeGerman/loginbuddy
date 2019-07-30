@@ -41,7 +41,7 @@ public class Callback extends HttpServlet {
       List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
       formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), code));
       formParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), (String)sessionValues.get(Constants.CLIENT_ID.getKey())));
-      formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), (String)sessionValues.get(Constants.REDIRECT_URI.getKey())));
+      formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), (String)sessionValues.get(Constants.CLIENT_REDIRECT.getKey())));
       formParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
 
       try {
