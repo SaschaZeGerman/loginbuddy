@@ -18,6 +18,8 @@ public enum Constants {
     BEARER("Bearer "),
     CLIENT_ID("client_id"),
     CLIENT_SECRET("client_secret"),
+    CLIENT_SECRET_BASIC("client_secret_basic"),
+    CLIENT_SECRET_POST("client_secret_post"),
     CODE("code"),
     CODE_VERIFIER("code_verifier"),
     CODE_CHALLENGE("code_challenge"),

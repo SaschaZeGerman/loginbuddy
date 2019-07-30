@@ -3,9 +3,16 @@
     "clients": [
       {
         "client_id": "clientIdForTestingPurposes",
-        "client_secret": "d5453153-e096-4672-bcb5-313d9847c8de",
+        "client_type": "public",
         "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback https://local.soapui.com/redirect"
+        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect"
+      },
+      {
+        "client_id": "clientIdForTestingPurposesConfidential",
+        "client_secret": "myFancyAndSecureClientSecret",
+        "client_type": "confidential",
+        "client_uri": "https://democlient.loginbuddy.net",
+        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect"
       }
     ],
     "providers": [

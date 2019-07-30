@@ -45,22 +45,11 @@ public class Authorize extends Overlord {
             return;
         }
 
-        ClientConfig clientConfig=null;
-        try {
-            clientConfig = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
-            if (clientConfig == null) {
-                LOGGER.warning("The given client_id is unknown or invalid");
-                response.sendError(400, "The given client_id is unknown or invalid");
-                return;
-            }
-        } catch (Exception e) {
-            // should never occur
-            LOGGER.severe("The system has not been configured yet!");
-            response.sendError(500, "The system has not been configured yet!");
+        if(!loadClientConfig(clientId)) {
+            LOGGER.warning("An invalid client_id was provided");
+            response.sendError(400, "An invalid client_id was provided!");
             return;
         }
-
-        String clientType = clientConfig.getClientType();
 
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0) {
@@ -154,7 +143,7 @@ public class Authorize extends Overlord {
         }
 
         Set<String> scopes = new TreeSet<>(Arrays.asList(((String)oidcConfig.get("scopes_supported")).split(" ")));
-        scopes.retainAll(Arrays.asList(clientScope.split(" ")));
+        scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
         if(scopes.size() == 0) {
             LOGGER.warning("Invalid or unsupported scope!");
             response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+scope+value"));

@@ -57,7 +57,7 @@ public class ClientConfig {
     }
 
     public String getClientType() {
-        return clientType == null ? Constants.CLIENT_TYPE_PUBLIC.getKey() : clientType;
+        return clientType;
     }
 
     public void setClientType(String clientType) {
