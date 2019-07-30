@@ -10,6 +10,7 @@ public class Discovery extends Overlord {
   // list all the key that we reference. Add _OP for optional ones so that it becomes more obvious when using them
   static final String TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED_OP = "token_endpoint_auth_methods_supported";
   static final String GRANT_TYPES_SUPPORTED_OP = "grant_types_supported";
+  static final String RESPONSE_TYPES_SUPPORTED = "response_types_supported";
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

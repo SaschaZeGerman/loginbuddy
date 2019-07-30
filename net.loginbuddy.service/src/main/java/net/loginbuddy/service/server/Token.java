@@ -162,6 +162,29 @@ public class Token extends Overlord {
       response.getWriter().write(resp.toJSONString());
       return;
     } else {
+
+      boolean checkRedirectUri = sessionCtx.get(Constants.CHECK_REDIRECT_URI.getKey(), Boolean.class);
+      if(checkRedirectUri) {
+        String redirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
+        if(redirectUri == null || redirectUri.trim().length() == 0 || request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 2) {
+          LOGGER.warning("Missing or duplicate redirect_uri!");
+          resp.put("error", "invalid_request");
+          resp.put("error_description", "Missing or duplicate redirect_uri!");
+          response.setStatus(400);
+          response.getWriter().write(resp.toJSONString());
+          return;
+        } else {
+          if(!redirectUri.equals(sessionCtx.getString(Constants.CLIENT_REDIRECT.getKey()))) {
+            LOGGER.warning("Invalid redirect_uri!");
+            resp.put("error", "invalid_request");
+            resp.put("error_description", "Invalid redirect_uri!");
+            response.setStatus(400);
+            response.getWriter().write(resp.toJSONString());
+            return;
+          }
+        }
+      }
+
       String clientCodeChallenge = sessionCtx.getString(Constants.CLIENT_CODE_CHALLENGE.getKey());
       if (clientCodeChallenge != null) {
         String clientCodeVerifier = request.getParameter(Constants.CODE_VERIFIER.getKey());

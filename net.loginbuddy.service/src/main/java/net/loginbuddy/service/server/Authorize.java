@@ -51,6 +51,7 @@ public class Authorize extends Overlord {
             return;
         }
 
+        boolean checkRedirectUri = true;
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0) {
             if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(clientType)) {
@@ -60,6 +61,7 @@ public class Authorize extends Overlord {
             } else {
                 // confidential clients only need a registered redirectUri and not need to request it
                 clientRedirectUri = clientConfig.getRedirectUri();
+                checkRedirectUri = false; // it was not given, so no need to check for it at the token endpoint
             }
         }
         if(request.getParameterValues(Constants.REDIRECT_URI.getKey()) != null && request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
@@ -100,7 +102,7 @@ public class Authorize extends Overlord {
             LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
             response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+response_type+parameter+or+value"));
             return;
-        } else if (Stream.of(((String) oidcConfig.get("response_types_supported")).split(" ")).noneMatch(clientResponseType::equals)) {
+        } else if (Stream.of(((String) oidcConfig.get(Discovery.RESPONSE_TYPES_SUPPORTED)).split("[,; ]")).noneMatch(clientResponseType::equals)) {
             LOGGER.warning(String.format("The given response_type is not supported: '%s'", clientResponseType));
             response.sendRedirect(clientRedirectUriError.concat(String.format("error=invalid_request&error_description=unsupported+response_type:+%s", URLEncoder.encode(clientResponseType, "UTF-8"))));
             return;
@@ -156,7 +158,7 @@ public class Authorize extends Overlord {
         String clientIdTokenHint = request.getParameter(Constants.ID_TOKEN_HINT.getKey());
 
         SessionContext sessionCtx = new SessionContext();
-        sessionCtx.sessionInit(clientId, clientScope, clientResponseType, clientCodeChallenge, clientCodeChallengeMethod, clientRedirectUri, clientNonce, clientState, clientProvider, clientPrompt, clientLoginHint, clientIdTokenHint);
+        sessionCtx.sessionInit(clientId, clientScope, clientResponseType, clientCodeChallenge, clientCodeChallengeMethod, clientRedirectUri, clientNonce, clientState, clientProvider, clientPrompt, clientLoginHint, clientIdTokenHint, checkRedirectUri);
 
         LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 

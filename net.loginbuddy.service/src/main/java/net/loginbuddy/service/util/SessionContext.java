@@ -13,7 +13,7 @@ public class SessionContext extends LoginbuddyContext {
 
   public void sessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
-      String prompt, String loginHint, String idtokenHint) {
+      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri) {
 
     put(Constants.CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
@@ -27,6 +27,7 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_PROMPT.getKey(), prompt == null ? "" : prompt);
     put(Constants.CLIENT_LOGIN_HINT.getKey(), loginHint == null ? "" : loginHint);
     put(Constants.CLIENT_ID_TOKEN_HINT.getKey(), idtokenHint == null ? "" : idtokenHint);
+    put(Constants.CHECK_REDIRECT_URI.getKey(), checkRedirectUri);
 
     put(Constants.NONCE.getKey(), UUID.randomUUID().toString());
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
