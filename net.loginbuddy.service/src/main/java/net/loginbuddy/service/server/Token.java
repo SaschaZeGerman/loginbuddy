@@ -92,8 +92,7 @@ public class Token extends Overlord {
           return;
         } else if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equalsIgnoreCase(clientType)) {
           String clientSecret = Constants.CLIENT_SECRET_POST.getKey().equals(usedAuthMethod) ? request.getParameter(Constants.CLIENT_SECRET.getKey()) : clientCreds.split(":")[1];
-          if (clientSecret == null || clientSecret.trim().length() == 0
-              || request.getParameterValues(Constants.CLIENT_SECRET.getKey()).length > 1) {
+          if (clientSecret == null || clientSecret.trim().length() == 0) {
             LOGGER.warning("Missing client_secret");
             resp.put("error", "invalid_request");
             resp.put("error_description", "Missing client_secret!");
