@@ -21,7 +21,7 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_CODE_CHALLENGE.getKey(), code_challenge);
     put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), code_challenge_method);
     put(Constants.CLIENT_REDIRECT.getKey(), redirectUri);
-    put(Constants.CLIENT_NONCE.getKey(), nonce == null ? "" : nonce);
+    put(Constants.CLIENT_NONCE.getKey(), nonce);
     put(Constants.CLIENT_STATE.getKey(), state);
     put(Constants.CLIENT_PROVIDER.getKey(), provider);
     put(Constants.CLIENT_PROMPT.getKey(), prompt == null ? "" : prompt);

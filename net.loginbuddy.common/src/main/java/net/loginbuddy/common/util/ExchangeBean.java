@@ -20,72 +20,62 @@ public class ExchangeBean implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(ExchangeBean.class));
 
-    private String iss, aud, nonce, provider, idToken;
+    private long iat, expiresIn;
+    private String iss, aud, nonce, provider, idToken, accessToken, refreshToken, scope, tokenType;
+
     private JSONObject userinfo, idTokenPayload;
-    private long iat;
 
     public ExchangeBean() {
         userinfo = new JSONObject();
     }
 
-    public String getIss() {
-        return iss;
+    public void setExpiresIn(Object expiresIn) {
+        this.expiresIn = expiresIn == null ? 0 : Long.parseLong(expiresIn.toString());
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public void setRefreshToken(Object refreshToken) {
+        this.refreshToken = refreshToken == null ? null : refreshToken.toString();
+    }
+
+    public void setScope(Object scope) {
+        this.scope = scope == null ? null : scope.toString();
+    }
+
+    public void setTokenType(Object tokenType) {
+        this.tokenType = tokenType == null ? null : tokenType.toString();
     }
 
     public void setIss(String iss) {
         this.iss = iss;
     }
 
-    public String getAud() {
-        return aud;
-    }
-
     public void setAud(String aud) {
         this.aud = aud;
     }
 
-    public String getNonce() {
-        return nonce;
-    }
 
-    public void setNonce(String nonce) {
-        this.nonce = nonce;
-    }
-
-    public String getProvider() {
-        return provider;
+    public void setNonce(Object nonce) {
+        this.nonce = nonce == null ? null : nonce.toString();
     }
 
     public void setProvider(String provider) {
         this.provider = provider;
     }
 
-    public JSONObject getUserinfo() {
-        return userinfo;
-    }
-
     public void setUserinfo(JSONObject userinfo) {
         this.userinfo = userinfo;
     }
 
-    public String getIdToken() {
-        return idToken;
-    }
-
-    public void setIdToken(String idToken) {
-        this.idToken = idToken;
-    }
-
-    public JSONObject getIdTokenPayload() {
-        return idTokenPayload;
+    public void setIdToken(Object idToken) {
+        this.idToken = idToken == null ? null : idToken.toString();
     }
 
     public void setIdTokenPayload(JSONObject idTokenPayload) {
         this.idTokenPayload = idTokenPayload;
-    }
-
-    public long getIat() {
-        return iat;
     }
 
     public void setIat(long iat) {
@@ -96,18 +86,46 @@ public class ExchangeBean implements Serializable {
     public String toString() {
 
         JSONObject output = new JSONObject();
-        JSONObject data = new JSONObject();
+        JSONObject details_provider = new JSONObject();
+        JSONObject details_loginbuddy = new JSONObject();
 
-        data.put("provider", provider);
-        data.put("userinfo", userinfo);
-        data.put("id_token", idToken);
-        data.put("id_token_payload", idTokenPayload);
+        output.put("access_token", accessToken);
+        if(scope != null)
+            output.put("scope", scope);
 
-        output.put("iss", iss);
-        output.put("iat", iat);
-        output.put("aud", aud);
-        output.put("nonce", nonce);
-        output.put("data", data);
+        output.put("expires_in", expiresIn);
+        output.put("token_type", tokenType);
+
+        if(refreshToken != null) {
+            output.put("refresh_token", refreshToken);
+        }
+        if(idToken != null) {
+            output.put("id_token", idToken);
+        }
+
+        details_provider.put("provider", provider);
+
+        if(userinfo != null)
+            details_provider.put("userinfo", userinfo);
+        else
+            details_provider.put("userinfo", new JSONObject());
+
+        if(idTokenPayload != null)
+            details_provider.put("id_token_payload", idTokenPayload);
+        else
+            details_provider.put("id_token_payload", new JSONObject());
+
+        output.put("details_provider", details_provider);
+
+        details_loginbuddy.put("iss", iss);
+
+        if(nonce != null)
+            details_loginbuddy.put("nonce", nonce);
+
+        details_loginbuddy.put("iat", iat);
+        details_loginbuddy.put("aud", aud);
+
+        output.put("details_loginbuddy", details_loginbuddy);
 
         return output.toJSONString();
     }

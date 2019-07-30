@@ -33,6 +33,7 @@ public enum Constants {
     GRANT_TYPE("grant_type"),
     ID_TOKEN("id_token"),
     ID_TOKEN_HINT("id_token_hint"),
+    ISSUER("issuer"),
     JWKS_URI("jwks_uri"),
     LOGIN_HINT("login_hint"),
     NONCE("nonce"),
@@ -54,6 +55,7 @@ public enum Constants {
     ACTION_GRANT("grant"),
     ACTION_INITIALIZE("initialize"),
     ACTION_CALLBACK("callback"),
+    ACTION_TOKEN_EXCHANGE("token_exchange"),
 
     // references client (application) values
     CLIENT_STATE("clientState"),

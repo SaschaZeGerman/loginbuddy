@@ -124,6 +124,7 @@ public class LoginbuddyProviderToken extends HttpServlet {
         fakeProviderResponse.put("token_type", "Bearer");
         fakeProviderResponse.put("expires_in", accessTokenLifetime);
         fakeProviderResponse.put("id_token", id_token);
+        fakeProviderResponse.put("scope", sessionValues.get(Constants.SCOPE.getKey()));
 
         response.setStatus(200);
         response.getWriter().println(fakeProviderResponse);

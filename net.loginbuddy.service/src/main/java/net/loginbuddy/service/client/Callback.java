@@ -28,6 +28,8 @@ import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.MsgResponse;
+import net.loginbuddy.service.server.Discovery;
+import net.loginbuddy.service.server.Overlord;
 import net.loginbuddy.service.util.SessionContext;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -42,7 +44,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 
-public class Callback extends HttpServlet {
+public class Callback extends Overlord {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
@@ -121,14 +123,14 @@ public class Callback extends HttpServlet {
             }
 
             ExchangeBean eb = new ExchangeBean();
-            eb.setIss("https://".concat(System.getenv("HOSTNAME_LOGINBUDDY")));
+            eb.setIss((String)oidcConfig.get(Constants.ISSUER.getKey()));
             eb.setIat(new Date().getTime()/1000);
             eb.setAud(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
-            eb.setNonce(UUID.randomUUID().toString());
+            eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             eb.setProvider(provider);
 
             String access_token = null;
-            String id_token = "none_issued";
+            String id_token = null;
 
             MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), authCode, tokenEndpoint, code_verifier);
             if (tokenResponse != null) {
@@ -137,6 +139,11 @@ public class Callback extends HttpServlet {
                         JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
                         LOGGER.info(tokenResponseObject.toJSONString());
                         access_token = tokenResponseObject.get("access_token").toString();
+                        eb.setAccessToken(access_token);
+                        eb.setRefreshToken(tokenResponseObject.get("refresh_token"));
+                        eb.setScope(tokenResponseObject.get("scope"));
+                        eb.setTokenType(tokenResponseObject.get("token_type"));
+                        eb.setExpiresIn(tokenResponseObject.get("expires_in"));
                         // in cases where id_token were not issued
                         try {
                             id_token = tokenResponseObject.get("id_token").toString();
@@ -144,8 +151,6 @@ public class Callback extends HttpServlet {
                             LOGGER.warning("No id_token was issued!");
                             e.printStackTrace();
                         }
-                    } else {
-                        // no sure what to do yet ... but it should also never happen!
                     }
                 } else {
                     // need to handle error cases
@@ -170,13 +175,7 @@ public class Callback extends HttpServlet {
                 eb.setIdTokenPayload(idTokenPayload);
                 eb.setIdToken(id_token);
             } catch (Exception e) {
-                JSONObject err = new JSONObject();
-                error = "invalid_id_token";
-                errorDescription = "The given id_token was invalid or could not be validated!";
-                err.put("error", error);
-                err.put("error_description", errorDescription);
-                eb.setIdTokenPayload(err);
-                eb.setIdToken("INVALID_" + id_token);
+                LOGGER.warning(e.getMessage());
             }
 
 
@@ -189,29 +188,16 @@ public class Callback extends HttpServlet {
                             JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
                             eb.setUserinfo(userinfoRespObject);
                         }
-                    } else if (userinfoResp.getStatus() == 401) {
-                        if (userinfoResp.getContentType().startsWith("application/json")) {
-                            JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-                            error = (String) err.get("error");
-                            errorDescription = (String) err.get("error_description");
-                            if (errorDescription == null) {
-                                errorDescription = "An error was returned by the provider without any description";
-                            }
-                            err.put("error", error);
-                            err.put("error_description", errorDescription);
-                            eb.setUserinfo(err);
-                        }
-                    } else {
-                        eb.setUserinfo((JSONObject)new JSONParser().parse("{\"error\":\"unknown_error\"}"));
                     }
                 }
             }
 
             String pickUpCode = UUID.randomUUID().toString();
             sessionCtx.put("eb", eb.toString());
+            sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
             LoginbuddyCache.getInstance().put(pickUpCode, sessionCtx);
 
-            clientRedirectUri = clientRedirectUri.concat("code=").concat(pickUpCode).concat("&state=").concat(clientState);
+            clientRedirectUri = clientState == null ? clientRedirectUri.concat("code=").concat(pickUpCode) : clientRedirectUri.concat("code=").concat(pickUpCode).concat("&state=").concat(clientState);
             response.sendRedirect(clientRedirectUri);
 
         } catch (Exception e) {
@@ -227,7 +213,11 @@ public class Callback extends HttpServlet {
         }
         error = URLEncoder.encode(error, "UTF-8");
         errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
-        return clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
+
+        if(clientState != null)
+            return clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription).concat("&state=").concat(clientState);
+        else
+            return clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription);
     }
 
     private MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode, String tokenEndpoint, String codeVerifier) {
