@@ -54,12 +54,12 @@ public class Authorize extends Overlord {
         boolean checkRedirectUri = true;
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0) {
-            if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(clientType)) {
+            if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(clientType) || clientConfig.getRedirectUri().split("[,; ]").length > 1) {
                 LOGGER.warning("Missing redirect_uri parameter!");
                 response.sendError(400, "Missing redirect_uri parameter!");
                 return;
             } else {
-                // confidential clients only need a registered redirectUri and not need to request it
+                // confidential clients only need a registered redirectUri and not need to request it UNLESS multiple ones were registered
                 clientRedirectUri = clientConfig.getRedirectUri();
                 checkRedirectUri = false; // it was not given, so no need to check for it at the token endpoint
             }
