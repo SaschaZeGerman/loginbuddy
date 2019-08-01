@@ -135,7 +135,7 @@ public class Authorize extends Overlord {
         String clientScope = request.getParameter(Constants.SCOPE.getKey());
         if ( (clientScope == null || clientScope.trim().length() == 0) || request.getParameterValues(Constants.SCOPE.getKey()).length > 1) {
             if(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(clientType)) {
-                clientScope = (String)oidcConfig.get("scope");
+                clientScope = getScopesSupportedSupported();
             } else {
                 LOGGER.warning("Invalid or unsupported scope parameter!");
                 response.sendRedirect(clientRedirectUriError
@@ -144,7 +144,7 @@ public class Authorize extends Overlord {
             }
         }
 
-        Set<String> scopes = new TreeSet<>(Arrays.asList(((String)oidcConfig.get("scopes_supported")).split(" ")));
+        Set<String> scopes = new TreeSet<>(Arrays.asList((getScopesSupportedSupported()).split("[,; ]")));
         scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
         if(scopes.size() == 0) {
             LOGGER.warning("Invalid or unsupported scope!");

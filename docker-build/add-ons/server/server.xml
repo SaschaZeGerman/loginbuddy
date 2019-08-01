@@ -17,41 +17,50 @@
 -->
 <Server port="8005" shutdown="SHUTDOWN">
 
-    <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener"/>
 
-    <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
-    <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
-    <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"/>
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
 
-    <Service name="Catalina">
+  <Service name="Catalina">
 
-        <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="443"/>
+    <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="443"/>
 
-        <Connector
-                SSLEnabled="true"
-                secure="true"
-                scheme="https"
-                port="443"
-                defaultSSLHostConfigName="local.loginbuddy.net"
-                protocol="org.apache.coyote.http11.Http11NioProtocol"
-                maxThreads="150">
-            <SSLHostConfig hostName="local.loginbuddy.net"
-                           protocols="TLSv1,TLSv1.1,TLSv1.2"
-                           sslProtocol="TLS">
-                <Certificate
-                        certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
-                        certificateKeystorePassword="changeit"
-                        certificateKeyAlias="loginbuddy"
-                        certificateVerification="false"/>
-            </SSLHostConfig>
-        </Connector>
+    <Connector
+      SSLEnabled="true"
+      secure="true"
+      scheme="https"
+      port="443"
+      defaultSSLHostConfigName="localhost"
+      protocol="org.apache.coyote.http11.Http11NioProtocol"
+      maxThreads="150">
+      <SSLHostConfig hostName="localhost"
+        protocols="TLSv1,TLSv1.1,TLSv1.2"
+        sslProtocol="TLS">
+        <Certificate
+          certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
+          certificateKeystorePassword="changeit"
+          certificateKeyAlias="loginbuddy"
+          certificateVerification="false"/>
+      </SSLHostConfig>
+    </Connector>
 
-        <Engine name="Catalina" defaultHost="localhost">
-            <Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true">
-                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-                       prefix="localhost_access_log" suffix=".txt"
-                       pattern="%h %l %u %t &quot;%r&quot; %s %b" />
-            </Host>
-        </Engine>
-    </Service>
+    <Engine name="Catalina" defaultHost="localhost">
+      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+          prefix="localhost_access_log" suffix=".txt"
+          pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
+        <Context path="" docBase="/usr/local/tomcat/webapps/ROOT" debug="0" reloadable="true">
+          <Resource name="bean/ConfigUtilFactory" auth="Container"
+            type="net.loginbuddy.service.config.ConfigUtil"
+            factory="org.apache.naming.factory.BeanFactory"
+            path="webapps/ROOT/WEB-INF/classes/config.json"/>
+          <Resource name="bean/CacheFactory" auth="Container"
+            type="net.loginbuddy.common.cache.DefaultCache"
+            factory="org.apache.naming.factory.BeanFactory"/>
+        </Context>
+      </Host>
+    </Engine>
+  </Service>
 </Server>

@@ -65,7 +65,6 @@ public enum Constants {
     CLIENT_PROVIDER("clientProvider"),
     CLIENT_SCOPE("clientScope"),
     CLIENT_RESPONSE_TYPE("clientResponseType"),
-    CLIENT_NONCE("clientNONCE"),
     CLIENT_PROMPT("clientPrompt"),
     CLIENT_LOGIN_HINT("clientLoginHint"),
     CLIENT_ID_TOKEN_HINT("clientIdtokenHint");

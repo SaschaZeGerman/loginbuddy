@@ -75,7 +75,7 @@
                     <Resource name="bean/ConfigUtilFactory" auth="Container"
                       type="net.loginbuddy.service.config.ConfigUtil"
                       factory="org.apache.naming.factory.BeanFactory"
-                      path="webapps/ROOT/config/config.json"/>
+                      path="webapps/ROOT/WEB-INF/classes/config.json"/>
                     <Resource name="bean/CacheFactory" auth="Container"
                       type="net.loginbuddy.common.cache.DefaultCache"
                       factory="org.apache.naming.factory.BeanFactory"/>

@@ -64,12 +64,6 @@
         <url-pattern>/jwks</url-pattern>
     </servlet-mapping>
 
-    <resource-env-ref>
-        <description>Object factory for Cache instances</description>
-        <resource-env-ref-name>bean/CacheFactory</resource-env-ref-name>
-        <resource-env-ref-type>net.loginbuddy.common.cache.DefaultCache</resource-env-ref-type>
-    </resource-env-ref>
-
     <error-page>
         <error-code>400</error-code>
         <location>/iapis/error.jsp</location>

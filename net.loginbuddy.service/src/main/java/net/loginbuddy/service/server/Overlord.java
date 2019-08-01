@@ -77,4 +77,11 @@ public class Overlord extends HttpServlet {
     return supported;
   }
 
+  String getScopesSupportedSupported() {
+    String supported = (String)oidcConfig.get(Discovery.SCOPES_SUPPORTED_OP);
+    if(supported == null || supported.trim().length() == 0) {
+      return Constants.OPENID_SCOPE.getKey();
+    }
+    return supported;
+  }
 }

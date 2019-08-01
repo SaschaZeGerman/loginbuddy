@@ -1,6 +1,5 @@
 package net.loginbuddy.service.util;
 
-import java.util.Date;
 import java.util.UUID;
 import net.loginbuddy.common.cache.LoginbuddyContext;
 import net.loginbuddy.common.config.Constants;
@@ -21,7 +20,6 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_CODE_CHALLENGE.getKey(), code_challenge);
     put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), code_challenge_method);
     put(Constants.CLIENT_REDIRECT.getKey(), redirectUri);
-    put(Constants.CLIENT_NONCE.getKey(), nonce);
     put(Constants.CLIENT_STATE.getKey(), state);
     put(Constants.CLIENT_PROVIDER.getKey(), provider);
     put(Constants.CLIENT_PROMPT.getKey(), prompt == null ? "" : prompt);
@@ -29,21 +27,11 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_ID_TOKEN_HINT.getKey(), idtokenHint == null ? "" : idtokenHint);
     put(Constants.CHECK_REDIRECT_URI.getKey(), checkRedirectUri);
 
-    put(Constants.NONCE.getKey(), UUID.randomUUID().toString());
+    put(Constants.NONCE.getKey(), nonce == null ? UUID.randomUUID().toString() : nonce);
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
-  }
-
-  public void sessionLoginProvided(String usernameLabel, String username) {
-    put(usernameLabel, username);
-    put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_AUTHENTICATE.getKey());
   }
 
   public void sessionCallback() {
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_CALLBACK.getKey());
-  }
-
-  public void sessionGranted() {
-    put("grant", String.valueOf(new Date()
-        .getTime())); // TODO: remember when this grant was given! If we had a 'grant' table, it would go in there
   }
 }

@@ -41,7 +41,7 @@ public class ConfigUtil {
 
     private JsonNode getConfig() throws IOException {
         try {
-            JsonNode node = MAPPER.readValue(Thread.currentThread().getContextClassLoader().getResource("config.json"), JsonNode.class);
+            JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
             return node.get(loginbuddy);
 
         } catch (IOException e) {
@@ -80,13 +80,6 @@ public class ConfigUtil {
             LOGGER.severe("Fail to map providers [" + providerNode.toString() + "]");
             throw new Exception("Fail to map providers [" + providerNode.toString() + "]");
         }
-    }
-
-    public ClientConfig getClientConfigByRedirectUri(String redirectUri) throws Exception {
-        return getClients().stream()
-                .filter(clientConfig -> clientConfig.getRedirectUri().equals(redirectUri))
-                .findFirst()
-                .orElse(null);
     }
 
     public ClientConfig getClientConfigByClientId(String clientId) throws Exception {

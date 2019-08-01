@@ -96,8 +96,8 @@ public class Callback extends Overlord {
         return;
       }
 
-      String authCode = request.getParameter(Constants.CODE.getKey());
-      if (authCode == null || authCode.trim().length() == 0
+      String providersAuthCode = request.getParameter(Constants.CODE.getKey());
+      if (providersAuthCode == null || providersAuthCode.trim().length() == 0
           || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
         clientRedirectUri = clientRedirectUri
             .concat("error=invalid_request&error_description=Missing+or+invalid+code+parameter");
@@ -129,14 +129,14 @@ public class Callback extends Overlord {
       eb.setIss((String) oidcConfig.get(Constants.ISSUER.getKey()));
       eb.setIat(new Date().getTime() / 1000);
       eb.setAud(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
-      eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+      eb.setNonce(sessionCtx.getString(Constants.NONCE.getKey()));
       eb.setProvider(provider);
 
       String access_token = null;
       String id_token = null;
 
       MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
-          providerConfig.getRedirectUri(), authCode, tokenEndpoint, code_verifier);
+          providerConfig.getRedirectUri(), providersAuthCode, tokenEndpoint, code_verifier);
       if (tokenResponse != null) {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
@@ -191,8 +191,7 @@ public class Callback extends Overlord {
       sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
       LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx);
 
-      clientRedirectUri = clientState == null ? clientRedirectUri.concat("code=").concat(authorizationCode)
-          : clientRedirectUri.concat("code=").concat(authorizationCode).concat("&state=").concat(clientState);
+      clientRedirectUri = clientState == null ? clientRedirectUri.concat("code=").concat(authorizationCode) : clientRedirectUri.concat("code=").concat(authorizationCode).concat("&state=").concat(clientState);
       response.sendRedirect(clientRedirectUri);
 
     } catch (Exception e) {
