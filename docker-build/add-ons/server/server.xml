@@ -42,7 +42,26 @@
           certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
           certificateKeystorePassword="changeit"
           certificateKeyAlias="loginbuddy"
-          certificateVerification="false"/>
+          certificateVerification="true"/>
+      </SSLHostConfig>
+    </Connector>
+
+    <Connector
+      SSLEnabled="true"
+      secure="true"
+      scheme="https"
+      port="444"
+      defaultSSLHostConfigName="localhost"
+      protocol="org.apache.coyote.http11.Http11NioProtocol"
+      maxThreads="150">
+      <SSLHostConfig hostName="localhost"
+        protocols="TLSv1,TLSv1.1,TLSv1.2"
+        sslProtocol="TLS">
+        <Certificate
+          certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy_sidecar.p12"
+          certificateKeystorePassword="changeit"
+          certificateKeyAlias="loginbuddy"
+          certificateVerification="true"/>
       </SSLHostConfig>
     </Connector>
 

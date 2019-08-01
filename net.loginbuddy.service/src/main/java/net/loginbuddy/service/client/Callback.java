@@ -257,7 +257,7 @@ public class Callback extends Overlord {
       return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
           EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
     } catch (Exception e) {
-      LOGGER.warning("Call to targetApi failed!");
+      LOGGER.warning("Call to targetApi failed!"); // TODO return error
       e.printStackTrace();
       return null;
     }
@@ -272,7 +272,7 @@ public class Callback extends Overlord {
       return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
           EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
     } catch (Exception e) {
-      LOGGER.warning("The API response could not be retrieved. Given URL: '" + targetApi + "'");
+      LOGGER.warning("The API response could not be retrieved. Given URL: '" + targetApi + "'"); // TODO return error
       e.printStackTrace();
       return null;
     }
