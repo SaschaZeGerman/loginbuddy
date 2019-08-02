@@ -9,6 +9,9 @@
 <%@ page import="net.loginbuddy.service.config.ProviderConfig" %>
 <%@ page import="net.loginbuddy.service.config.LoginbuddyConfig" %>
 <%@ page import="java.util.List" %>
+<%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
+<%@ page import="net.loginbuddy.service.util.SessionContext" %>
+<%@ page import="net.loginbuddy.common.config.Constants" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!
@@ -23,9 +26,10 @@
         }
         String sessionId = request.getParameter("session");
 
+        SessionContext sessionCtx = (SessionContext)LoginbuddyCache.getInstance().get(sessionId);
         List<ProviderConfig> providerConfigs = null;
         try {
-            providerConfigs = LoginbuddyConfig.getInstance().getConfigUtil().getProviders();
+            providerConfigs = LoginbuddyConfig.getInstance().getConfigUtil().getProviders(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
         } catch (Exception e) {
             // should never occur, this would have been caught in Providers
             LOGGER.severe("The system has not been configured yet!");

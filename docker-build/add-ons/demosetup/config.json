@@ -5,7 +5,8 @@
         "client_id": "clientIdForTestingPurposes",
         "client_type": "public",
         "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect"
+        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
+        "providers": ["server_loginbuddy"]
       },
       {
         "client_id": "clientIdForTestingPurposesConfidential",
@@ -28,6 +29,18 @@
         "scope": "openid profile email",
         "response_type": "code",
         "redirect_uri": "https://local.loginbuddy.net/callback"
+      },{
+        "provider": "not_for_public_client",
+        "issuer": "https://not_for_public_client/server",
+        "client_id": "not_for_public_client",
+        "client_secret": "not_for_public_client",
+        "authorization_endpoint": "https://not_for_public_client/authorize",
+        "token_endpoint": "https://not_for_public_client/token",
+        "userinfo_endpoint": "https://not_for_public_client/userinfo",
+        "jwks_uri": "https://not_for_public_client/jwks.json",
+        "scope": "openid profile email",
+        "response_type": "code",
+        "redirect_uri": "https://not_for_public_client/callback"
       }
     ]
   }

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -66,7 +67,30 @@ public class ConfigUtil {
         }
     }
 
-    public List<ProviderConfig> getProviders() throws Exception {
+    public ClientConfig getClientConfigByClientId(String clientId) throws Exception {
+        return getClients().stream()
+                .filter(clientConfig -> clientConfig.getClientId().equals(clientId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    // TODO make this thing more efficient
+    public List<ProviderConfig> getProviders(String clientId) throws Exception {
+        ClientConfig cc = getClientConfigByClientId(clientId);
+        if(cc.getClientProviders() != null && cc.getClientProviders().length > 0) {
+            List<ProviderConfig> result = new ArrayList<>();
+            for(ProviderConfig pc : getProviders()) {
+                if(Arrays.asList(cc.getClientProviders()).contains(pc.getProvider())) {
+                    result.add(pc);
+                }
+            }
+            return result;
+        } else {
+            return getProviders();
+        }
+    }
+
+    private List<ProviderConfig> getProviders() throws Exception {
         JsonNode providerNode = getConfig().get(providers);
 
         if (providerNode == null || !providerNode.isArray()) {
@@ -82,16 +106,9 @@ public class ConfigUtil {
         }
     }
 
-    public ClientConfig getClientConfigByClientId(String clientId) throws Exception {
-        return getClients().stream()
-                .filter(clientConfig -> clientConfig.getClientId().equals(clientId))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public ProviderConfig getProviderConfigByProvider(String loginHint) throws Exception {
+    public ProviderConfig getProviderConfigByProvider(String providerHint) throws Exception {
         return getProviders().stream()
-                .filter(provider -> provider.getProvider().equalsIgnoreCase(loginHint))
+                .filter(provider -> provider.getProvider().equalsIgnoreCase(providerHint))
                 .findFirst()
                 .orElse(null);
     }

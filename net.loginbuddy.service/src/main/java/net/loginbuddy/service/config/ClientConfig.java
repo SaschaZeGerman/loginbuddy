@@ -28,6 +28,9 @@ public class ClientConfig {
     @JsonProperty("client_type")
     private String clientType;
 
+    @JsonProperty("providers")
+    private String[] clientProviders;
+
     public String getRedirectUri() {
         return redirectUri;
     }
@@ -62,5 +65,13 @@ public class ClientConfig {
 
     public void setClientType(String clientType) {
         this.clientType = clientType;
+    }
+
+    public String[] getClientProviders() {
+        return clientProviders;
+    }
+
+    public void setClientProviders(String[] clientProviders) {
+        this.clientProviders = clientProviders;
     }
 }
