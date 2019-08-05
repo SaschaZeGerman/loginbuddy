@@ -23,7 +23,7 @@ public class ExchangeBean implements Serializable {
     private String iss, aud, nonce, provider;
     private long iat;
 
-    private JSONObject userinfo, idTokenPayload, tokenResponse;
+    private JSONObject userinfo, idTokenPayload, tokenResponse, normalized;
 
     public ExchangeBean() {
         userinfo = new JSONObject();
@@ -41,6 +41,7 @@ public class ExchangeBean implements Serializable {
         this.aud = aud;
     }
 
+    public void setNormalized(JSONObject normalized) {this.normalized = normalized;}
 
     public void setNonce(Object nonce) {
         this.nonce = nonce == null ? null : nonce.toString();
@@ -80,17 +81,21 @@ public class ExchangeBean implements Serializable {
         else
             details_provider.put("id_token_payload", new JSONObject());
 
-        tokenResponse.put("details_provider", details_provider);
 
         details_loginbuddy.put("iss", iss);
 
-        if(nonce != null)
+        if(nonce != null) {
             details_loginbuddy.put("nonce", nonce);
+        }
 
         details_loginbuddy.put("iat", iat);
         details_loginbuddy.put("aud", aud);
 
+        tokenResponse.put("details_provider", details_provider);
         tokenResponse.put("details_loginbuddy", details_loginbuddy);
+
+        if(normalized != null)
+            tokenResponse.put("details_normalized", normalized);
 
         return tokenResponse.toJSONString();
     }

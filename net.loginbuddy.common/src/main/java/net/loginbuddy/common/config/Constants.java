@@ -67,7 +67,8 @@ public enum Constants {
     CLIENT_RESPONSE_TYPE("clientResponseType"),
     CLIENT_PROMPT("clientPrompt"),
     CLIENT_LOGIN_HINT("clientLoginHint"),
-    CLIENT_ID_TOKEN_HINT("clientIdtokenHint");
+    CLIENT_ID_TOKEN_HINT("clientIdtokenHint"),
+    MAPPING_OIDC("{\"sub\":\"sub\", \"name\": \"name\",\"given_name\": \"given_name\",\"family_name\": \"family_name\",\"picture\": \"picture\",\"email\":\"email\", \"email_verified\":\"email_verified\", \"provider\":\"asis:provider\"}");
 
     private final String key;
 

@@ -9,8 +9,15 @@
 package net.loginbuddy.service.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.util.logging.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class ProviderConfig {
+
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProviderConfig.class));
 
     private String provider;
     private String issuer;
@@ -42,6 +49,9 @@ public class ProviderConfig {
 
     @JsonProperty("response_type")
     private String responseType;
+
+    @JsonProperty("mappings")
+    private JsonNode mappings;
 
     public ProviderConfig() {
     }
@@ -140,5 +150,22 @@ public class ProviderConfig {
 
     public void setResponseType(String responseType) {
         this.responseType = responseType;
+    }
+
+    public String getMappings() {
+        return mappings == null ? "{}" : mappings.toString();
+    }
+
+    public JSONObject getMappingsAsJson() {
+        try {
+            return (JSONObject)new JSONParser().parse(getMappings());
+        } catch (ParseException e) {
+            LOGGER.warning(String.format("The mapping object is invalid: %s", getMappings() == null ? "" : getMappings()));
+            return new JSONObject();
+        }
+    }
+
+    public void setMappings(JsonNode mappings) {
+        this.mappings = mappings;
     }
 }

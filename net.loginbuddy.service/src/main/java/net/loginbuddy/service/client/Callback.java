@@ -14,6 +14,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -39,6 +41,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 
 public class Callback extends Overlord {
@@ -173,18 +176,16 @@ public class Callback extends Overlord {
         return;
       }
 
-      // Call /userinfo only if it was configured in config.json
-      if (userInfoEndpoint != null && !"".equals(userInfoEndpoint)) {
         MsgResponse userinfoResp = getProtectedAPI(access_token, userInfoEndpoint);
         if (userinfoResp != null) {
           if (userinfoResp.getStatus() == 200) {
             if (userinfoResp.getContentType().startsWith("application/json")) {
               JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
               eb.setUserinfo(userinfoRespObject);
+              eb.setNormalized(normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
             }
           }
         }
-      }
 
       String authorizationCode = UUID.randomUUID().toString();
       sessionCtx.put("eb", eb.toString());
@@ -199,6 +200,47 @@ public class Callback extends Overlord {
       e.printStackTrace();
       response.getWriter().println("authorization request failed!");
     }
+  }
+
+  /**
+   * Mappings attributes so that receiving clients can expect the same details at the same location in the response message
+   * @param mappings
+   * @param userinfoRespObject
+   * @return
+   */
+  private JSONObject normalizeDetails(String provider, JSONObject mappings, JSONObject userinfoRespObject) {
+    JSONObject result = new JSONObject();
+    try {
+      mappings = (mappings == null || mappings.size() == 0) ? (JSONObject)new JSONParser().parse(Constants.MAPPING_OIDC.getKey().replace("asis:provider", "asis:"+provider)) : mappings;
+    } catch (ParseException e) {
+      // should not occur!
+      LOGGER.severe("The default mapping for OpenID Connect claims is invalid! Continuing as if nothing has happened ... .");
+    }
+    if(userinfoRespObject != null && userinfoRespObject.size() > 0) {
+      for(Object nextEntry : mappings.entrySet()) {
+        Map.Entry entry = (Entry)nextEntry;
+        String mappingKey = (String)entry.getKey();
+        String mappingRule = (String)entry.getValue();
+        String outputValue = "";
+        if(mappingRule.contains("[")) {
+          String userinfoClaim = (String)userinfoRespObject.get(mappingRule.substring(0, mappingRule.indexOf("[")));
+          int idx = Integer.parseInt(Character.toString(mappingRule.charAt(mappingRule.indexOf("[")+1)));
+          try {
+            outputValue = userinfoClaim.split(" ")[idx];
+          } catch(Exception e) {
+            LOGGER.warning(String.format("invalid indexed mapping: 'mappings.%s' --> 'userinfo.%s': invalid index: %s",mappingKey, mappingRule, e.getMessage()));
+          }
+        } else if(mappingRule.startsWith("asis:")) {
+          outputValue = mappingRule.substring(5);
+        }
+        else if(mappingRule.trim().length() > 0){
+          Object value = userinfoRespObject.get(mappingRule);
+          outputValue = value == null ? "" : String.valueOf(value);
+        }
+        result.put(mappingKey, outputValue == null ? "" : outputValue);
+      }
+    }
+    return result;
   }
 
   private String getErrorForRedirect(String clientRedirectUri, String clientState, String error,
