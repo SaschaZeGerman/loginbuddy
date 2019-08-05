@@ -200,6 +200,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.util.PropertyPermission "com.fasterxml.jackson.core.util.BufferRecyclers.trackReusableBuffers", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY", "read";
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
     permission java.io.FilePermission "/usr/local/tomcat/ssl/demosetup.p12", "read";
     permission java.net.SocketPermission "demoserver.loginbuddy.net", "connect,resolve";
 };
