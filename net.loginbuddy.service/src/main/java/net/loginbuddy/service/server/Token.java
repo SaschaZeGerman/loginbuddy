@@ -8,23 +8,19 @@
 
 package net.loginbuddy.service.server;
 
+import java.io.IOException;
 import java.util.Base64;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Map;
-import java.util.logging.Logger;
-import sun.misc.BASE64Decoder;
 
 @WebServlet(name = "Token")
 public class Token extends Overlord {
