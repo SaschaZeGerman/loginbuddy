@@ -10,9 +10,7 @@
 version: '3.4'
 services:
   loginbuddy-demosetup:
-    build:
-      context: .
-      dockerfile: Dockerfile_demosetup
+    image: saschazegerman/loginbuddy:latest-demo
     restart: always
     ports:
       - "80:80"

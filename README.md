@@ -24,24 +24,22 @@ This is the visual overview of the design:
 I have only used loginbuddy on a MacBook, if you run it on Windows, some instructions may need to be adjusted!
 
 - Preparation
-  - modify your hosts file, add **127.0.0.1 local.loginbuddy.net server.loginbuddy.net**
+  - modify your hosts file, add **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
   - for MacBooks this would be done at ```sudo /etc/hosts```
 - Download or clone this project
   - ```git clone https://github.com/SaschaZeGerman/loginbuddy.git```
-  - Switch into the directory *.../loginbuddy*
-- Run ```docker-compose -f docker-compose-start.yml up -d```
-  - this will pull the latest image from docker hub
-  - this will also create two private keys within the container, on the fly, used for testing and development purposes. See 'docker-build/add-ons/local/loginbuddy.sh' for details
-  - the private key's subject for 'local.loginbuddy.net' is **CN=local.loginbuddy.net**
-  - the private key's subject for 'server.loginbuddy.net' (the 'fake' OpenID Provider) is **CN=server.loginbuddy.net**
+  - Switch into the directory *loginbuddy*
+- Run ```docker-compose -f docker-compose-demosetup.yml up -d```
+  - this will pull the latest demo image from docker hub
   - this will use ports 80 (http), 443 (https)
 - Open a browser
-  - go to **http://local.loginbuddy.net** and follow the prompts
-  - the following screen will display an image saying **fake** which is the demo provider. Just click it ...
-  - the demo takes your through the (simulated) typical authentication/ authorization flow
-  - the response at the end is completely fake but it represents the type of content that can be expected 
+  - go to **http://democlient.loginbuddy.net** and follow the prompts
 
-That's it! In a real life scenario the 'fake' image would be replaced by images of real providers!
+The demo simulates a client, a social login provider (called 'fake') and uses loginbuddy!
+
+The last page displays type of message loginbuddy would return to your client.
+
+Since the demo uses self-signed certificates, confirm the SSL security screen in your browser.
 
 # Current state
 

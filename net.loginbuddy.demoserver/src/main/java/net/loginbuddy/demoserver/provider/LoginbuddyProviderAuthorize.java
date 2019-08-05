@@ -68,7 +68,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
 
       String code_challenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
       if (!Pkce.verifyChallenge(code_challenge)) {
-        throw new IllegalArgumentException("invalid code_challenge");
+        throw new IllegalArgumentException("Invalid code_challenge");
       }
 
       // We always require S256
@@ -144,7 +144,7 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
       }
     } else {
       LOGGER.warning("Invalid or missing session parameter!");
-      response.sendError(400, "Invalid of missing session parameter!");
+      response.sendError(400, "Invalid or missing session parameter!");
       return;
     }
 

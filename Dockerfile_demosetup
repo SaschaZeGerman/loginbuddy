@@ -20,6 +20,7 @@ COPY docker-build/add-ons/demosetup/loginbuddy.sh /opt/docker/loginbuddy.sh
 COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/demosetup/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/demosetup/config.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
+COPY docker-build/add-ons/demosetup/discovery.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
 COPY docker-build/add-ons/demosetup/server_loginbuddy.png /usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
 
 # create non-priviliged user (with its own group) to run tomcat
