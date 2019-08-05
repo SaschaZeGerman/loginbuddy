@@ -12,13 +12,18 @@
 version: '3.4'
 services:
   loginbuddy-demosetup:
-    image: loginbuddy:demosetup-latest
+    build:
+      context: .
+      dockerfile: Dockerfile_demosetup
     restart: always
     ports:
       - "80:80"
       - "443:443"
       - "8000:8000"
       - "9010:9010"
+    volumes:
+      - ./docker-build/add-ons/demosetup/catalina.policy:/usr/local/tomcat/conf/catalina.policy
+      - ./docker-build/add-ons/local/dev_config.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
     environment:
       - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
       - "HOSTNAME_LOGINBUDDY_DEMOSERVER=demoserver.loginbuddy.net"
