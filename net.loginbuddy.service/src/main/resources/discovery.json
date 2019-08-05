@@ -1,8 +1,8 @@
 {
-  "issuer": "https://local.loginbuddy.net",
-  "authorization_endpoint": "https://local.loginbuddy.net/authorize",
-  "token_endpoint": "https://local.loginbuddy.net/token",
-  "jwks_uri": "https://local.loginbuddy.net/jwks",
+  "issuer": "https://{your-domain}",
+  "authorization_endpoint": "https://{your-domain}/authorize",
+  "token_endpoint": "https://{your-domain}/token",
+  "jwks_uri": "https://{your-domain}/jwks",
   "response_types_supported": "code",
   "grant_types_supported": "authorization_code",
   "id_token_signing_alg_values_supported": "RS256",
@@ -10,5 +10,5 @@
   "token_endpoint_auth_methods_supported": "client_secret_post, client_secret_basic",
   "subject_types_supported": "public",
   "scopes_supported": "openid email profile",
-  "userinfo_endpoint": "https://local.loginbuddy.net/userinfo"
+  "userinfo_endpoint": "https://{your-domain}/userinfo"
 }

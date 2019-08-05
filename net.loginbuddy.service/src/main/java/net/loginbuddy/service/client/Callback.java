@@ -144,7 +144,7 @@ public class Callback extends Overlord {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
-            LOGGER.info(tokenResponseObject.toJSONString());
+//            LOGGER.info(tokenResponseObject.toJSONString()); // turn this on for debugging purposes
             access_token = tokenResponseObject.get("access_token").toString();
             eb.setTokenResponse(tokenResponseObject);
             try {

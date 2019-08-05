@@ -9,12 +9,11 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 # Default loginbuddy services
 COPY net.loginbuddy.service/target/service-1.0.0 /usr/local/tomcat/webapps/ROOT
 
-# overwrite some configuration to 'harden' tomat. 'logindbuddy.xml' is required since we run tomcat with security manager
-# without 'loginbuddy.xml' we would use a 'META-INF/context.xml' file
+# - update 'catalina.policy' with required SocketPermissions
+# - update 'server.xml' with unique passwords for accessing the private keys
 #
 COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/server/server.xml /usr/local/tomcat/conf/server.xml
-COPY docker-build/add-ons/server/web.xml /usr/local/tomcat/conf/web.xml
 
 # create non-priviliged user (with its own group) to run tomcat
 #

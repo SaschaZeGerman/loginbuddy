@@ -3,21 +3,21 @@
 #
 # - it creates a private key (via loginbuddy.sh)
 # - it updates the containers JAVA truststore to accept its own self-signed certificate a trust anchor
-# - it uses a permission file (docker-build/add-ons/local/catalina.policy) that accepts socket connections to a few prominent platforms (and to itself)
-# - it enables remote debugging
-# - it enables JMX support
+# - it uses a permission file (docker-build/add-ons/demosetup/catalina.policy) that accepts socket connections to a few prominent platforms (and to itself)
 #
 # NOTE: use this only for local development purposes!
 #
 version: '3.4'
 services:
   loginbuddy-demosetup:
-    image: loginbuddy:demosetup-latest
+    build:
+      context: .
+      dockerfile: Dockerfile_demosetup
     restart: always
     ports:
       - "80:80"
       - "443:443"
     environment:
       - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
-      - "HOSTNAME_LOGINBUDDY_DEMOSERVER=demoserver.loginbuddy.net"
       - "HOSTNAME_LOGINBUDDY_DEMOCLIENT=democlient.loginbuddy.net"
+      - "JAVA_OPTS=-Dorg.jose4j.jws.default-allow-none=false"

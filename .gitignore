@@ -29,9 +29,8 @@ apitest/soapui/properties/*.properties
 # temporary test files
 apitest/tempfiles/*
 
-# Loginbuddy
-docker-build/add-ons/web/*
-docker-build/add-ons/local/dev_*
+# local docker files
+docker-build/add-ons/local/
 
 # personal docker-compose file
 docker-compose-sascha.yml

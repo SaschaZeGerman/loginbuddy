@@ -13,7 +13,8 @@
         "client_secret": "myFancyAndSecureClientSecret",
         "client_type": "confidential",
         "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect"
+        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
+        "providers": ["server_loginbuddy", "not_for_public_client"]
       }
     ],
     "providers": [
@@ -29,7 +30,8 @@
         "scope": "openid profile email",
         "response_type": "code",
         "redirect_uri": "https://local.loginbuddy.net/callback"
-      },{
+      },
+      {
         "provider": "not_for_public_client",
         "issuer": "https://not_for_public_client/server",
         "client_id": "not_for_public_client",
@@ -41,7 +43,37 @@
         "scope": "openid profile email",
         "response_type": "code",
         "redirect_uri": "https://not_for_public_client/callback"
-      }
+      },
+      {
+        "provider": "google",
+        "issuer": "https://accounts.google.com",
+        "openid_configuration_uri": "https://accounts.google.com/.well-known/openid-configuration",
+        "client_id": "",
+        "client_secret": "",
+        "response_type": "code",
+        "redirect_uri": "https://local.loginbuddy.net/callback"
+      },
+      {
+        "provider": "github",
+        "issuer": "https://github.com",
+        "client_id": "",
+        "client_secret": "",
+        "authorization_endpoint": "https://github.com/login/oauth/authorize",
+        "token_endpoint": "https://github.com/login/oauth/access_token",
+        "userinfo_endpoint": "https://api.github.com/user",
+        "response_type": "code",
+        "scope": "read:user user:email",
+        "redirect_uri": "https://local.loginbuddy.net/callback",
+        "mappings": {
+          "name": "name",
+          "given_name": "name[0]",
+          "family_name": "name[1]",
+          "picture": "",
+          "email": "login",
+          "email_verified": "asis:true",
+          "provider": "asis:github",
+          "sub": "id"
+        }}
     ]
   }
 }
