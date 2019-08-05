@@ -8,7 +8,7 @@ branches:
   only:
   - master
 before_install:
-- mvn package
+- mvn clean install
 script:
 - docker build --tag saschazegerman/loginbuddy:latest .
 after_success:
