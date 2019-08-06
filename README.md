@@ -33,11 +33,11 @@ I have only used loginbuddy on a MacBook, if you run it on Windows, some instruc
   - this will pull the latest demo image from docker hub
   - this will use ports 80 (http), 443 (https)
 - Open a browser
-  - go to **http://democlient.loginbuddy.net** and follow the prompts
+  - go to **https://democlient.loginbuddy.net** and follow the prompts
 
 The demo simulates a client, a social login provider (called 'fake') and uses loginbuddy!
 
-The last page displays type of message loginbuddy would return to your client.
+The last page displays type of message loginbuddy would return to your client. (the window is very small. Copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
 
 Since the demo uses self-signed certificates, confirm the SSL security screen in your browser.
 
