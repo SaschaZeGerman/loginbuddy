@@ -17,7 +17,7 @@ public class Discovery extends Overlord {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setStatus(200);
     response.setContentType("application/json");
-    response.getWriter().write(oidcConfig.toJSONString());
+    response.getWriter().write(getOpenIdConfigurationString());
   }
 
   @Override

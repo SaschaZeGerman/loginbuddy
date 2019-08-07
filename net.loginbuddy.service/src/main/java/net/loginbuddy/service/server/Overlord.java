@@ -3,6 +3,7 @@ package net.loginbuddy.service.server;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -17,9 +19,29 @@ public class Overlord extends HttpServlet {
 
   private static Logger LOGGER = Logger.getLogger(String.valueOf(Overlord.class));
 
-  protected JSONObject oidcConfig;
-  protected ClientConfig clientConfig;
-  protected String clientType;
+  private JSONObject oidcConfig;
+  ClientConfig clientConfig;
+  String clientType;
+
+  private String jsonArrayToString(JSONArray jsonArray) {
+    StringBuilder sb = new StringBuilder();
+    for(Object o : jsonArray) {
+      sb.append((String)o).append(" ");
+    }
+    return sb.toString().substring(0,sb.toString().length()-1);
+  }
+
+  public String getIssuer() {
+    String issuer = (String) oidcConfig.get(Constants.ISSUER.getKey());
+    if(issuer == null || issuer.trim().length() == 0 ) {
+      throw new IllegalArgumentException("issuer is required in discovery.json");
+    }
+    return (String) oidcConfig.get(Constants.ISSUER.getKey());
+  }
+
+  String getOpenIdConfigurationString() {
+    return oidcConfig.toJSONString();
+  }
 
   @Override
   public void init() throws ServletException {
@@ -37,6 +59,7 @@ public class Overlord extends HttpServlet {
     } catch (Exception e) {
       LOGGER.severe("No discovery document found!");
       e.printStackTrace();
+      throw new IllegalArgumentException("discovery.json could not be found");
     }
   }
 
@@ -61,27 +84,35 @@ public class Overlord extends HttpServlet {
     return true;
   }
 
+  String getResponseTypesSupported() {
+    JSONArray supported = (JSONArray)oidcConfig.get(Discovery.RESPONSE_TYPES_SUPPORTED);
+    if(supported == null || supported.size() == 0) {
+      throw new IllegalArgumentException("supported response types are required in discovery.json");
+    }
+    return jsonArrayToString(supported);
+  }
+
   String getGrantTypesSupported() {
-    String supported = (String)oidcConfig.get(Discovery.GRANT_TYPES_SUPPORTED_OP);
-    if(supported == null || supported.trim().length() == 0) {
+    JSONArray supported = (JSONArray)oidcConfig.get(Discovery.GRANT_TYPES_SUPPORTED_OP);
+    if(supported == null || supported.size() == 0) {
       return Constants.AUTHORIZATION_CODE.getKey();
     }
-    return supported;
+    return jsonArrayToString(supported);
   }
 
   String getTokenEndpointAuthMethodsSupported() {
-    String supported = (String)oidcConfig.get(Discovery.TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED_OP);
-    if(supported == null || supported.trim().length() == 0) {
+    JSONArray supported = (JSONArray)oidcConfig.get(Discovery.TOKEN_ENDPOINT_AUTH_METHODS_SUPPORTED_OP);
+    if(supported == null || supported.size() == 0) {
       return Constants.CLIENT_SECRET_BASIC.getKey() + "," + Constants.CLIENT_SECRET_POST.getKey();
     }
-    return supported;
+    return jsonArrayToString(supported);
   }
 
   String getScopesSupportedSupported() {
-    String supported = (String)oidcConfig.get(Discovery.SCOPES_SUPPORTED_OP);
-    if(supported == null || supported.trim().length() == 0) {
+    JSONArray supported = (JSONArray)oidcConfig.get(Discovery.SCOPES_SUPPORTED_OP);
+    if(supported == null || supported.size() == 0) {
       return Constants.OPENID_SCOPE.getKey();
     }
-    return supported;
+    return jsonArrayToString(supported);
   }
 }

@@ -129,7 +129,7 @@ public class Callback extends Overlord {
       }
 
       ExchangeBean eb = new ExchangeBean();
-      eb.setIss((String) oidcConfig.get(Constants.ISSUER.getKey()));
+      eb.setIss(getIssuer());
       eb.setIat(new Date().getTime() / 1000);
       eb.setAud(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
       eb.setNonce(sessionCtx.getString(Constants.NONCE.getKey()));

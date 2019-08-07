@@ -102,7 +102,7 @@ public class Authorize extends Overlord {
             LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
             response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+response_type+parameter+or+value"));
             return;
-        } else if (Stream.of(((String) oidcConfig.get(Discovery.RESPONSE_TYPES_SUPPORTED)).split("[,; ]")).noneMatch(clientResponseType::equals)) {
+        } else if (Stream.of((getResponseTypesSupported()).split("[,; ]")).noneMatch(clientResponseType::equals)) {
             LOGGER.warning(String.format("The given response_type is not supported: '%s'", clientResponseType));
             response.sendRedirect(clientRedirectUriError.concat(String.format("error=invalid_request&error_description=unsupported+response_type:+%s", URLEncoder.encode(clientResponseType, "UTF-8"))));
             return;
