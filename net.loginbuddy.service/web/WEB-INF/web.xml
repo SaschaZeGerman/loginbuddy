@@ -58,6 +58,10 @@
         <servlet-name>Jwks</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Jwks</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>Userinfo</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Userinfo</servlet-class>
+    </servlet>
 
     <!-- The mapping for the default servlet -->
     <servlet-mapping>
@@ -102,6 +106,10 @@
     <servlet-mapping>
         <servlet-name>Jwks</servlet-name>
         <url-pattern>/jwks</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Userinfo</servlet-name>
+        <url-pattern>/userinfo</url-pattern>
     </servlet-mapping>
 
     <error-page>

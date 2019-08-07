@@ -3,11 +3,13 @@ package net.loginbuddy.service.server;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
@@ -114,5 +116,11 @@ public class Overlord extends HttpServlet {
       return Constants.OPENID_SCOPE.getKey();
     }
     return jsonArrayToString(supported);
+  }
+
+  void notYetImplemented(HttpServletResponse response) throws IOException {
+    response.setStatus(418);
+    response.setContentType("application/json");
+    response.getWriter().write("{\"sorry\":\"not yet implemented\"}");
   }
 }
