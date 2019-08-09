@@ -28,10 +28,6 @@ public class ProviderConfig {
     @JsonIgnore(false)
     private String issuer;
 
-    @JsonProperty("response_type")
-    @JsonIgnore(false)
-    private String responseType;
-
     @JsonProperty("client_id")
     @JsonIgnore(false)
     private String clientId;
@@ -41,7 +37,11 @@ public class ProviderConfig {
     private String redirectUri;
 
     @JsonProperty("client_secret")
+    @JsonIgnore(false)
     private String clientSecret;
+
+    @JsonProperty("response_type")
+    private String responseType;
 
     @JsonProperty("scope")
     private String scope;

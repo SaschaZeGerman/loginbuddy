@@ -17,10 +17,6 @@ public class ClientConfig {
     @JsonIgnore(false)
     private String redirectUri;
 
-    @JsonProperty("client_uri")
-    @JsonIgnore(false)
-    private String clientUri;
-
     @JsonProperty("client_id")
     @JsonIgnore(false)
     private String clientId;
@@ -28,6 +24,9 @@ public class ClientConfig {
     @JsonProperty("client_type")
     @JsonIgnore(false)
     private String clientType;
+
+    @JsonProperty("client_uri")
+    private String clientUri;
 
     @JsonProperty("client_secret")
     private String clientSecret;

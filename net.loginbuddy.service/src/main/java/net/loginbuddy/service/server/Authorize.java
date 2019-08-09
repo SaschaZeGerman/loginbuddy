@@ -132,6 +132,7 @@ public class Authorize extends Overlord {
             return;
         }
 
+        // TODO somehow tie incoming and outgoing SCOPE values together. 'Initialize' uses SCOPEs independent of these ones
         String clientScope = request.getParameter(Constants.SCOPE.getKey());
         if ( (clientScope == null || clientScope.trim().length() == 0) || request.getParameterValues(Constants.SCOPE.getKey()).length > 1) {
             if(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(cc.getClientType())) {
