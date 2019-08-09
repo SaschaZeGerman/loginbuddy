@@ -11,7 +11,6 @@ package net.loginbuddy.service.server;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -45,7 +44,8 @@ public class Authorize extends Overlord {
             return;
         }
 
-        if(!loadClientConfig(clientId)) {
+        ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
+        if(cc == null) {
             LOGGER.warning("An invalid client_id was provided");
             response.sendError(400, "An invalid client_id was provided!");
             return;
@@ -54,13 +54,13 @@ public class Authorize extends Overlord {
         boolean checkRedirectUri = true;
         String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
         if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0) {
-            if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(clientType) || clientConfig.getRedirectUri().split("[,; ]").length > 1) {
+            if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(cc.getClientType()) || cc.getRedirectUri().split("[,; ]").length > 1) {
                 LOGGER.warning("Missing redirect_uri parameter!");
                 response.sendError(400, "Missing redirect_uri parameter!");
                 return;
             } else {
                 // confidential clients only need a registered redirectUri and not need to request it UNLESS multiple ones were registered
-                clientRedirectUri = clientConfig.getRedirectUri();
+                clientRedirectUri = cc.getRedirectUri();
                 checkRedirectUri = false; // it was not given, so no need to check for it at the token endpoint
             }
         }
@@ -69,7 +69,7 @@ public class Authorize extends Overlord {
             response.sendError(400, "Too many redirect_uri parameters given!");
             return;
         }
-        if(Stream.of(clientConfig.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
+        if(Stream.of(cc.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
             LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
             response.sendError(400, String.format("Invalid redirect_uri: %s", clientRedirectUri));
             return;
@@ -102,7 +102,7 @@ public class Authorize extends Overlord {
             LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
             response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+response_type+parameter+or+value"));
             return;
-        } else if (Stream.of((getResponseTypesSupported()).split("[,; ]")).noneMatch(clientResponseType::equals)) {
+        } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getResponseTypesSupported())).noneMatch(clientResponseType::equals)) {
             LOGGER.warning(String.format("The given response_type is not supported: '%s'", clientResponseType));
             response.sendRedirect(clientRedirectUriError.concat(String.format("error=invalid_request&error_description=unsupported+response_type:+%s", URLEncoder.encode(clientResponseType, "UTF-8"))));
             return;
@@ -134,8 +134,8 @@ public class Authorize extends Overlord {
 
         String clientScope = request.getParameter(Constants.SCOPE.getKey());
         if ( (clientScope == null || clientScope.trim().length() == 0) || request.getParameterValues(Constants.SCOPE.getKey()).length > 1) {
-            if(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(clientType)) {
-                clientScope = getScopesSupportedSupported();
+            if(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(cc.getClientType())) {
+                clientScope = LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString();
             } else {
                 LOGGER.warning("Invalid or unsupported scope parameter!");
                 response.sendRedirect(clientRedirectUriError
@@ -144,7 +144,7 @@ public class Authorize extends Overlord {
             }
         }
 
-        Set<String> scopes = new TreeSet<>(Arrays.asList((getScopesSupportedSupported()).split("[,; ]")));
+        Set<String> scopes = new TreeSet<>(Arrays.asList((LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString()).split("[,; ]")));
         scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
         if(scopes.size() == 0) {
             LOGGER.warning("Invalid or unsupported scope!");

@@ -129,7 +129,7 @@ public class Callback extends Overlord {
       }
 
       ExchangeBean eb = new ExchangeBean();
-      eb.setIss(getIssuer());
+      eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
       eb.setIat(new Date().getTime() / 1000);
       eb.setAud(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
       eb.setNonce(sessionCtx.getString(Constants.NONCE.getKey()));

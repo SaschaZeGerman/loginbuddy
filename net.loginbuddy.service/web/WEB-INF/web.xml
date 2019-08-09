@@ -34,6 +34,13 @@
         <load-on-startup>3</load-on-startup>
     </servlet>
 
+    <!-- Load the configuration. No servlet-mapping required -->
+    <servlet>
+        <servlet-name>Bootstrap</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.Overlord</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
     <servlet>
         <servlet-name>Initialize</servlet-name>
         <servlet-class>net.loginbuddy.service.client.Initialize</servlet-class>

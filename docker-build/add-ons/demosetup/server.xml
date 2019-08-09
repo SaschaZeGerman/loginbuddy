@@ -76,6 +76,10 @@
                       type="net.loginbuddy.service.config.ConfigUtil"
                       factory="org.apache.naming.factory.BeanFactory"
                       path="webapps/ROOT/WEB-INF/classes/config.json"/>
+                    <Resource name="bean/DiscoveryUtilFactory" auth="Container"
+                      type="net.loginbuddy.service.config.DiscoveryUtil"
+                      factory="org.apache.naming.factory.BeanFactory"
+                      path="webapps/ROOT/WEB-INF/classes/discovery.json"/>
                     <Resource name="bean/CacheFactory" auth="Container"
                       type="net.loginbuddy.common.cache.DefaultCache"
                       factory="org.apache.naming.factory.BeanFactory"/>

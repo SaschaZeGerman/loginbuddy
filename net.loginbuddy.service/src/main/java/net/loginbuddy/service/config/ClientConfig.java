@@ -8,25 +8,29 @@
 
 package net.loginbuddy.service.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.loginbuddy.common.config.Constants;
 
 public class ClientConfig {
 
     @JsonProperty("redirect_uri")
+    @JsonIgnore(false)
     private String redirectUri;
 
     @JsonProperty("client_uri")
+    @JsonIgnore(false)
     private String clientUri;
 
     @JsonProperty("client_id")
+    @JsonIgnore(false)
     private String clientId;
+
+    @JsonProperty("client_type")
+    @JsonIgnore(false)
+    private String clientType;
 
     @JsonProperty("client_secret")
     private String clientSecret;
-
-    @JsonProperty("client_type")
-    private String clientType;
 
     @JsonProperty("providers")
     private String[] clientProviders;

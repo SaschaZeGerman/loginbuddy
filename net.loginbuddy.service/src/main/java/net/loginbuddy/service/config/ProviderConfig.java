@@ -8,6 +8,7 @@
 
 package net.loginbuddy.service.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.logging.Logger;
@@ -19,18 +20,31 @@ public class ProviderConfig {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProviderConfig.class));
 
+    @JsonProperty("provider")
+    @JsonIgnore(false)
     private String provider;
+
+    @JsonProperty("issuer")
+    @JsonIgnore(false)
     private String issuer;
-    private String scope;
+
+    @JsonProperty("response_type")
+    @JsonIgnore(false)
+    private String responseType;
 
     @JsonProperty("client_id")
+    @JsonIgnore(false)
     private String clientId;
+
+    @JsonProperty("redirect_uri")
+    @JsonIgnore(false)
+    private String redirectUri;
 
     @JsonProperty("client_secret")
     private String clientSecret;
 
-    @JsonProperty("redirect_uri")
-    private String redirectUri;
+    @JsonProperty("scope")
+    private String scope;
 
     @JsonProperty("authorization_endpoint")
     private String authorizationEndpoint;
@@ -46,9 +60,6 @@ public class ProviderConfig {
 
     @JsonProperty("jwks_uri")
     private String jwksUri;
-
-    @JsonProperty("response_type")
-    private String responseType;
 
     @JsonProperty("mappings")
     private JsonNode mappings;

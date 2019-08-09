@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Pkce;
+import net.loginbuddy.service.config.ClientConfig;
+import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
@@ -65,12 +67,10 @@ public class Token extends Overlord {
       }
     }
 
-    // Find the client configuration
-    //
-    if (loadClientConfig(clientId)) {
-
+    ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
+    if(cc != null) {
       // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
-      String supportedMethods = getTokenEndpointAuthMethodsSupported();
+      String supportedMethods = LoginbuddyConfig.getInstance().getDiscoveryUtil().getTokenEndpointAuthMethodsSupportedAsString();
       if (supportedMethods == null) {
         supportedMethods = usedAuthMethod;
       }
@@ -78,7 +78,7 @@ public class Token extends Overlord {
       if (Stream.of((supportedMethods).split("[,; ]")).anyMatch(usedAuthMethod::equalsIgnoreCase)) {
         // Public clients cannot use a Basic authorization header. They miss the 'secret' portion of the string 'client_id:'
         //
-        if (Constants.CLIENT_TYPE_PUBLIC.getKey().equals(clientType) && Constants.CLIENT_SECRET_BASIC.getKey()
+        if (Constants.CLIENT_TYPE_PUBLIC.getKey().equals(cc.getClientType()) && Constants.CLIENT_SECRET_BASIC.getKey()
             .equals(usedAuthMethod)) {
           LOGGER.warning("Unsupported authentication method for public clients was used!");
           resp.put("error", "invalid_request");
@@ -86,7 +86,7 @@ public class Token extends Overlord {
           response.setStatus(400);
           response.getWriter().write(resp.toJSONString());
           return;
-        } else if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equalsIgnoreCase(clientType)) {
+        } else if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equalsIgnoreCase(cc.getClientType())) {
           String clientSecret = Constants.CLIENT_SECRET_POST.getKey().equals(usedAuthMethod) ? request.getParameter(Constants.CLIENT_SECRET.getKey()) : clientCreds.split(":")[1];
           if (clientSecret == null || clientSecret.trim().length() == 0) {
             LOGGER.warning("Missing client_secret");
@@ -95,7 +95,7 @@ public class Token extends Overlord {
             response.setStatus(400);
             response.getWriter().write(resp.toJSONString());
             return;
-          } else if (!clientConfig.getClientSecret().equals(clientSecret)) {
+          } else if (!cc.getClientSecret().equals(clientSecret)) {
             resp.put("error", "invalid_request");
             resp.put("error_description", "Invalid client credentials given");
             response.setStatus(400);
@@ -129,7 +129,7 @@ public class Token extends Overlord {
       response.setStatus(400);
       response.getWriter().write(resp.toJSONString());
       return;
-    } else if (Stream.of((getGrantTypesSupported()).split("[,; ]"))
+    } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getGrantTypesSupported()))
         .noneMatch(grant_type::equals)) {
       LOGGER.warning(String.format("The given grant_type is not supported: '%s'", grant_type));
       resp.put("error", "invalid_request");

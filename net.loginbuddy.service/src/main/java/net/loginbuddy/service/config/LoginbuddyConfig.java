@@ -8,15 +8,16 @@
 
 package net.loginbuddy.service.config;
 
+import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import java.util.logging.Logger;
 
 public class LoginbuddyConfig {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyConfig.class));
 
     private ConfigUtil configUtil;
+    private DiscoveryUtil discoveryUtil;
 
     private static LoginbuddyConfig ourInstance;
 
@@ -32,14 +33,24 @@ public class LoginbuddyConfig {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             configUtil = (ConfigUtil) envCtx.lookup("bean/ConfigUtilFactory");
+            discoveryUtil = (DiscoveryUtil) envCtx.lookup("bean/DiscoveryUtilFactory");
         } catch (Exception e) {
-            LOGGER.severe("LoginbuddyConfiguration could not be loaded!");
+            LOGGER.severe("Loginbuddy configurations could not be loaded!");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Called on bootstrapping Loginbuddy in @see Overlord
+     * @return
+     */
+    public boolean isConfigured() {
+        return configUtil != null && discoveryUtil != null && configUtil.isConfigured() && discoveryUtil.isConfigured();
     }
 
     public ConfigUtil getConfigUtil() {
         return configUtil;
     }
+    public DiscoveryUtil getDiscoveryUtil() { return discoveryUtil; }
 
 }
