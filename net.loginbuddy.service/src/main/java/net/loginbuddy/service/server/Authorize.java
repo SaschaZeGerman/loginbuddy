@@ -164,9 +164,10 @@ public class Authorize extends Overlord {
         LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 
         if ("".equals(clientProvider)) {
-            request.getRequestDispatcher("/iapis/providers.jsp?session=".concat(sessionCtx.getId())).forward(request, response);
+            request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId())).forward(request, response);
         } else {
-            response.sendRedirect("initialize?session=".concat(sessionCtx.getId()).concat("&provider=").concat(URLEncoder.encode(clientProvider, "UTF-8")));
+            String hostname = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer();
+            response.sendRedirect(String.format("%s/initialize?session=%s", hostname,(sessionCtx.getId())));
         }
     }
 }
