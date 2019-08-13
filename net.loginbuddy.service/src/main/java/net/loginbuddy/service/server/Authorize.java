@@ -9,7 +9,6 @@
 package net.loginbuddy.service.server;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -21,6 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.ParameterValidator;
+import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
@@ -29,145 +31,188 @@ import net.loginbuddy.service.util.SessionContext;
 @WebServlet(name = "Authorize")
 public class Authorize extends Overlord {
 
-    private static Logger LOGGER = Logger.getLogger(String.valueOf(Authorize.class));
+  private static Logger LOGGER = Logger.getLogger(String.valueOf(Authorize.class));
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    doGet(request, response);
+  }
+
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+    ParameterValidatorResult clientIdResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+    ParameterValidatorResult clientResponseTypeResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.RESPONSE_TYPE.getKey()));
+    ParameterValidatorResult clientRedirectUriResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.REDIRECT_URI.getKey()));
+    ParameterValidatorResult clientProviderResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()), "");
+    ParameterValidatorResult clientStateResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.STATE.getKey()), "");
+    ParameterValidatorResult clientCodeChallengeResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE.getKey()));
+    ParameterValidatorResult clientCodeChallendeMethodResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()));
+    ParameterValidatorResult scopeResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.SCOPE.getKey()));
+    ParameterValidatorResult clientNonceResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.NONCE.getKey()));
+    ParameterValidatorResult clientPromptResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.PROMPT.getKey()), "");
+    ParameterValidatorResult clientLoginHintResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.LOGIN_HINT.getKey()), "");
+    ParameterValidatorResult clientIdTokenHintResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.ID_TOKEN_HINT.getKey()), "");
+
+    if (!clientIdResult.getResult().equals(RESULT.VALID)) {
+      LOGGER.warning("Missing or invalid or multiple client_id parameters given!");
+      response.sendError(400, "Missing or invalid or multiple client_id parameters given!");
+      return;
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
-        if (clientId == null || clientId.trim().length() == 0 || request.getParameterValues(Constants.CLIENT_ID.getKey()).length > 1) {
-            LOGGER.warning("Missing or invalid client_id parameter!");
-            response.sendError(400, "Missing or invalid client_id parameter!");
-            return;
-        }
-
-        ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
-        if(cc == null) {
-            LOGGER.warning("An invalid client_id was provided");
-            response.sendError(400, "An invalid client_id was provided!");
-            return;
-        }
-
-        boolean checkRedirectUri = true;
-        String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
-        if (clientRedirectUri == null || clientRedirectUri.trim().length() == 0) {
-            if(Constants.CLIENT_TYPE_PUBLIC.getKey().equals(cc.getClientType()) || cc.getRedirectUri().split("[,; ]").length > 1) {
-                LOGGER.warning("Missing redirect_uri parameter!");
-                response.sendError(400, "Missing redirect_uri parameter!");
-                return;
-            } else {
-                // confidential clients only need a registered redirectUri and not need to request it UNLESS multiple ones were registered
-                clientRedirectUri = cc.getRedirectUri();
-                checkRedirectUri = false; // it was not given, so no need to check for it at the token endpoint
-            }
-        }
-        if(request.getParameterValues(Constants.REDIRECT_URI.getKey()) != null && request.getParameterValues(Constants.REDIRECT_URI.getKey()).length > 1) {
-            LOGGER.warning("Too many redirect_uri parameters given!");
-            response.sendError(400, "Too many redirect_uri parameters given!");
-            return;
-        }
-        if(Stream.of(cc.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
-            LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
-            response.sendError(400, String.format("Invalid redirect_uri: %s", clientRedirectUri));
-            return;
-        }
-
-        String clientRedirectUriError;
-        if (clientRedirectUri.contains("?")) {
-            clientRedirectUriError = clientRedirectUri.concat("&");
-
-        } else {
-            clientRedirectUriError = clientRedirectUri.concat("?");
-        }
-
-        String clientState = request.getParameter(Constants.STATE.getKey());
-        if (clientState == null || clientState.trim().length() == 0) {
-            LOGGER.info("No state parameter received!");
-            clientState = "";
-        }
-        if (request.getParameterValues(Constants.STATE.getKey()) != null && request.getParameterValues(Constants.STATE.getKey()).length > 1) {
-            LOGGER.warning("Multiple state parameters received!");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=multiple+state+parameters+received"));
-            return;
-        }
-
-        clientRedirectUriError = "".equals(clientState) ? clientRedirectUriError : clientRedirectUriError.concat("state=").concat(clientState).concat("&");
-
-        String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
-        if (clientResponseType == null || clientResponseType.trim().length() == 0
-            || request.getParameterValues(Constants.RESPONSE_TYPE.getKey()).length > 1) {
-            LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+response_type+parameter+or+value"));
-            return;
-        } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getResponseTypesSupported())).noneMatch(clientResponseType::equals)) {
-            LOGGER.warning(String.format("The given response_type is not supported: '%s'", clientResponseType));
-            response.sendRedirect(clientRedirectUriError.concat(String.format("error=invalid_request&error_description=unsupported+response_type:+%s", URLEncoder.encode(clientResponseType, "UTF-8"))));
-            return;
-        }
-
-        String clientProvider = request.getParameter(Constants.PROVIDER.getKey());
-        if (clientProvider != null && request.getParameterValues("provider").length > 1) {
-            LOGGER.warning("Invalid provider parameter!");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+provider+parameter"));
-            return;
-        }
-        if (clientProvider == null || clientProvider.trim().length() == 0) {
-            clientProvider = "";
-        }
-
-        String clientCodeChallenge = request.getParameter(Constants.CODE_CHALLENGE.getKey());
-        if (clientCodeChallenge != null && (request.getParameterValues(Constants.CODE_CHALLENGE.getKey()).length > 1 || !Pkce.verifyChallenge(clientCodeChallenge))) {
-            LOGGER.warning("Invalid code_challenge!");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+code_challenge"));
-            return;
-        }
-
-        String clientCodeChallengeMethod = request.getParameter(Constants.CODE_CHALLENGE_METHOD.getKey());
-        if ( (clientCodeChallengeMethod != null && request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()).length > 1) || Pkce.CODE_CHALLENGE_METHOD_PLAIN.equals(clientCodeChallengeMethod)) {
-            LOGGER.warning("Invalid or unsupported code_challenge_method parameter or value!");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+code_challenge_method+parameter+or+value"));
-            return;
-        }
-
-        // TODO somehow tie incoming and outgoing SCOPE values together. 'Initialize' uses SCOPEs independent of these ones
-        String clientScope = request.getParameter(Constants.SCOPE.getKey());
-        if ( (clientScope == null || clientScope.trim().length() == 0) || request.getParameterValues(Constants.SCOPE.getKey()).length > 1) {
-            if(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(cc.getClientType())) {
-                clientScope = LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString();
-            } else {
-                LOGGER.warning("Invalid or unsupported scope parameter!");
-                response.sendRedirect(clientRedirectUriError
-                    .concat("error=invalid_request&error_description=invalid+or+unsupported+scope+parameter"));
-                return;
-            }
-        }
-
-        Set<String> scopes = new TreeSet<>(Arrays.asList((LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString()).split("[,; ]")));
-        scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
-        if(scopes.size() == 0) {
-            LOGGER.warning("Invalid or unsupported scope!");
-            response.sendRedirect(clientRedirectUriError.concat("error=invalid_request&error_description=invalid+or+unsupported+scope+value"));
-            return;
-        }
-
-        String clientNonce = request.getParameter(Constants.NONCE.getKey());
-        String clientPrompt = request.getParameter(Constants.PROMPT.getKey());
-        String clientLoginHint = request.getParameter(Constants.LOGIN_HINT.getKey());
-        String clientIdTokenHint = request.getParameter(Constants.ID_TOKEN_HINT.getKey());
-
-        SessionContext sessionCtx = new SessionContext();
-        sessionCtx.sessionInit(clientId, clientScope, clientResponseType, clientCodeChallenge, clientCodeChallengeMethod, clientRedirectUri, clientNonce, clientState, clientProvider, clientPrompt, clientLoginHint, clientIdTokenHint, checkRedirectUri);
-
-        LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
-
-        if ("".equals(clientProvider)) {
-            request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId())).forward(request, response);
-        } else {
-            String hostname = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer();
-            response.sendRedirect(String.format("%s/initialize?session=%s", hostname,(sessionCtx.getId())));
-        }
+    ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil()
+        .getClientConfigByClientId(clientIdResult.getValue());
+    if (cc == null) {
+      LOGGER.warning("An invalid client_id was provided");
+      response.sendError(400, "An invalid client_id was provided!");
+      return;
     }
+
+    if (clientRedirectUriResult.getResult().equals(RESULT.MULTIPLE)) {
+      LOGGER.warning("Too many redirect_uri parameters given!");
+      response.sendError(400, "Too many redirect_uri parameters given!");
+      return;
+    }
+
+    boolean checkRedirectUri = true;
+    String clientRedirectUri = clientRedirectUriResult.getValue();
+    if (clientRedirectUri == null) {
+      if (Constants.CLIENT_TYPE_PUBLIC.getKey().equals(cc.getClientType())) {
+        LOGGER.warning("Missing redirect_uri parameter!");
+        response.sendError(400, "Missing redirect_uri parameter!");
+        return;
+      } else if (cc.getRedirectUri().split("[,; ]").length != 1) {
+        LOGGER.warning("Missing redirect_uri parameter!");
+        response.sendError(400, "Missing redirect_uri parameter!");
+        return;
+      } else {
+        // confidential clients only need a registered redirectUri and not need to request it UNLESS multiple ones were registered
+        clientRedirectUri = cc.getRedirectUri();
+        checkRedirectUri = false; // it was not given, so no need to check for it at the token endpoint
+      }
+    }
+    if (Stream.of(cc.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
+      LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
+      response.sendError(400, String.format("Invalid redirect_uri: %s", clientRedirectUri));
+      return;
+    }
+
+    //
+    // As of here we can return errors to the clients redirect_uri
+    //
+
+    String clientRedirectUriValid;
+    if (clientRedirectUri.contains("?")) {
+      clientRedirectUriValid = clientRedirectUri.concat("&");
+    } else {
+      clientRedirectUriValid = clientRedirectUri.concat("?");
+    }
+
+    if (clientStateResult.getResult().equals(RESULT.MULTIPLE)) {
+      LOGGER.warning("Multiple state parameters received!");
+      response.sendRedirect(
+          getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple state parameters received"));
+      return;
+    }
+
+    clientRedirectUriValid = "".equals(clientStateResult.getValue()) ? clientRedirectUriValid
+        : clientRedirectUriValid.concat("state=").concat(clientStateResult.getValue()).concat("&");
+
+    if (!clientResponseTypeResult.getResult().equals(RESULT.VALID)) {
+      LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
+      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request",
+          "invalid or unsupported response_type parameter or value"));
+      return;
+    } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getResponseTypesSupported()))
+        .noneMatch(clientResponseTypeResult.getValue()::equals)) {
+      LOGGER.warning(
+          String.format("The given response_type is not supported: %s", clientResponseTypeResult.getValue()));
+      response.sendRedirect(
+          getErrorForRedirect(clientRedirectUriValid, "invalid_request", String.format("unsupported response_type: %s", clientResponseTypeResult.getValue())));
+      return;
+    }
+
+    if (clientProviderResult.getResult().equals(RESULT.MULTIPLE)) {
+      LOGGER.warning("Multiple provider parameter!");
+      response
+          .sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple provider parameter"));
+      return;
+    }
+
+    if (clientCodeChallengeResult.getResult().equals(RESULT.MULTIPLE)) {
+      LOGGER.warning("Multiple code_challenge parameters found!");
+      response.sendRedirect(
+          getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple code_challenge parameters found"));
+      return;
+    }
+    if (clientCodeChallengeResult.getResult().equals(RESULT.VALID) && !Pkce
+        .verifyChallenge(clientCodeChallengeResult.getValue())) {
+      LOGGER.warning("Invalid code_challenge!");
+      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid code_challenge"));
+      return;
+    }
+
+    if (clientCodeChallendeMethodResult.getResult().equals(RESULT.MULTIPLE)) {
+      LOGGER.warning("Multiple code_challenge_method parameters found!");
+      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request",
+          "multiple code_challenge_method parameters found!"));
+      return;
+    }
+
+    if (clientCodeChallendeMethodResult.getResult().equals(RESULT.VALID) && !Pkce.CODE_CHALLENGE_METHOD_S256
+        .equals(clientCodeChallendeMethodResult.getValue())) {
+      LOGGER.warning("Unsupported code_challenge_method parameter!");
+      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request",
+          "unsupported code_challenge_method parameter"));
+      return;
+    }
+
+    // TODO somehow tie incoming and outgoing SCOPE values together. 'Initialize' uses SCOPEs independent of these ones
+    String clientScope = scopeResult.getValue();
+    if (clientScope == null) {
+      if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(cc.getClientType())) {
+        clientScope = LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString();
+      } else {
+        LOGGER.warning("Invalid or unsupported scope parameter!");
+        response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope parameter"));
+        return;
+      }
+    }
+
+    Set<String> scopes = new TreeSet<>(
+        Arrays.asList((LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString()).split("[,; ]")));
+    scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
+    if (scopes.size() == 0) {
+      LOGGER.warning("Invalid or unsupported scope!");
+      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope value"));
+      return;
+    }
+
+    SessionContext sessionCtx = new SessionContext();
+    sessionCtx.setSessionInit(clientIdResult.getValue(), clientScope, clientResponseTypeResult.getValue(),
+        clientCodeChallengeResult.getValue(), clientCodeChallendeMethodResult.getValue(),
+        clientRedirectUri, clientNonceResult.getValue(), clientStateResult.getValue(), clientProviderResult.getValue(),
+        clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
+        checkRedirectUri, clientRedirectUriValid);
+
+    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
+
+    if ("".equals(clientProviderResult.getValue())) {
+      request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
+          .forward(request, response);
+    } else {
+      String hostname = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer();
+      response.sendRedirect(String.format("%s/initialize?session=%s", hostname, (sessionCtx.getId())));
+    }
+  }
 }

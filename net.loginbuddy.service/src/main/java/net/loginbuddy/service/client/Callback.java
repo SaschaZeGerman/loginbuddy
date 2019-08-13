@@ -9,8 +9,6 @@
 package net.loginbuddy.service.client;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +24,9 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.MsgResponse;
+import net.loginbuddy.common.util.ParameterValidator;
+import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.server.Overlord;
@@ -34,7 +35,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -58,18 +58,32 @@ public class Callback extends Overlord {
 
     try {
 
-      String sessionId = request.getParameter(Constants.STATE.getKey());
-      if (sessionId == null || sessionId.trim().length() == 0
-          || request.getParameterValues(Constants.STATE.getKey()).length > 1) {
+      ParameterValidatorResult sessionIdResult = ParameterValidator
+          .getSingleValue(request.getParameterValues(Constants.STATE.getKey()));
+      ParameterValidatorResult codeResult = ParameterValidator
+          .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
+      ParameterValidatorResult errorResult = ParameterValidator
+          .getSingleValue(request.getParameterValues(Constants.ERROR.getKey()));
+      ParameterValidatorResult errorDescriptionResult = ParameterValidator
+          .getSingleValue(request.getParameterValues(Constants.ERROR_DESCRIPTION.getKey()), "");
+
+      if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing or invalid state parameter returned from provider!");
         response.sendError(400, "Missing or invalid state parameter");
         return;
       }
 
-      SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionId);
-      if (sessionCtx == null || !sessionId.equals(sessionCtx.getId())) {
-        LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionId + "'");
+      SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionIdResult.getValue());
+      if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
+        LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
         response.sendError(400, "The current session is invalid or it has expired!");
+        return;
+      }
+
+      if (errorResult.getValue() != null) {
+        response.sendRedirect(
+            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(),
+                errorDescriptionResult.getValue()));
         return;
       }
 
@@ -77,34 +91,17 @@ public class Callback extends Overlord {
         LOGGER.warning(
             "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                 + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-        response.sendError(400, "The current action was not expected!");
+        response.sendRedirect(
+            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
+                "the request was not expected"));
         return;
       }
 
-      String clientRedirectUri = sessionCtx.getString(Constants.CLIENT_REDIRECT.getKey());
-      if (clientRedirectUri.contains("?")) {
-        clientRedirectUri = clientRedirectUri.concat("&");
-
-      } else {
-        clientRedirectUri = clientRedirectUri.concat("?");
-      }
-      String clientState = sessionCtx.getString(Constants.CLIENT_STATE.getKey());
-
-      String error = request.getParameter(Constants.ERROR.getKey());
-      String errorDescription = null;
-      if (error != null) {
-        errorDescription = request.getParameter("error_description");
-        clientRedirectUri = getErrorForRedirect(clientRedirectUri, clientState, error, errorDescription);
-        response.sendRedirect(clientRedirectUri);
-        return;
-      }
-
-      String providersAuthCode = request.getParameter(Constants.CODE.getKey());
-      if (providersAuthCode == null || providersAuthCode.trim().length() == 0
-          || request.getParameterValues(Constants.CODE.getKey()).length > 1) {
-        clientRedirectUri = clientRedirectUri
-            .concat("error=invalid_request&error_description=Missing+or+invalid+code+parameter");
-        response.sendRedirect(clientRedirectUri);
+      if (!codeResult.getResult().equals(RESULT.VALID)) {
+        LOGGER.warning("Missing code parameter returned from provider!");
+        response.sendRedirect(
+            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
+                "missing or invalid code parameter"));
         return;
       }
 
@@ -113,20 +110,6 @@ public class Callback extends Overlord {
 
       ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
           .getProviderConfigByProvider(provider);
-
-      String tokenEndpoint = null;
-      String userInfoEndpoint = null;
-      String jwksUri = null;
-
-      if (providerConfig.getOpenidConfigurationUri() != null) {
-        tokenEndpoint = sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey());
-        userInfoEndpoint = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
-        jwksUri = sessionCtx.getString(Constants.JWKS_URI.getKey());
-      } else {
-        tokenEndpoint = providerConfig.getTokenEndpoint();
-        userInfoEndpoint = providerConfig.getUserinfoEndpoint();
-        jwksUri = providerConfig.getJwksUri();
-      }
 
       ExchangeBean eb = new ExchangeBean();
       eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
@@ -139,7 +122,8 @@ public class Callback extends Overlord {
       String id_token = null;
 
       MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
-          providerConfig.getRedirectUri(), providersAuthCode, tokenEndpoint, code_verifier);
+          providerConfig.getRedirectUri(), codeResult.getValue(),
+          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), code_verifier);
       if (tokenResponse != null) {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
@@ -149,7 +133,7 @@ public class Callback extends Overlord {
             eb.setTokenResponse(tokenResponseObject);
             try {
               id_token = tokenResponseObject.get("id_token").toString();
-              MsgResponse jwks = getAPI(jwksUri);
+              MsgResponse jwks = getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
               JSONObject idTokenPayload = new Jwt()
                   .validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(),
                       sessionCtx.getString(Constants.NONCE.getKey()));
@@ -162,78 +146,79 @@ public class Callback extends Overlord {
           // need to handle error cases
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-            error = (String) err.get("error");
-            errorDescription = (String) err.get("error_description");
-            clientRedirectUri = getErrorForRedirect(clientRedirectUri, clientState, error, errorDescription);
-            response.sendRedirect(clientRedirectUri);
+            response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
+                (String) err.get("error"),
+                (String) err.get("error_description")));
             return;
           }
         }
       } else {
-        clientRedirectUri = clientRedirectUri.concat(
-            "error=invalid_request&error_description=The+code+exchange+failed.+An+access_token+could+not+be+retrieved");
-        response.sendRedirect(clientRedirectUri);
+        response.sendRedirect(
+            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
+                "the code exchange failed. An access_token could not be retrieved"));
         return;
       }
 
-        MsgResponse userinfoResp = getProtectedAPI(access_token, userInfoEndpoint);
-        if (userinfoResp != null) {
-          if (userinfoResp.getStatus() == 200) {
-            if (userinfoResp.getContentType().startsWith("application/json")) {
-              JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
-              eb.setUserinfo(userinfoRespObject);
-              eb.setNormalized(normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
-            }
+      MsgResponse userinfoResp = getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
+      if (userinfoResp != null) {
+        if (userinfoResp.getStatus() == 200) {
+          if (userinfoResp.getContentType().startsWith("application/json")) {
+            JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
+            eb.setUserinfo(userinfoRespObject);
+            eb.setNormalized(normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
           }
         }
+      }
 
       String authorizationCode = UUID.randomUUID().toString();
       sessionCtx.put("eb", eb.toString());
       sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
       LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx);
 
-      clientRedirectUri = clientState == null ? clientRedirectUri.concat("code=").concat(authorizationCode) : clientRedirectUri.concat("code=").concat(authorizationCode).concat("&state=").concat(clientState);
-      response.sendRedirect(clientRedirectUri);
+      response.sendRedirect(
+          getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "code",
+              authorizationCode));
 
     } catch (Exception e) {
       LOGGER.warning("authorization request failed!");
       e.printStackTrace();
-      response.getWriter().println("authorization request failed!");
+      response.sendError(400, "authorization request failed!");
     }
   }
 
   /**
-   * Mappings attributes so that receiving clients can expect the same details at the same location in the response message
-   * @param mappings
-   * @param userinfoRespObject
-   * @return
+   * Mappings attributes so that receiving clients can expect the same details at the same location in the response
+   * message
    */
   private JSONObject normalizeDetails(String provider, JSONObject mappings, JSONObject userinfoRespObject) {
     JSONObject result = new JSONObject();
     try {
-      mappings = (mappings == null || mappings.size() == 0) ? (JSONObject)new JSONParser().parse(Constants.MAPPING_OIDC.getKey().replace("asis:provider", "asis:"+provider)) : mappings;
+      mappings = (mappings == null || mappings.size() == 0) ? (JSONObject) new JSONParser()
+          .parse(Constants.MAPPING_OIDC.getKey().replace("asis:provider", "asis:" + provider)) : mappings;
     } catch (ParseException e) {
       // should not occur!
-      LOGGER.severe("The default mapping for OpenID Connect claims is invalid! Continuing as if nothing has happened ... .");
+      LOGGER.severe(
+          "The default mapping for OpenID Connect claims is invalid! Continuing as if nothing has happened ... .");
     }
-    if(userinfoRespObject != null && userinfoRespObject.size() > 0) {
-      for(Object nextEntry : mappings.entrySet()) {
-        Map.Entry entry = (Entry)nextEntry;
-        String mappingKey = (String)entry.getKey();
-        String mappingRule = (String)entry.getValue();
+    if (userinfoRespObject != null && userinfoRespObject.size() > 0) {
+      for (Object nextEntry : mappings.entrySet()) {
+        Map.Entry entry = (Entry) nextEntry;
+        String mappingKey = (String) entry.getKey();
+        String mappingRule = (String) entry.getValue();
         String outputValue = "";
-        if(mappingRule.contains("[")) {
-          String userinfoClaim = (String)userinfoRespObject.get(mappingRule.substring(0, mappingRule.indexOf("[")));
-          int idx = Integer.parseInt(Character.toString(mappingRule.charAt(mappingRule.indexOf("[")+1)));
+        if (mappingRule.contains("[")) {
+          String userinfoClaim = (String) userinfoRespObject.get(mappingRule.substring(0, mappingRule.indexOf("[")));
+          int idx = Integer.parseInt(Character.toString(mappingRule.charAt(mappingRule.indexOf("[") + 1)));
           try {
             outputValue = userinfoClaim.split(" ")[idx];
-          } catch(Exception e) {
-            LOGGER.warning(String.format("invalid indexed mapping: 'mappings.%s' --> 'userinfo.%s': invalid index: %s",mappingKey, mappingRule, e.getMessage()));
+          } catch (Exception e) {
+            LOGGER.warning(String
+                .format("invalid indexed mapping: 'mappings.%s' --> 'userinfo.%s': invalid index: %s", mappingKey,
+                    mappingRule, e.getMessage()));
           }
-        } else if(mappingRule.startsWith("asis:")) {
+        } else if (mappingRule.startsWith("asis:")) {
           outputValue = mappingRule.substring(5);
-        }
-        else if(mappingRule.trim().length() > 0){
+        } else if (mappingRule.trim().length() > 0) {
           Object value = userinfoRespObject.get(mappingRule);
           outputValue = value == null ? "" : String.valueOf(value);
         }
@@ -241,23 +226,6 @@ public class Callback extends Overlord {
       }
     }
     return result;
-  }
-
-  private String getErrorForRedirect(String clientRedirectUri, String clientState, String error,
-      String errorDescription) throws UnsupportedEncodingException {
-    if (errorDescription == null) {
-      errorDescription = "An error was returned by the provider without any description";
-    }
-    error = URLEncoder.encode(error, "UTF-8");
-    errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
-
-    if (clientState != null) {
-      return clientRedirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription)
-          .concat("&state=").concat(clientState);
-    } else {
-      return clientRedirectUri.concat("error=").concat(error).concat("&error_description=")
-          .concat(errorDescription);
-    }
   }
 
   private MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode,
@@ -288,36 +256,4 @@ public class Callback extends Overlord {
       return null;
     }
   }
-
-  private MsgResponse getProtectedAPI(String accessToken, String targetApi) {
-    try {
-      HttpGet req = new HttpGet(targetApi);
-      HttpClient httpClient = HttpClientBuilder.create().build();
-      req.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BEARER.getKey() + accessToken);
-
-      HttpResponse response = httpClient.execute(req);
-      return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
-          EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
-    } catch (Exception e) {
-      LOGGER.warning("Call to targetApi failed!"); // TODO return error
-      e.printStackTrace();
-      return null;
-    }
-  }
-
-  private MsgResponse getAPI(String targetApi) {
-    try {
-      HttpGet req = new HttpGet(targetApi);
-      HttpClient httpClient = HttpClientBuilder.create().build();
-
-      HttpResponse response = httpClient.execute(req);
-      return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
-          EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
-    } catch (Exception e) {
-      LOGGER.warning("The API response could not be retrieved. Given URL: '" + targetApi + "'"); // TODO return error
-      e.printStackTrace();
-      return null;
-    }
-  }
-
 }

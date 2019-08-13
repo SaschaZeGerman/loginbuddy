@@ -60,6 +60,7 @@ public enum Constants {
     // references client (application) values
     CLIENT_STATE("clientState"),
     CLIENT_REDIRECT("clientRedirectUri"),
+    CLIENT_REDIRECT_VALID("clientRedirectUriValid"),
     CLIENT_CODE_CHALLENGE("clientCodeChallenge"),
     CLIENT_CODE_CHALLENGE_METHOD("clientCodeChallengeMethod"),
     CLIENT_PROVIDER("clientProvider"),
