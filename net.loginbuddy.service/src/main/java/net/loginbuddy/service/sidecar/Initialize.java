@@ -6,12 +6,12 @@
  *
  */
 
-package net.loginbuddy.service.client;
+package net.loginbuddy.service.sidecar;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.logging.Logger;
-import javax.servlet.annotation.WebServlet;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
@@ -19,91 +19,51 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.PkcePair;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.server.Overlord;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-@WebServlet(name = "Initialize")
-public class Initialize extends Overlord {
+/**
+ * This class accepts connections only from localhost. The intention is easy access if loginbuddy is used as a sidecar
+ * deployment where it becomes part of the actual webapplication. This setup makes it possible to run loginbuddy
+ * transparent to the outside world. At the same time, its external API are still available if necessary.
+ */
+public class Initialize extends SidecarMaster {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
 
-  // initiate authorization flow with provider
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    doPost(request, response);
-  }
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    super.doGet(request, response);
 
-  @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-    ParameterValidatorResult sessionIdResult = ParameterValidator
-        .getSingleValue(request.getParameterValues(Constants.SESSION.getKey()));
     ParameterValidatorResult providerResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
+    ParameterValidatorResult nonceResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.NONCE.getKey()));
+    ParameterValidatorResult stateResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.STATE.getKey()));
+    ParameterValidatorResult promptResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.PROMPT.getKey()), "");
+    ParameterValidatorResult idTokenHintResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.ID_TOKEN_HINT.getKey()), "");
+    ParameterValidatorResult loginHintResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.LOGIN_HINT.getKey()), "");
 
-    if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
-      LOGGER.warning("Missing session, cannot initiate the authorization flow!");
-      response.sendError(400, "Missing session, cannot initiate the authorization flow!");
-      return;
-    }
+    SessionContext sessionCtx = new SessionContext();
 
-    SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(sessionIdResult.getValue());
-    if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
-      LOGGER.warning("The current session is invalid or it has expired!");
-      response.sendError(400, "The current session is invalid or it has expired!");
-      return;
-    }
-
-    if (!Constants.ACTION_INITIALIZE.getKey().equals(sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()))) {
-      LOGGER.warning(
-          "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
-              + "', expected: '" + Constants.ACTION_INITIALIZE.getKey() + "'");
-      response.sendRedirect(
-          getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
-              "the request was not expected"));
-      return;
-    }
-
-    String providerSession = (sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey())).trim();
-    if ("".equals(providerSession)) {
-      if (providerResult.getResult().equals(RESULT.VALID)) {
-        providerSession = providerResult.getValue();
-      } else {
-        LOGGER.warning("No provider has been selected or an invalid parameters has been given");
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
-                "No provider has been selected or an invalid parameters has been given"));
-        return;
-      }
-    }
-
-    // TODO Verify that the selected provider is valid for this client
     ProviderConfig providerConfig = null;
     try {
-      providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(providerSession);
-      if (providerConfig != null) {
-        sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), providerSession);
-      } else {
-        LOGGER.warning("The given provider is unknown or invalid");
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
-                "The given provider is unknown or invalid"));
-        return;
-      }
+      providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
+          .getProviderConfigByProvider(providerResult.getValue());
     } catch (Exception e) {
       // should never occur
-      LOGGER.severe("The system has not been configured yet!");
-      response.sendRedirect(
-          getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "server_error",
-              "The system has not been configured yet!"));
+      LOGGER.severe("The system has not been configured yet");
+      response.getWriter().write(getErrorAsJson("invalid_system", "system not configured yet").toJSONString());
       return;
     }
 
@@ -120,9 +80,8 @@ public class Initialize extends Overlord {
         } catch (ParseException e) {
           // should never happen
           LOGGER.warning("For some unknown reason the OpenID Configuration could not be parsed as JSON object!");
-          response.sendRedirect(
-              getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "message_error",
-                  "The OpenID Configuration could not be parsed!"));
+          response.getWriter().write(getErrorAsJson("invalid_target",
+              "For some unknown reason the OpenID Configuration could not be parsed as JSON object").toJSONString());
           return;
         }
         authorizeUrl.append(msg.get(Constants.AUTHORIZATION_ENDPOINT.getKey()).toString());
@@ -130,10 +89,11 @@ public class Initialize extends Overlord {
         sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), msg.get(Constants.USERINFO_ENDPOINT.getKey()).toString());
         sessionCtx.put(Constants.JWKS_URI.getKey(), msg.get(Constants.JWKS_URI.getKey()).toString());
       } else {
-        LOGGER.warning(String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl));
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "message_error",
-                "The OpenID Configuration could not be retrieved!"));
+        LOGGER.warning(
+            String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl));
+        response.getWriter().write(getErrorAsJson("invalid_target",
+            String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl))
+            .toJSONString());
         return;
       }
     } else {
@@ -148,6 +108,22 @@ public class Initialize extends Overlord {
     sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
 
     String scope = providerConfig.getScope() == null ? Constants.OPENID_SCOPE.getKey() : providerConfig.getScope();
+
+    sessionCtx.setSessionInit(
+        providerConfig.getClientId(),
+        scope,
+        providerConfig.getResponseType(),
+        pair.getChallenge(),
+        "S256",
+        "",
+        nonceResult.getValue(),
+        stateResult.getValue(),
+        providerResult.getValue(),
+        promptResult.getValue(),
+        loginHintResult.getValue(),
+        idTokenHintResult.getValue(),
+        false,
+        "");
 
     authorizeUrl.append("?")
         .append(Constants.CLIENT_ID.getKey())
@@ -164,11 +140,11 @@ public class Initialize extends Overlord {
         .append(pair.getChallenge()) // won't produce null unless we ask for method=plain which we do not do
         .append("&").append(Constants.CODE_CHALLENGE_METHOD.getKey()).append("=S256")
         .append("&").append(Constants.PROMPT.getKey()).append("=")
-        .append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
+        .append(URLEncoder.encode(promptResult.getValue(), "utf-8"))
         .append("&").append(Constants.LOGIN_HINT.getKey()).append("=")
-        .append(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()))
+        .append(URLEncoder.encode(loginHintResult.getValue(), "utf-8"))
         .append("&").append(Constants.ID_TOKEN_HINT.getKey()).append("=")
-        .append(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()))
+        .append(URLEncoder.encode(idTokenHintResult.getValue(), "utf-8"))
         .append("&").append(Constants.STATE.getKey())
         .append("=").append(sessionCtx.getId());
 
@@ -176,7 +152,8 @@ public class Initialize extends Overlord {
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 
-    response.sendRedirect(authorizeUrl.toString());
-
+    response.setStatus(201);
+    response.setContentType("text/plain");
+    response.addHeader("Location", authorizeUrl.toString());
   }
 }

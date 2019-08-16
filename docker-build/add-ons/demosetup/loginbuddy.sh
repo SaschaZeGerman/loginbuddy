@@ -4,13 +4,9 @@
 # For development purposes, this script generates a private key on the fly.
 # SNI (Server Name Indication) is used to lookup the matching certificate (private key), simulating different servers.
 
-# Create a directory for ssl certificates
-#
-mkdir /usr/local/tomcat/ssl
-
 # Create private key
 
-# Key for demosetup:
+# Keys for demosetup:
 #
 keytool -genkey -alias demosetup -keystore /usr/local/tomcat/ssl/demosetup.p12 -storetype PKCS12 -keyalg RSA -storepass changeit -keypass changeit -validity 1 -keysize 2048 -dname "CN=local.loginbuddy.net" -ext san=dns:demoserver.loginbuddy.net,dns:democlient.loginbuddy.net
 

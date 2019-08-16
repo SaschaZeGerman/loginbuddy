@@ -69,6 +69,15 @@
         <servlet-name>Userinfo</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Userinfo</servlet-class>
     </servlet>
+    <!-- sidecar resources -->
+    <servlet>
+        <servlet-name>SidecarInitialize</servlet-name>
+        <servlet-class>net.loginbuddy.service.sidecar.Initialize</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SidecarCallback</servlet-name>
+        <servlet-class>net.loginbuddy.service.sidecar.Callback</servlet-class>
+    </servlet>
 
     <!-- The mapping for the default servlet -->
     <servlet-mapping>
@@ -117,6 +126,16 @@
     <servlet-mapping>
         <servlet-name>Userinfo</servlet-name>
         <url-pattern>/userinfo</url-pattern>
+    </servlet-mapping>
+
+    <!-- sidecar resources -->
+    <servlet-mapping>
+        <servlet-name>SidecarInitialize</servlet-name>
+        <url-pattern>/sidecar/initialize</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SidecarCallback</servlet-name>
+        <url-pattern>/sidecar/callback</url-pattern>
     </servlet-mapping>
 
     <error-page>

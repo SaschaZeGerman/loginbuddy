@@ -73,7 +73,8 @@
           "email_verified": "asis:true",
           "provider": "asis:github",
           "sub": "id"
-        }}
+        }
+      }
     ]
   }
 }

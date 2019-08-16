@@ -10,6 +10,24 @@ public class SessionContext extends LoginbuddyContext {
     super();
   }
 
+  /**
+   *
+   * @param clientId
+   * @param scope
+   * @param response_type
+   * @param code_challenge
+   * @param code_challenge_method
+   * @param redirectUri
+   * @param nonce
+   * @param state
+   * @param provider
+   * @param prompt
+   * @param loginHint
+   * @param idtokenHint
+   * @param checkRedirectUri
+   * @param redirectUriValid
+   * @return the used or generated 'nonce' value
+   */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
       String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid) {

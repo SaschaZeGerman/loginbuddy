@@ -1,20 +1,7 @@
-/*
- * Copyright (c) 2018. . All rights reserved.
- *
- * This software may be modified and distributed under the terms of the Apache License 2.0 license.
- * See http://www.apache.org/licenses/LICENSE-2.0 for details.
- *
- */
-
-package net.loginbuddy.service.client;
+package net.loginbuddy.service.sidecar;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,33 +16,17 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.server.Overlord;
 import net.loginbuddy.service.util.SessionContext;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-
-public class Callback extends Overlord {
+public class Callback extends SidecarMaster {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    doGet(req, resp);
-  }
-
-  @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    super.doGet(request, response);
     try {
 
       ParameterValidatorResult sessionIdResult = ParameterValidator
@@ -69,21 +40,23 @@ public class Callback extends Overlord {
 
       if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing or invalid state parameter returned from provider!");
-        response.sendError(400, "Missing or invalid state parameter");
+        response.getWriter().write(
+            getErrorAsJson("invalid_response", "Missing or invalid state parameter returned from provider")
+                .toJSONString());
         return;
       }
 
       SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionIdResult.getValue());
       if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
         LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
-        response.sendError(400, "The current session is invalid or it has expired!");
+        response.getWriter().write(
+            getErrorAsJson("invalid_session", "the current session is invalid or it has expired").toJSONString());
         return;
       }
 
       if (errorResult.getValue() != null) {
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(),
-                errorDescriptionResult.getValue()));
+        response.getWriter()
+            .write(getErrorAsJson(errorResult.getValue(), errorDescriptionResult.getValue()).toJSONString());
         return;
       }
 
@@ -91,17 +64,14 @@ public class Callback extends Overlord {
         LOGGER.warning(
             "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                 + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
-                "the request was not expected"));
+        response.getWriter().write(getErrorAsJson("invalid_session", "the request was not expected").toJSONString());
         return;
       }
 
       if (!codeResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing code parameter returned from provider!");
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
-                "missing or invalid code parameter"));
+        response.getWriter()
+            .write(getErrorAsJson("invalid_session", "missing or invalid code parameter").toJSONString());
         return;
       }
 
@@ -146,16 +116,15 @@ public class Callback extends Overlord {
           // need to handle error cases
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-            response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
-                (String) err.get("error"),
-                (String) err.get("error_description")));
+            response.getWriter()
+                .write(getErrorAsJson((String) err.get("error"), (String) err.get("error_description")).toJSONString());
             return;
           }
         }
       } else {
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
-                "the code exchange failed. An access_token could not be retrieved"));
+        response.getWriter().write(
+            getErrorAsJson("invalid_request", "the code exchange failed. An access_token could not be retrieved")
+                .toJSONString());
         return;
       }
 
@@ -170,19 +139,13 @@ public class Callback extends Overlord {
         }
       }
 
-      String authorizationCode = UUID.randomUUID().toString();
-      sessionCtx.put("eb", eb.toString());
-      sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-      LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx);
-
-      response.sendRedirect(
-          getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "code",
-              authorizationCode));
+      response.setStatus(200);
+      response.getWriter().write(eb.toString());
 
     } catch (Exception e) {
       LOGGER.warning("authorization request failed!");
       e.printStackTrace();
-      response.sendError(400, "authorization request failed!");
+      response.getWriter().write(getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
     }
   }
 }

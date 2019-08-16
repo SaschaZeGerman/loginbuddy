@@ -15,6 +15,10 @@ COPY net.loginbuddy.demoserver/target/demoserver-1.0.0 /usr/local/tomcat/webapps
 # Demo Client
 COPY net.loginbuddy.democlient/target/democlient-1.0.0 /usr/local/tomcat/webapps/democlient
 
+# Create a directory for ssl certificates
+#
+RUN mkdir /usr/local/tomcat/ssl
+
 COPY docker-build/add-ons/demosetup/web.xml /usr/local/tomcat/conf/web.xml
 COPY docker-build/add-ons/demosetup/loginbuddy.sh /opt/docker/loginbuddy.sh
 COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml

@@ -9,12 +9,11 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 # Default loginbuddy services
 COPY net.loginbuddy.service/target/service-1.0.0 /usr/local/tomcat/webapps/ROOT
 
-# - update 'catalina.policy' with required SocketPermissions
 # - update 'server.xml' with unique passwords for accessing the private keys
 # - update 'loginbuddy.net' generates a private key for the 'side-car' scenario. This can be self signed. Valid for 90 days
 #
-COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
-COPY docker-build/add-ons/server/server.xml /usr/local/tomcat/conf/server.xml
+COPY docker-build/add-ons/sidecar/server.xml /usr/local/tomcat/conf/server.xml
+COPY docker-build/add-ons/sidecar/loginbuddy.sh /opt/docker/loginbuddy.sh
 
 # Create directory for holding SSL keys
 #
@@ -26,6 +25,6 @@ RUN addgroup tomcat
 RUN adduser -SG tomcat tomcat
 RUN chown -R tomcat:tomcat /usr/local/tomcat/
 
-# Run the entrypoint script to run tomcat with security manager
+# Run the entrypoint script to run tomcat with security manager and generate a private key for the 'sidecar' use case
 #
-CMD ["catalina.sh", "run", "-security"]
+CMD ["/opt/docker/loginbuddy.sh"]
