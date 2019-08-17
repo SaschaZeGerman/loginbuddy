@@ -25,42 +25,42 @@
 
     <Service name="Catalina">
 
-        <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="443"/>
+        <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="@@sslport@@"/>
 
         <Connector
                 SSLEnabled="true"
                 secure="true"
                 scheme="https"
-                port="443"
+                port="@@sslport@@"
                 defaultSSLHostConfigName="local.loginbuddy.net"
                 protocol="org.apache.coyote.http11.Http11NioProtocol"
                 maxThreads="150">
             <SSLHostConfig hostName="local.loginbuddy.net"
-                           protocols="TLSv1,TLSv1.1,TLSv1.2"
+                           protocols="TLSv1.2"
                            sslProtocol="TLS">
                 <Certificate
-                        certificateKeystoreFile="/usr/local/tomcat/ssl/demosetup.p12"
-                        certificateKeystorePassword="changeit"
-                        certificateKeyAlias="demosetup"
-                        certificateVerification="false"/>
+                        certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
+                        certificateKeystorePassword="@@sslpwd@@"
+                        certificateKeyAlias="loginbuddy"
+                        certificateVerification="true"/>
             </SSLHostConfig>
             <SSLHostConfig hostName="demoserver.loginbuddy.net"
-                           protocols="TLSv1,TLSv1.1,TLSv1.2"
+                           protocols="TLSv1.2"
                            sslProtocol="TLS">
                 <Certificate
-                        certificateKeystoreFile="/usr/local/tomcat/ssl/demosetup.p12"
-                        certificateKeystorePassword="changeit"
-                        certificateKeyAlias="demosetup"
-                        certificateVerification="false"/>
+                        certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
+                        certificateKeystorePassword="@@sslpwd@@"
+                        certificateKeyAlias="loginbuddy"
+                        certificateVerification="true"/>
             </SSLHostConfig>
             <SSLHostConfig hostName="democlient.loginbuddy.net"
-                           protocols="TLSv1,TLSv1.1,TLSv1.2"
+                           protocols="TLSv1.2"
                            sslProtocol="TLS">
                 <Certificate
-                        certificateKeystoreFile="/usr/local/tomcat/ssl/demosetup.p12"
-                        certificateKeystorePassword="changeit"
-                        certificateKeyAlias="demosetup"
-                        certificateVerification="false"/>
+                        certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
+                        certificateKeystorePassword="@@sslpwd@@"
+                        certificateKeyAlias="loginbuddy"
+                        certificateVerification="true"/>
             </SSLHostConfig>
         </Connector>
 

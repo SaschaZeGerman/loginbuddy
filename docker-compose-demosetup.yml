@@ -1,10 +1,6 @@
 #
 # This docker compose file is usable for development purposes:
 #
-# - it creates a private key (via loginbuddy.sh)
-# - it updates the containers JAVA truststore to accept its own self-signed certificate a trust anchor
-# - it uses a permission file (docker-build/add-ons/demosetup/catalina.policy) that accepts socket connections to a few prominent platforms (and to itself)
-#
 # NOTE: use this only for local development purposes!
 #
 version: '3.4'
@@ -15,7 +11,3 @@ services:
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      - "HOSTNAME_LOGINBUDDY=local.loginbuddy.net"
-      - "HOSTNAME_LOGINBUDDY_DEMOCLIENT=democlient.loginbuddy.net"
-      - "JAVA_OPTS=-Dorg.jose4j.jws.default-allow-none=false"

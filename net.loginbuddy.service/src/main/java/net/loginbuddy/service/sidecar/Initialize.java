@@ -30,7 +30,7 @@ import org.json.simple.parser.ParseException;
 
 /**
  * This class accepts connections only from localhost. The intention is easy access if loginbuddy is used as a sidecar
- * deployment where it becomes part of the actual webapplication. This setup makes it possible to run loginbuddy
+ * deployment where it becomes part of the actual web application. This setup makes it possible to run loginbuddy
  * transparent to the outside world. At the same time, its external API are still available if necessary.
  */
 public class Initialize extends SidecarMaster {

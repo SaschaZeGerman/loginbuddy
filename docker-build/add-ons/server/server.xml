@@ -25,31 +25,32 @@
 
   <Service name="Catalina">
 
-    <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="443"/>
+    <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="@@sslport@@"/>
 
     <Connector
       SSLEnabled="true"
       secure="true"
       scheme="https"
-      port="443"
-      defaultSSLHostConfigName="localhost"
+      port="@@sslport@@"
+      defaultSSLHostConfigName="@@hostname@@"
       protocol="org.apache.coyote.http11.Http11NioProtocol"
       maxThreads="150">
-      <SSLHostConfig hostName="localhost"
-        protocols="TLSv1,TLSv1.1,TLSv1.2"
+      <SSLHostConfig hostName="@@hostname@@"
+        protocols="TLSv1.2"
         sslProtocol="TLS">
         <Certificate
           certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
-          certificateKeystorePassword="changeit"
+          certificateKeystorePassword="@@sslpwd@@"
           certificateKeyAlias="loginbuddy"
           certificateVerification="true"/>
       </SSLHostConfig>
     </Connector>
 
-    <Engine name="Catalina" defaultHost="localhost">
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
+    <Engine name="Catalina" defaultHost="@@hostname@@">
+      <Host name="@@hostname@@"  appBase="webapps" unpackWARs="true" autoDeploy="true">
+        <Alias>@@hostname@@</Alias>
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-          prefix="localhost_access_log" suffix=".txt"
+          prefix="loginbuddy_access_log" suffix=".txt"
           pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
         <Context path="" docBase="/usr/local/tomcat/webapps/ROOT" debug="0" reloadable="true">
           <Resource name="bean/ConfigUtilFactory" auth="Container"

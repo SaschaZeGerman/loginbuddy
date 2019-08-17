@@ -78,18 +78,16 @@ grant codeBase "file:${catalina.home}/bin/tomcat-juli.jar" {
         permission java.lang.RuntimePermission "getClassLoader";
         permission java.lang.RuntimePermission "setContextClassLoader";
 
-        // [Loginbuddy]: added next line
+        // [Loginbuddy]: added next 4 lines
         permission java.lang.management.ManagementPermission "monitor";
+        permission java.util.PropertyPermission "org.apache.juli.AsyncLoggerPollInterval", "read";
+        permission java.util.PropertyPermission "org.apache.juli.AsyncMaxRecordCount", "read";
+        permission java.util.PropertyPermission "org.apache.juli.AsyncOverflowDropType", "read";
 
         permission java.util.logging.LoggingPermission "control";
 
         permission java.util.PropertyPermission "java.util.logging.config.class", "read";
         permission java.util.PropertyPermission "java.util.logging.config.file", "read";
-
-        // [Loginbuddy]: added next 3 lines
-        permission java.util.PropertyPermission "org.apache.juli.AsyncLoggerPollInterval", "read";
-        permission java.util.PropertyPermission "org.apache.juli.AsyncMaxRecordCount", "read";
-        permission java.util.PropertyPermission "org.apache.juli.AsyncOverflowDropType", "read";
 
         permission java.util.PropertyPermission "org.apache.juli.ClassLoaderLogManager.debug", "read";
         permission java.util.PropertyPermission "catalina.base", "read";
@@ -127,7 +125,6 @@ grant {
     // javamail named MimePart DataSource used to send mail
     permission java.util.PropertyPermission "java.home", "read";
     permission java.util.PropertyPermission "java.naming.*", "read";
-    permission java.util.PropertyPermission "javax.sql.*", "read";
 
     // OS Specific properties to allow read access
     permission java.util.PropertyPermission "os.name", "read";
@@ -153,12 +150,6 @@ grant {
     permission java.util.PropertyPermission "java.vm.vendor", "read";
     permission java.util.PropertyPermission "java.vm.name", "read";
 
-    // Required for OpenJMX
-    permission java.lang.RuntimePermission "getAttribute";
-
-    // Allow read of JAXP compliant XML parser debug
-    permission java.util.PropertyPermission "jaxp.debug", "read";
-
     // All JSPs need to be able to read this package
     permission java.lang.RuntimePermission "accessClassInPackage.org.apache.tomcat";
 
@@ -173,27 +164,9 @@ grant {
      "org.apache.jasper.runtime.BodyContentImpl.LIMIT_BUFFER", "read";
     permission java.util.PropertyPermission
      "org.apache.el.parser.COERCE_TO_ZERO", "read";
-
-    // The cookie code needs these.
-    permission java.util.PropertyPermission
-     "org.apache.catalina.STRICT_SERVLET_COMPLIANCE", "read";
-    permission java.util.PropertyPermission
-     "org.apache.tomcat.util.http.ServerCookie.STRICT_NAMING", "read";
-    permission java.util.PropertyPermission
-     "org.apache.tomcat.util.http.ServerCookie.FWD_SLASH_IS_SEPARATOR", "read";
-
-    // Applications using Comet need to be able to access this package
-    permission java.lang.RuntimePermission "accessClassInPackage.org.apache.catalina.comet";
-
-    // Applications using the legacy WebSocket implementation need to be able to access this package
-    permission java.lang.RuntimePermission "accessClassInPackage.org.apache.catalina.websocket";
-
-    // Applications using the JSR-356 WebSocket implementation need to be able to access these packages
-    permission java.lang.RuntimePermission "accessClassInPackage.org.apache.tomcat.websocket";
-    permission java.lang.RuntimePermission "accessClassInPackage.org.apache.tomcat.websocket.server";
 };
 
-// [Loginbuddy]: adding permissions for loginbuddy to connect to more servers
+// [Loginbuddy]: adding permissions for loginbuddy
 grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.util.PropertyPermission "user.dir", "read";
     permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
@@ -201,6 +174,5 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "accessDeclaredMembers";
     permission java.lang.RuntimePermission "exitVM.1";
-//    permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";
-// see 'catalina.policy' of the demo setup for socketpermissions
+    permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";
 };

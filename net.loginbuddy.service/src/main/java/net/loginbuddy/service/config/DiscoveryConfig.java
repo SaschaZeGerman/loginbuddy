@@ -15,6 +15,22 @@ public class DiscoveryConfig {
   @JsonIgnore(false)
   private String[] responseTypeSupported;
 
+  @JsonProperty("authorization_endpoint")
+  @JsonIgnore(false)
+  private String authorizationEndpoint;
+
+  @JsonProperty("jwks_uri")
+  @JsonIgnore(false)
+  private String jwksUri;
+
+  @JsonProperty("id_token_signing_alg_values_supported")
+  @JsonIgnore(false)
+  private String[] idTokenSigningAlgValuesSupported;
+
+  @JsonProperty("subject_types_supported")
+  @JsonIgnore(false)
+  private String[] subjectTypesSupported;
+
   @JsonProperty("grant_types_supported")
   private String[] grantTypesSupported;
 
@@ -24,23 +40,11 @@ public class DiscoveryConfig {
   @JsonProperty("scopes_supported")
   private String[] scopesSupported;
 
-  @JsonProperty("authorization_endpoint")
-  private String authorizationEndpoint;
-
   @JsonProperty("token_endpoint")
   private String tokenEndpoint;
 
-  @JsonProperty("jwks_uri")
-  private String jwksUri;
-
-  @JsonProperty("id_token_signing_alg_values_supported")
-  private String[] idTokenSigningAlgValuesSupported;
-
   @JsonProperty("service_documentation")
   private String serviceDocumentation;
-
-  @JsonProperty("subject_types_supported")
-  private String[] subjectTypesSupported;
 
   @JsonProperty("code_challenge_methods_supported")
   private String[] codeChallengeMethodsSupported;

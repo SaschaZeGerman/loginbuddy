@@ -1,13 +1,4 @@
-FROM tomcat:alpine
-
-# We do not want to keep the default applications, remove them
-#
-RUN rm -rf /usr/local/tomcat/webapps/*
-
-# add our own application as the one and only
-#
-# Default loginbuddy services
-COPY net.loginbuddy.service/target/service-1.0.0 /usr/local/tomcat/webapps/ROOT
+FROM saschazegerman/loginbuddy:latest
 #
 # Demo Server
 COPY net.loginbuddy.demoserver/target/demoserver-1.0.0 /usr/local/tomcat/webapps/demoserver
@@ -15,22 +6,14 @@ COPY net.loginbuddy.demoserver/target/demoserver-1.0.0 /usr/local/tomcat/webapps
 # Demo Client
 COPY net.loginbuddy.democlient/target/democlient-1.0.0 /usr/local/tomcat/webapps/democlient
 
-# Create a directory for ssl certificates
-#
-RUN mkdir /usr/local/tomcat/ssl
-
-COPY docker-build/add-ons/demosetup/web.xml /usr/local/tomcat/conf/web.xml
-COPY docker-build/add-ons/demosetup/loginbuddy.sh /opt/docker/loginbuddy.sh
-COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
-COPY docker-build/add-ons/demosetup/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/demosetup/config.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
 COPY docker-build/add-ons/demosetup/discovery.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
+COPY docker-build/add-ons/demosetup/loginbuddy.sh /opt/docker/loginbuddy.sh
+COPY docker-build/add-ons/demosetup/permissions.policy /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
+COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/demosetup/server_loginbuddy.png /usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
 
-# create non-priviliged user (with its own group) to run tomcat
-#
-RUN addgroup tomcat
-RUN adduser -SG tomcat tomcat
-RUN chown -R tomcat:tomcat /usr/local/tomcat/
+ENV HOSTNAME_LOGINBUDDY local.loginbuddy.net
+ENV HOSTNAME_LOGINBUDDY_DEMOCLIENT democlient.loginbuddy.net
 
 ENTRYPOINT ["/opt/docker/loginbuddy.sh"]
