@@ -18,10 +18,8 @@
 #    ports:
 #      - "80:80"
 #      - "443:443"
-#    environment:
-#      - "JAVA_OPTS=-Dorg.jose4j.jws.default-allow-none=false"
 #    volumes:
-#      - /opt/loginbuddy/catalina.policy:/usr/local/tomcat/conf/catalina.policy
+#      - /opt/loginbuddy/permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
 #      - /opt/loginbuddy/config.json:/usr/local/tomcat/webapps/ROOT/classes/config.json
 #      - /opt/loginbuddy/discovery.json:/usr/local/tomcat/webapps/ROOT/classes/discovery.json
 #      - /opt/certs/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
