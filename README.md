@@ -4,24 +4,25 @@ A container based solution that helps developers support social login for their 
 
 The latest docker image is always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
 
-A running version of the latest loginbuddy may be here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). (If the URL is not working, I am trying to figure out something new)
+A running version of the latest Loginbuddy may be here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). (If the URL is not working, I am trying to figure out something new)
 
 # Loginbuddy - Your authenticator
 
 This project implements an OpenID Connect client that can be used as proxy between an application (your application) and 
 an OpenID Provider. This is useful for cases where social login should be an option for users to login to your 
-application. Your application needs to make two simple calls only and the response will be users details. Loginbuddy 
-takes care of the complete OAuth/ OpenID Connect protocol.
+application. Your application only needs to communicate with Loginbuddy. After finishing the authentication and authorization 
+with providers, Loginbuddy provides single response to the application.
 
-This is the visual overview of the design:
+The high level design looks like this:
 
-![alt overview](doc/overview_700.png)
+![alt overview](doc/simple_overview_01.png)
 
 # Getting started
 
-## Running the latest and greatest container of Loginbuddy:
+## Running the latest and greatest container of Loginbuddy
 
-I have only used loginbuddy on a MacBook, if you run it on Windows, some instructions may need to be adjusted!
+The sample setup consists of Loginbuddy, a sample web application and a sample OpenID Provider. The instructions are 
+made for Docker on a MacBook and may need to be adjusted for windows users.
 
 - Preparation
   - modify your hosts file, add **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
@@ -35,17 +36,17 @@ I have only used loginbuddy on a MacBook, if you run it on Windows, some instruc
 - Open a browser
   - go to **https://democlient.loginbuddy.net** and follow the prompts
 
-The demo simulates a client, a social login provider (called 'fake') and uses loginbuddy!
+The demo simulates a client, a social login provider (called 'fake') and uses Loginbuddy!
 
-The last page displays type of message loginbuddy would return to your client. (the window is very small. Copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
+The last page displays the type of message Loginbuddy would return to your application. (the window is very small. Copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
 
-Since the demo uses self-signed certificates, confirm the SSL security screen in your browser.
+Since the demo uses self-signed certificates, confirm the SSL security screens in your browser.
 
 # Current state
 
-Please check the project page: [projects](https://github.com/SaschaZeGerman/loginbuddy/projects).
+To find out more details on how to configure and build Loginbuddy, please visit the [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki) pages!
 
-To find out more details on how to build and configure Loginbuddy, please visit the [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki) pages!
+Please check the project page to find out what is planned for the future and what has been done so far: [projects](https://github.com/SaschaZeGerman/loginbuddy/projects).
 
 # License
 
