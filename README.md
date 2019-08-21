@@ -27,10 +27,7 @@ made for Docker on a MacBook and may need to be adjusted for windows users.
 - Preparation
   - modify your hosts file, add **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
   - for MacBooks this would be done at ```sudo /etc/hosts```
-- Download or clone this project
-  - ```git clone https://github.com/SaschaZeGerman/loginbuddy.git```
-  - Switch into the directory *loginbuddy*
-- Run ```docker-compose -f docker-compose-demosetup.yml up -d```
+- Run ```docker run -p 80:80 -p 443:443 -d saschazegerman/loginbuddy:latest-demo```
   - this will pull the latest demo image from docker hub
   - this will use ports 80 (http), 443 (https)
 - Open a browser
