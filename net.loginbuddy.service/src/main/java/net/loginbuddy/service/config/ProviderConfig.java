@@ -61,10 +61,14 @@ public class ProviderConfig {
     @JsonProperty("jwks_uri")
     private String jwksUri;
 
+    @JsonProperty("pkce")
+    private boolean pkce;
+
     @JsonProperty("mappings")
     private JsonNode mappings;
 
     public ProviderConfig() {
+        this.pkce = true;
     }
 
     public String getProvider() {
@@ -161,6 +165,14 @@ public class ProviderConfig {
 
     public void setResponseType(String responseType) {
         this.responseType = responseType;
+    }
+
+    public boolean getPkce() {
+        return pkce;
+    }
+
+    public void setPkce(boolean pkce) {
+        this.pkce = pkce;
     }
 
     public String getMappings() {

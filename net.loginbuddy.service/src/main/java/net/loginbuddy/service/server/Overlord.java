@@ -143,7 +143,8 @@ public class Overlord extends HttpServlet {
     formParameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), clientSecret));
     formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), redirectUri));
     formParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
-    formParameters.add(new BasicNameValuePair(Constants.CODE_VERIFIER.getKey(), codeVerifier));
+    if(codeVerifier != null)
+      formParameters.add(new BasicNameValuePair(Constants.CODE_VERIFIER.getKey(), codeVerifier));
 
     HttpPost req = new HttpPost(tokenEndpoint);
 

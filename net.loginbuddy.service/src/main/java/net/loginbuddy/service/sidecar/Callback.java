@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2018. . All rights reserved.
+ *
+ * This software may be modified and distributed under the terms of the Apache License 2.0 license.
+ * See http://www.apache.org/licenses/LICENSE-2.0 for details.
+ *
+ */
+
 package net.loginbuddy.service.sidecar;
 
 import java.io.IOException;
@@ -25,7 +33,12 @@ public class Callback extends SidecarMaster {
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    doGet(req, resp);
+  }
+
+  @Override
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     super.doGet(request, response);
     try {
 
@@ -76,7 +89,6 @@ public class Callback extends SidecarMaster {
       }
 
       String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
-      String code_verifier = sessionCtx.getString(Constants.CODE_VERIFIER.getKey());
 
       ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
           .getProviderConfigByProvider(provider);
@@ -93,12 +105,12 @@ public class Callback extends SidecarMaster {
 
       MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
           providerConfig.getRedirectUri(), codeResult.getValue(),
-          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), code_verifier);
+          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
       if (tokenResponse != null) {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
-//            LOGGER.info(tokenResponseObject.toJSONString()); // turn this on for debugging purposes
+            LOGGER.fine(tokenResponseObject.toJSONString());
             access_token = tokenResponseObject.get("access_token").toString();
             eb.setTokenResponse(tokenResponseObject);
             try {
@@ -111,6 +123,10 @@ public class Callback extends SidecarMaster {
             } catch (Exception e) {
               LOGGER.warning("No id_token was issued or it was invalid!");
             }
+          } else {
+            response.getWriter()
+                .write(getErrorAsJson("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())).toJSONString());
+            return;
           }
         } else {
           // need to handle error cases

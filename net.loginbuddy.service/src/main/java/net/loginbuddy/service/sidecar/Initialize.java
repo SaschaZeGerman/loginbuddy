@@ -11,7 +11,6 @@ package net.loginbuddy.service.sidecar;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
@@ -37,8 +36,14 @@ public class Initialize extends SidecarMaster {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
 
+  // initiate authorization flow with provider
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    doPost(request, response);
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     super.doGet(request, response);
 
     ParameterValidatorResult providerResult = ParameterValidator
@@ -56,14 +61,22 @@ public class Initialize extends SidecarMaster {
 
     SessionContext sessionCtx = new SessionContext();
 
+    // TODO Verify that the selected provider is valid for this client
     ProviderConfig providerConfig = null;
     try {
       providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
           .getProviderConfigByProvider(providerResult.getValue());
+      if (providerConfig == null) {
+        LOGGER.warning("The given provider is unknown or invalid");
+        response.getWriter()
+            .write(getErrorAsJson("invalid_request", "The given provider is unknown or invalid").toJSONString());
+        return;
+      }
     } catch (Exception e) {
       // should never occur
       LOGGER.severe("The system has not been configured yet");
-      response.getWriter().write(getErrorAsJson("invalid_system", "system not configured yet").toJSONString());
+      response.getWriter()
+          .write(getErrorAsJson("invalid_system", "The system has not been configured yet").toJSONString());
       return;
     }
 
@@ -104,8 +117,14 @@ public class Initialize extends SidecarMaster {
       sessionCtx.put(Constants.JWKS_URI.getKey(), providerConfig.getJwksUri());
     }
 
+    // use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
     PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
-    sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
+    String pkce = null;
+    if (providerConfig.getPkce()) {
+      sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
+      pkce = String.format("&%s=%s&%s=S256", Constants.CODE_CHALLENGE.getKey(), pair.getChallenge(),
+          Constants.CODE_CHALLENGE_METHOD.getKey());
+    }
 
     String scope = providerConfig.getScope() == null ? Constants.OPENID_SCOPE.getKey() : providerConfig.getScope();
 
@@ -114,7 +133,7 @@ public class Initialize extends SidecarMaster {
         scope,
         providerConfig.getResponseType(),
         pair.getChallenge(),
-        "S256",
+        Pkce.CODE_CHALLENGE_METHOD_S256,
         "",
         nonceResult.getValue(),
         stateResult.getValue(),
@@ -136,15 +155,13 @@ public class Initialize extends SidecarMaster {
         .append("=").append(sessionCtx.get(Constants.NONCE.getKey()))
         .append("&").append(Constants.REDIRECT_URI.getKey())
         .append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
-        .append("&").append(Constants.CODE_CHALLENGE.getKey()).append("=")
-        .append(pair.getChallenge()) // won't produce null unless we ask for method=plain which we do not do
-        .append("&").append(Constants.CODE_CHALLENGE_METHOD.getKey()).append("=S256")
+        .append(pkce == null ? "" : pkce)
         .append("&").append(Constants.PROMPT.getKey()).append("=")
-        .append(URLEncoder.encode(promptResult.getValue(), "utf-8"))
+        .append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
         .append("&").append(Constants.LOGIN_HINT.getKey()).append("=")
-        .append(URLEncoder.encode(loginHintResult.getValue(), "utf-8"))
+        .append(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()))
         .append("&").append(Constants.ID_TOKEN_HINT.getKey()).append("=")
-        .append(URLEncoder.encode(idTokenHintResult.getValue(), "utf-8"))
+        .append(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()))
         .append("&").append(Constants.STATE.getKey())
         .append("=").append(sessionCtx.getId());
 

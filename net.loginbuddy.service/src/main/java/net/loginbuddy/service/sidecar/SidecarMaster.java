@@ -1,7 +1,6 @@
 package net.loginbuddy.service.sidecar;
 
 import java.io.IOException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.service.server.Overlord;
@@ -9,7 +8,7 @@ import net.loginbuddy.service.server.Overlord;
 public class SidecarMaster extends Overlord {
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     response.setStatus(400);
     response.setContentType("application/json");

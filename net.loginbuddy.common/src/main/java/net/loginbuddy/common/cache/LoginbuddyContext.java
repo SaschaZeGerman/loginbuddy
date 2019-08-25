@@ -42,5 +42,9 @@ public class LoginbuddyContext {
   public String getString(String key) {
     return get(key, String.class);
   }
+
+  public Boolean getBoolean(String key) {
+    return get(key, Boolean.class);
+  }
   public Long getLong(String key) { return get(key, Long.class); }
 }

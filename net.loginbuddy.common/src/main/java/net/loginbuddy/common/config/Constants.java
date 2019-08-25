@@ -40,6 +40,7 @@ public enum Constants {
     OPENID_SCOPE("openid profile email"),
     PROVIDER("provider"),
     PROMPT("prompt"),
+    PKCE("pkce"),
     REDIRECT_URI("redirect_uri"),
     RESPONSE_TYPE("response_type"),
     SESSION("session"),

@@ -44,10 +44,10 @@ public class Initialize extends Overlord {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-    ParameterValidatorResult sessionIdResult = ParameterValidator
-        .getSingleValue(request.getParameterValues(Constants.SESSION.getKey()));
     ParameterValidatorResult providerResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
+    ParameterValidatorResult sessionIdResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.SESSION.getKey()));
 
     if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing session, cannot initiate the authorization flow!");
@@ -89,14 +89,14 @@ public class Initialize extends Overlord {
     ProviderConfig providerConfig = null;
     try {
       providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(providerSession);
-      if (providerConfig != null) {
-        sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), providerSession);
-      } else {
+      if (providerConfig == null) {
         LOGGER.warning("The given provider is unknown or invalid");
         response.sendRedirect(
             getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
                 "The given provider is unknown or invalid"));
         return;
+      } else {
+        sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), providerSession);
       }
     } catch (Exception e) {
       // should never occur
@@ -144,8 +144,14 @@ public class Initialize extends Overlord {
       sessionCtx.put(Constants.JWKS_URI.getKey(), providerConfig.getJwksUri());
     }
 
-    PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
-    sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
+    // use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
+    String pkce = null;
+    if (providerConfig.getPkce()) {
+      PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
+      sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
+      pkce = String.format("&%s=%s&%s=S256", Constants.CODE_CHALLENGE.getKey(), pair.getChallenge(),
+          Constants.CODE_CHALLENGE_METHOD.getKey());
+    }
 
     String scope = providerConfig.getScope() == null ? Constants.OPENID_SCOPE.getKey() : providerConfig.getScope();
 
@@ -160,9 +166,7 @@ public class Initialize extends Overlord {
         .append("=").append(sessionCtx.get(Constants.NONCE.getKey()))
         .append("&").append(Constants.REDIRECT_URI.getKey())
         .append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
-        .append("&").append(Constants.CODE_CHALLENGE.getKey()).append("=")
-        .append(pair.getChallenge()) // won't produce null unless we ask for method=plain which we do not do
-        .append("&").append(Constants.CODE_CHALLENGE_METHOD.getKey()).append("=S256")
+        .append(pkce == null ? "" : pkce)
         .append("&").append(Constants.PROMPT.getKey()).append("=")
         .append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
         .append("&").append(Constants.LOGIN_HINT.getKey()).append("=")
@@ -177,6 +181,5 @@ public class Initialize extends Overlord {
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 
     response.sendRedirect(authorizeUrl.toString());
-
   }
 }

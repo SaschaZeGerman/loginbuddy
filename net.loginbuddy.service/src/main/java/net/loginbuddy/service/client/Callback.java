@@ -9,11 +9,7 @@
 package net.loginbuddy.service.client;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -31,18 +27,8 @@ import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.server.Overlord;
 import net.loginbuddy.service.util.SessionContext;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 
 public class Callback extends Overlord {
 
@@ -106,7 +92,6 @@ public class Callback extends Overlord {
       }
 
       String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
-      String code_verifier = sessionCtx.getString(Constants.CODE_VERIFIER.getKey());
 
       ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
           .getProviderConfigByProvider(provider);
@@ -123,12 +108,12 @@ public class Callback extends Overlord {
 
       MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
           providerConfig.getRedirectUri(), codeResult.getValue(),
-          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), code_verifier);
+          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
       if (tokenResponse != null) {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
-//            LOGGER.info(tokenResponseObject.toJSONString()); // turn this on for debugging purposes
+            LOGGER.fine(tokenResponseObject.toJSONString());
             access_token = tokenResponseObject.get("access_token").toString();
             eb.setTokenResponse(tokenResponseObject);
             try {
@@ -141,6 +126,11 @@ public class Callback extends Overlord {
             } catch (Exception e) {
               LOGGER.warning("No id_token was issued or it was invalid!");
             }
+          } else {
+            response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
+                "invalid_response",
+                String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())));
+            return;
           }
         } else {
           // need to handle error cases
