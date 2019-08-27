@@ -39,7 +39,17 @@ public class Callback extends SidecarMaster {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    super.doGet(request, response);
+
+    try {
+      checkClientConnection(request);
+    } catch (IllegalAccessException e) {
+      LOGGER.warning(e.getMessage());
+      response.setStatus(400);
+      response.setContentType("application/json");
+      response.getWriter().write(e.getMessage());
+      return;
+    }
+
     try {
 
       ParameterValidatorResult sessionIdResult = ParameterValidator

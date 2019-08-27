@@ -44,7 +44,16 @@ public class Initialize extends SidecarMaster {
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    super.doGet(request, response);
+
+    try {
+      checkClientConnection(request);
+    } catch (IllegalAccessException e) {
+      LOGGER.warning(e.getMessage());
+      response.setStatus(400);
+      response.setContentType("application/json");
+      response.getWriter().write(e.getMessage());
+      return;
+    }
 
     ParameterValidatorResult providerResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
