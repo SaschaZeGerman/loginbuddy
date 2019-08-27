@@ -1,6 +1,6 @@
-package net.loginbuddy.service.provider;
+package net.loginbuddy.service.client.provider;
 
-public class PorivderHandlerLinkedIn implements ProviderHandler {
+public class ProviderHandlerLinkedIn implements ProviderHandler {
 
   @Override
   public void handleRequest() {
