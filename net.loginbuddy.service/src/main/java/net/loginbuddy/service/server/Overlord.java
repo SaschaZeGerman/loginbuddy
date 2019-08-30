@@ -14,15 +14,18 @@ import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -49,8 +52,14 @@ public class Overlord extends HttpServlet {
     req.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BEARER.getKey() + accessToken);
 
     HttpResponse response = httpClient.execute(req);
-    return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
+    return new MsgResponse(getHeader(response, "content-type", "application/json"),
         EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+  }
+
+  // TODO check got 'single' header
+  private String getHeader(HttpResponse response, String headerName, String defaultValue) {
+    Header[] headers = response.getHeaders(headerName);
+    return headers == null ? defaultValue : headers.length != 1 ? defaultValue : headers[0].getValue();
   }
 
   protected MsgResponse getAPI(String targetApi) throws IOException {
@@ -58,7 +67,7 @@ public class Overlord extends HttpServlet {
     HttpClient httpClient = HttpClientBuilder.create().build();
 
     HttpResponse response = httpClient.execute(req);
-    return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
+    return new MsgResponse(getHeader(response, "content-type", "application/json"),
         EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
   }
 
@@ -146,15 +155,97 @@ public class Overlord extends HttpServlet {
     if(codeVerifier != null)
       formParameters.add(new BasicNameValuePair(Constants.CODE_VERIFIER.getKey(), codeVerifier));
 
-    HttpPost req = new HttpPost(tokenEndpoint);
+    return postMessage(formParameters, tokenEndpoint, "application/json");
+  }
+
+  protected MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String acceptContentType) throws IOException {
+
+    HttpPost req = new HttpPost(targetUrl);
 
     HttpClient httpClient = HttpClientBuilder.create().build();
     req.setEntity(new UrlEncodedFormEntity(formParameters));
-    req.addHeader("Accept", "application/json");
+    req.addHeader("Accept", acceptContentType);
 
     HttpResponse response = httpClient.execute(req);
-    return new MsgResponse(response.getHeaders("Content-Type")[0].getValue(),
+    return new MsgResponse(getHeader(response, "content-type", "application/json"),
         EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+  }
+
+  protected MsgResponse postMessage(JSONObject input, String targetUrl, String acceptContentType) throws IOException {
+
+    StringEntity requestEntity = new StringEntity(input.toJSONString(), "UTF-8");
+    requestEntity.setContentType("application/json");
+    HttpPost req = new HttpPost(targetUrl);
+    HttpClient httpClient = HttpClientBuilder.create().build();
+    req.setEntity(requestEntity);
+    req.addHeader("Content-Type", "application/json");
+    req.addHeader("Accept", acceptContentType);
+
+    HttpResponse response = httpClient.execute(req);
+    return new MsgResponse(getHeader(response, "content-type", acceptContentType),
+        EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+  }
+
+  protected JSONObject retrieveAndRegister(String issuer, String discoveryUrl) {
+
+    JSONObject errorResp = new JSONObject();
+    try {
+      MsgResponse oidcConfig = getAPI(discoveryUrl);
+      if (oidcConfig.getStatus() == 200) {
+        if (oidcConfig.getContentType().startsWith("application/json")) {
+          JSONObject doc = (JSONObject) new JSONParser().parse(oidcConfig.getMsg());
+          String registerUrl = (String) doc.get("registration_endpoint");
+          if (registerUrl == null || registerUrl.trim().length() == 0) {
+            throw new IllegalArgumentException("The registration_url is invalid or not provided");
+          } else {
+            JSONObject registrationMSg = new JSONObject();
+            JSONArray redirectUrisArray = new JSONArray();
+            String redirectUri = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer() + "/callback";
+            redirectUrisArray.add(redirectUri);
+            registrationMSg.put("redirect_uris", redirectUrisArray);
+            registrationMSg.put("token_endpoint_auth_method", "client_secret_post");
+            MsgResponse registrationResponse = postMessage(registrationMSg, registerUrl, "application/json");
+            if(registrationResponse.getStatus() == 200) {
+              if(registrationResponse.getContentType().startsWith("application/json")) {
+                JSONObject registration = (JSONObject)new JSONParser().parse(registrationResponse.getMsg());
+                String clientId = (String)registration.get(Constants.CLIENT_ID.getKey());
+                String clientSecret = (String)registration.get(Constants.CLIENT_SECRET.getKey());
+                return providerTemplate(issuer, discoveryUrl, clientId, clientSecret, redirectUri, "openid email profile");
+              } else {
+                // TODO handle the strange case of not getting JSON as content-type
+                return getErrorAsJson("invalid_configuration", "the registration response is not JSON");
+              }
+            } else {
+              // TODO handle the non 200 case for registration responses
+              return getErrorAsJson("invalid_request", "the registration failed");
+            }
+          }
+        } else {
+          // TODO handle the strange case of not getting JSON as a content-type
+          return getErrorAsJson("invalid_configuration", "the openid-configuration response is not JSON");
+        }
+      } else {
+        // TODO handdle non 200 responses
+        return getErrorAsJson("invalid_configuration", "the opeid-configuration could not be retrieved");
+      }
+    } catch (Exception e) {
+      // TODO need to handle errors
+      e.printStackTrace();
+      return getErrorAsJson("invalid_server", "no idea what went wrong");
+    }
+  }
+
+  private JSONObject providerTemplate(String issuer, String discoveryUrl, String clientId, String clientSecret, String redirectUri, String scope) {
+    JSONObject config = new JSONObject();
+    config.put("provider", "selfissued-"+issuer);
+    config.put("issuer", issuer);
+    config.put("openid_configuration_uri", discoveryUrl);
+    config.put("client_id", clientId);
+    config.put("client_secret", clientSecret);
+    config.put("response_type", "code");
+    config.put("scope", scope);
+    config.put("redirect_uri", redirectUri);
+    return config;
   }
 
   void notYetImplemented(HttpServletResponse response) throws IOException {

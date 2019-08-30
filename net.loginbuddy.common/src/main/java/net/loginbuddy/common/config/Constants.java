@@ -28,6 +28,7 @@ public enum Constants {
     CODE_VERIFIER("code_verifier"),
     CODE_CHALLENGE("code_challenge"),
     CODE_CHALLENGE_METHOD("code_challenge_method"),
+    DISCOVERY_URL("discovery_url"),
     ERROR("error"),
     ERROR_DESCRIPTION("error_description"),
     GRANT_TYPE("grant_type"),

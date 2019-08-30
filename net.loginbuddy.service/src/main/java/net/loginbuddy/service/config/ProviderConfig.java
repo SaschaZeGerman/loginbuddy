@@ -71,6 +71,21 @@ public class ProviderConfig {
         this.pkce = true;
     }
 
+    public ProviderConfigType getProviderType() {
+        return clientId == null ? ProviderConfigType.MINIMAL : openidConfigurationUri == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
+    }
+
+    // TODO find a better way for adding these claims at runtime
+    public void enhanceToDefault(ProviderConfig config) {
+        this.clientId = config.getClientId();
+        this.clientSecret = config.getClientSecret();
+        this.redirectUri = config.getRedirectUri();
+        this.issuer = config.getIssuer();
+        this.openidConfigurationUri = config.getOpenidConfigurationUri();
+        this.responseType = config.getResponseType();
+        this.scope = config.getScope();
+    }
+
     public String getProvider() {
         return provider;
     }

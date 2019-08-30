@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Logger;
+import net.loginbuddy.common.cache.LoginbuddyCache;
 
 public class DiscoveryUtil {
 
@@ -35,9 +36,13 @@ public class DiscoveryUtil {
 
   private DiscoveryConfig getConfig() {
     try {
-      JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
-      DiscoveryConfig config = MAPPER.readValue(node.toString(), DiscoveryConfig.class);
-      config.setJsonString(node.toString());
+      DiscoveryConfig config = (DiscoveryConfig)LoginbuddyCache.getInstance().get("DiscoveryConfig");
+      if(config == null) {
+        JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
+        config = MAPPER.readValue(node.toString(), DiscoveryConfig.class);
+        config.setJsonString(node.toString());
+        LoginbuddyCache.getInstance().put("DiscoveryConfig", config);
+      }
       return config;
     } catch (Exception e) {
       LOGGER.severe("discovery.json file could not be loaded or it is invalid JSON! Existing!");
