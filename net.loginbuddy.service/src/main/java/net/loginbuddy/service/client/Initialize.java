@@ -8,12 +8,16 @@
 
 package net.loginbuddy.service.client;
 
+import static net.loginbuddy.common.api.HttpHelper.getErrorForRedirect;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.logging.Logger;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
@@ -24,14 +28,13 @@ import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.PkcePair;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.server.Overlord;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 @WebServlet(name = "Initialize")
-public class Initialize extends Overlord {
+public class Initialize extends HttpServlet {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
 
@@ -112,7 +115,7 @@ public class Initialize extends Overlord {
     // using the well-known endpoint
     String oidcConfigUrl = providerConfig.getOpenidConfigurationUri();
     if (oidcConfigUrl != null) {
-      MsgResponse openIdConfig = getAPI(oidcConfigUrl);
+      MsgResponse openIdConfig = HttpHelper.getAPI(oidcConfigUrl);
       if (openIdConfig != null && openIdConfig.getStatus() == 200) {
         JSONObject msg = null;
         try {

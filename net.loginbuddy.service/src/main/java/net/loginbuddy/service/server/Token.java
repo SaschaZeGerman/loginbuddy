@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.cache.LoginbuddyCache;
@@ -28,7 +29,7 @@ import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
 @WebServlet(name = "Token")
-public class Token extends Overlord {
+public class Token extends HttpServlet {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Token.class));
 

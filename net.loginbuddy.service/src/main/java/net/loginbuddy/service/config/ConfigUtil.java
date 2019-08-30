@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import net.loginbuddy.common.api.HttpHelper;
+import net.loginbuddy.common.cache.LoginbuddyCache;
 
 public class ConfigUtil {
 
@@ -30,7 +32,11 @@ public class ConfigUtil {
 
   private JsonNode getConfig() {
     try {
-      JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
+      JsonNode node = (JsonNode) LoginbuddyCache.getInstance().get("ConfigUtilGetConfig");
+      if (node == null) {
+        node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
+        LoginbuddyCache.getInstance().put("ConfigUtilGetConfig", node);
+      }
       return node.get("loginbuddy");
     } catch (IOException e) {
       LOGGER.severe("LoginBuddyConfiguration file could not be loaded!");
@@ -56,7 +62,21 @@ public class ConfigUtil {
     JsonNode providerNode = getConfig().get("providers");
     if (providerNode != null && providerNode.isArray()) {
       try {
-        return Arrays.asList(MAPPER.readValue(providerNode.toString(), ProviderConfig[].class));
+        // need it from cache for provider configurations that used dynamic registrations. Otherwise we register again and again
+        List<ProviderConfig> providers = (List<ProviderConfig>) LoginbuddyCache.getInstance().get("providers");
+        if (providers == null) {
+          providers = Arrays.asList(MAPPER.readValue(providerNode.toString(), ProviderConfig[].class));
+          for (ProviderConfig next : providers) {
+            if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
+              next.enhanceToFull(MAPPER
+                  .readValue(HttpHelper.retrieveAndRegister(next.getIssuer(), next.getOpenidConfigurationUri(),
+                      LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()).toJSONString(),
+                      ProviderConfig.class));
+            }
+          }
+          LoginbuddyCache.getInstance().put("providers", providers);
+        }
+        return providers;
       } catch (Exception e) {
         LOGGER.severe("Fail to map providers [" + providerNode.toString() + "]");
       }

@@ -8,7 +8,10 @@
 
 package net.loginbuddy.common.util;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import org.jose4j.jwk.JsonWebKey;
@@ -16,6 +19,7 @@ import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.VerificationJwkSelector;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -76,7 +80,7 @@ public class Jwt {
 
             // simple string comparisons first
             if(expectedIss.equals(jo.get("iss"))) {
-                if(expectedAud.equals(jo.get("aud"))) {
+                if(validateAud(expectedAud, jo.get("aud"))) {
                     if(expectedNonce.equals(jo.get("nonce"))) {
                         if ((new Date().getTime() / 1000) < Long.parseLong(String.valueOf(jo.get("exp")))) {
                             JsonWebKeySet jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetJson);
@@ -111,5 +115,21 @@ public class Jwt {
             throw new IllegalArgumentException("The given JWT could not be parsed or decoded!");
         }
         throw new IllegalArgumentException("The given JWT could not be parsed or decoded!");
+    }
+
+    private boolean validateAud(String expectedAud, Object actualAud) {
+        if (expectedAud == null || actualAud == null) {
+            return false;
+        }
+        if(actualAud instanceof JSONArray) {
+            JSONArray actualAudiences = (JSONArray)actualAud;
+            for (Object actualAudience : actualAudiences) {
+                if (expectedAud.equals(actualAudience)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return expectedAud.equals(actualAud);
     }
 }

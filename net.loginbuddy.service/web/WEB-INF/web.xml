@@ -93,6 +93,11 @@
         <servlet-name>SidecarCallback</servlet-name>
         <servlet-class>net.loginbuddy.service.sidecar.Callback</servlet-class>
     </servlet>
+    <!-- dynamic registration-->
+    <servlet>
+        <servlet-name>SelfIssuedRegistation</servlet-name>
+        <servlet-class>net.loginbuddy.service.selfissued.Registration</servlet-class>
+    </servlet>
 
     <!-- The mapping for the default servlet -->
     <servlet-mapping>
@@ -151,6 +156,12 @@
     <servlet-mapping>
         <servlet-name>SidecarCallback</servlet-name>
         <url-pattern>/sidecar/callback</url-pattern>
+    </servlet-mapping>
+
+    <!-- dynamic registration -->
+    <servlet-mapping>
+        <servlet-name>SelfIssuedRegistation</servlet-name>
+        <url-pattern>/selfissued/registration</url-pattern>
     </servlet-mapping>
 
     <error-page>

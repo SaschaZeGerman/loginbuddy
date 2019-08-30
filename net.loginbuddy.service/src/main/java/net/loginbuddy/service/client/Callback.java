@@ -9,12 +9,16 @@
 package net.loginbuddy.service.client;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ExchangeBean;
@@ -25,12 +29,11 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.server.Overlord;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-public class Callback extends Overlord {
+public class Callback extends HttpServlet {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
@@ -68,7 +71,7 @@ public class Callback extends Overlord {
 
       if (errorResult.getValue() != null) {
         response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(),
+            HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(),
                 errorDescriptionResult.getValue()));
         return;
       }
@@ -78,7 +81,7 @@ public class Callback extends Overlord {
             "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                 + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
         response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
+            HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
                 "the request was not expected"));
         return;
       }
@@ -86,7 +89,7 @@ public class Callback extends Overlord {
       if (!codeResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing code parameter returned from provider!");
         response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
+            HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
                 "missing or invalid code parameter"));
         return;
       }
@@ -106,7 +109,7 @@ public class Callback extends Overlord {
       String access_token = null;
       String id_token = null;
 
-      MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
+      MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
           providerConfig.getRedirectUri(), codeResult.getValue(),
           sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
       if (tokenResponse != null) {
@@ -118,7 +121,7 @@ public class Callback extends Overlord {
             eb.setTokenResponse(tokenResponseObject);
             try {
               id_token = tokenResponseObject.get("id_token").toString();
-              MsgResponse jwks = getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
+              MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
               JSONObject idTokenPayload = new Jwt()
                   .validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(),
                       sessionCtx.getString(Constants.NONCE.getKey()));
@@ -127,7 +130,7 @@ public class Callback extends Overlord {
               LOGGER.warning("No id_token was issued or it was invalid!");
             }
           } else {
-            response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
+            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
                 "invalid_response",
                 String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())));
             return;
@@ -136,7 +139,7 @@ public class Callback extends Overlord {
           // need to handle error cases
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-            response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
+            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
                 (String) err.get("error"),
                 (String) err.get("error_description")));
             return;
@@ -144,18 +147,18 @@ public class Callback extends Overlord {
         }
       } else {
         response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
+            HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
                 "the code exchange failed. An access_token could not be retrieved"));
         return;
       }
 
-      MsgResponse userinfoResp = getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
+      MsgResponse userinfoResp = HttpHelper.getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
       if (userinfoResp != null) {
         if (userinfoResp.getStatus() == 200) {
           if (userinfoResp.getContentType().startsWith("application/json")) {
             JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
             eb.setUserinfo(userinfoRespObject);
-            eb.setNormalized(normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
+            eb.setNormalized(HttpHelper.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
           }
         }
       }
@@ -174,5 +177,10 @@ public class Callback extends Overlord {
       e.printStackTrace();
       response.sendError(400, "authorization request failed!");
     }
+  }
+
+  private String getMessageForRedirect(String redirectUri, String urlSafeKey, String value)
+      throws UnsupportedEncodingException {
+    return redirectUri.concat(urlSafeKey).concat("=").concat(URLEncoder.encode(value, "UTF-8"));
   }
 }

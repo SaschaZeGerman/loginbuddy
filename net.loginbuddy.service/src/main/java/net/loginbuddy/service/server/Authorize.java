@@ -16,8 +16,10 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
@@ -29,7 +31,7 @@ import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.util.SessionContext;
 
 @WebServlet(name = "Authorize")
-public class Authorize extends Overlord {
+public class Authorize extends HttpServlet {
 
   private static Logger LOGGER = Logger.getLogger(String.valueOf(Authorize.class));
 
@@ -121,7 +123,7 @@ public class Authorize extends Overlord {
     if (clientStateResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Multiple state parameters received!");
       response.sendRedirect(
-          getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple state parameters received"));
+          HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple state parameters received"));
       return;
     }
 
@@ -130,7 +132,7 @@ public class Authorize extends Overlord {
 
     if (!clientResponseTypeResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
-      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request",
+      response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request",
           "invalid or unsupported response_type parameter or value"));
       return;
     } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getResponseTypesSupported()))
@@ -138,33 +140,33 @@ public class Authorize extends Overlord {
       LOGGER.warning(
           String.format("The given response_type is not supported: %s", clientResponseTypeResult.getValue()));
       response.sendRedirect(
-          getErrorForRedirect(clientRedirectUriValid, "invalid_request", String.format("unsupported response_type: %s", clientResponseTypeResult.getValue())));
+          HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", String.format("unsupported response_type: %s", clientResponseTypeResult.getValue())));
       return;
     }
 
     if (clientProviderResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Multiple provider parameter!");
       response
-          .sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple provider parameter"));
+          .sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple provider parameter"));
       return;
     }
 
     if (clientCodeChallengeResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Multiple code_challenge parameters found!");
       response.sendRedirect(
-          getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple code_challenge parameters found"));
+          HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple code_challenge parameters found"));
       return;
     }
     if (clientCodeChallengeResult.getResult().equals(RESULT.VALID) && !Pkce
         .verifyChallenge(clientCodeChallengeResult.getValue())) {
       LOGGER.warning("Invalid code_challenge!");
-      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid code_challenge"));
+      response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid code_challenge"));
       return;
     }
 
     if (clientCodeChallendeMethodResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Multiple code_challenge_method parameters found!");
-      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request",
+      response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request",
           "multiple code_challenge_method parameters found!"));
       return;
     }
@@ -172,7 +174,7 @@ public class Authorize extends Overlord {
     if (clientCodeChallendeMethodResult.getResult().equals(RESULT.VALID) && !Pkce.CODE_CHALLENGE_METHOD_S256
         .equals(clientCodeChallendeMethodResult.getValue())) {
       LOGGER.warning("Unsupported code_challenge_method parameter!");
-      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request",
+      response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request",
           "unsupported code_challenge_method parameter"));
       return;
     }
@@ -184,7 +186,7 @@ public class Authorize extends Overlord {
         clientScope = LoginbuddyConfig.getInstance().getDiscoveryUtil().getScopesSupportedAsString();
       } else {
         LOGGER.warning("Invalid or unsupported scope parameter!");
-        response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope parameter"));
+        response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope parameter"));
         return;
       }
     }
@@ -194,7 +196,7 @@ public class Authorize extends Overlord {
     scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
     if (scopes.size() == 0) {
       LOGGER.warning("Invalid or unsupported scope!");
-      response.sendRedirect(getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope value"));
+      response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope value"));
       return;
     }
 

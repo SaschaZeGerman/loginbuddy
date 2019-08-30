@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
@@ -78,14 +79,14 @@ public class Initialize extends SidecarMaster {
       if (providerConfig == null) {
         LOGGER.warning("The given provider is unknown or invalid");
         response.getWriter()
-            .write(getErrorAsJson("invalid_request", "The given provider is unknown or invalid").toJSONString());
+            .write(HttpHelper.getErrorAsJson("invalid_request", "The given provider is unknown or invalid").toJSONString());
         return;
       }
     } catch (Exception e) {
       // should never occur
       LOGGER.severe("The system has not been configured yet");
       response.getWriter()
-          .write(getErrorAsJson("invalid_system", "The system has not been configured yet").toJSONString());
+          .write(HttpHelper.getErrorAsJson("invalid_system", "The system has not been configured yet").toJSONString());
       return;
     }
 
@@ -94,7 +95,7 @@ public class Initialize extends SidecarMaster {
     // using the well-known endpoint
     String oidcConfigUrl = providerConfig.getOpenidConfigurationUri();
     if (oidcConfigUrl != null) {
-      MsgResponse openIdConfig = getAPI(oidcConfigUrl);
+      MsgResponse openIdConfig = HttpHelper.getAPI(oidcConfigUrl);
       if (openIdConfig != null && openIdConfig.getStatus() == 200) {
         JSONObject msg = null;
         try {
@@ -102,7 +103,7 @@ public class Initialize extends SidecarMaster {
         } catch (ParseException e) {
           // should never happen
           LOGGER.warning("For some unknown reason the OpenID Configuration could not be parsed as JSON object!");
-          response.getWriter().write(getErrorAsJson("invalid_target",
+          response.getWriter().write(HttpHelper.getErrorAsJson("invalid_target",
               "For some unknown reason the OpenID Configuration could not be parsed as JSON object").toJSONString());
           return;
         }
@@ -113,7 +114,7 @@ public class Initialize extends SidecarMaster {
       } else {
         LOGGER.warning(
             String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl));
-        response.getWriter().write(getErrorAsJson("invalid_target",
+        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_target",
             String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl))
             .toJSONString());
         return;

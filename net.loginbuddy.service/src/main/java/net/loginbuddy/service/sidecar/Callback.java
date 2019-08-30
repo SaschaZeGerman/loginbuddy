@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ExchangeBean;
@@ -64,7 +65,7 @@ public class Callback extends SidecarMaster {
       if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing or invalid state parameter returned from provider!");
         response.getWriter().write(
-            getErrorAsJson("invalid_response", "Missing or invalid state parameter returned from provider")
+            HttpHelper.getErrorAsJson("invalid_response", "Missing or invalid state parameter returned from provider")
                 .toJSONString());
         return;
       }
@@ -73,13 +74,13 @@ public class Callback extends SidecarMaster {
       if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
         LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
         response.getWriter().write(
-            getErrorAsJson("invalid_session", "the current session is invalid or it has expired").toJSONString());
+            HttpHelper.getErrorAsJson("invalid_session", "the current session is invalid or it has expired").toJSONString());
         return;
       }
 
       if (errorResult.getValue() != null) {
         response.getWriter()
-            .write(getErrorAsJson(errorResult.getValue(), errorDescriptionResult.getValue()).toJSONString());
+            .write(HttpHelper.getErrorAsJson(errorResult.getValue(), errorDescriptionResult.getValue()).toJSONString());
         return;
       }
 
@@ -87,14 +88,14 @@ public class Callback extends SidecarMaster {
         LOGGER.warning(
             "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                 + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-        response.getWriter().write(getErrorAsJson("invalid_session", "the request was not expected").toJSONString());
+        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "the request was not expected").toJSONString());
         return;
       }
 
       if (!codeResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing code parameter returned from provider!");
         response.getWriter()
-            .write(getErrorAsJson("invalid_session", "missing or invalid code parameter").toJSONString());
+            .write(HttpHelper.getErrorAsJson("invalid_session", "missing or invalid code parameter").toJSONString());
         return;
       }
 
@@ -113,7 +114,7 @@ public class Callback extends SidecarMaster {
       String access_token = null;
       String id_token = null;
 
-      MsgResponse tokenResponse = postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
+      MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
           providerConfig.getRedirectUri(), codeResult.getValue(),
           sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
       if (tokenResponse != null) {
@@ -125,7 +126,7 @@ public class Callback extends SidecarMaster {
             eb.setTokenResponse(tokenResponseObject);
             try {
               id_token = tokenResponseObject.get("id_token").toString();
-              MsgResponse jwks = getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
+              MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
               JSONObject idTokenPayload = new Jwt()
                   .validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(),
                       sessionCtx.getString(Constants.NONCE.getKey()));
@@ -135,7 +136,7 @@ public class Callback extends SidecarMaster {
             }
           } else {
             response.getWriter()
-                .write(getErrorAsJson("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())).toJSONString());
+                .write(HttpHelper.getErrorAsJson("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())).toJSONString());
             return;
           }
         } else {
@@ -143,24 +144,24 @@ public class Callback extends SidecarMaster {
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
             response.getWriter()
-                .write(getErrorAsJson((String) err.get("error"), (String) err.get("error_description")).toJSONString());
+                .write(HttpHelper.getErrorAsJson((String) err.get("error"), (String) err.get("error_description")).toJSONString());
             return;
           }
         }
       } else {
         response.getWriter().write(
-            getErrorAsJson("invalid_request", "the code exchange failed. An access_token could not be retrieved")
+            HttpHelper.getErrorAsJson("invalid_request", "the code exchange failed. An access_token could not be retrieved")
                 .toJSONString());
         return;
       }
 
-      MsgResponse userinfoResp = getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
+      MsgResponse userinfoResp = HttpHelper.getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
       if (userinfoResp != null) {
         if (userinfoResp.getStatus() == 200) {
           if (userinfoResp.getContentType().startsWith("application/json")) {
             JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
             eb.setUserinfo(userinfoRespObject);
-            eb.setNormalized(normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
+            eb.setNormalized(HttpHelper.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
           }
         }
       }
@@ -171,7 +172,7 @@ public class Callback extends SidecarMaster {
     } catch (Exception e) {
       LOGGER.warning("authorization request failed!");
       e.printStackTrace();
-      response.getWriter().write(getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
+      response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
     }
   }
 }

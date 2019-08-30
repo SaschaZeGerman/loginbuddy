@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.util.Arrays;
 import java.util.logging.Logger;
+import net.loginbuddy.common.cache.LoginbuddyCache;
 
 public class DiscoveryUtil {
 
@@ -35,14 +36,25 @@ public class DiscoveryUtil {
 
   private DiscoveryConfig getConfig() {
     try {
-      JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
-      DiscoveryConfig config = MAPPER.readValue(node.toString(), DiscoveryConfig.class);
-      config.setJsonString(node.toString());
+      DiscoveryConfig config = (DiscoveryConfig) LoginbuddyCache.getInstance().get("DiscoveryConfig");
+      if (config == null) {
+        JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
+        config = MAPPER.readValue(node.toString(), DiscoveryConfig.class);
+        config.setJsonString(node.toString());
+        LoginbuddyCache.getInstance().put("DiscoveryConfig", config);
+      }
       return config;
     } catch (Exception e) {
       LOGGER.severe("discovery.json file could not be loaded or it is invalid JSON! Existing!");
     }
     return null; // we should never get here
+  }
+
+  /**
+   * A helper method for dynamic registrations
+   */
+  public String getRedirectUri() {
+    return getIssuer() + "/callback";
   }
 
   public String getIssuer() {
@@ -68,13 +80,34 @@ public class DiscoveryUtil {
   public String getAuthorizationEndpoint() {
     return getConfig().getAuthorizationEndpoint();
   }
-  public String getTokenEndpoint() { return getConfig().getTokenEndpoint(); }
-  public String getJwksUri() { return getConfig().getJwksUri(); }
-  public String[] getIdTokenSigningAlgValuesSupported() { return getConfig().getIdTokenSigningAlgValuesSupported(); }
-  public String getServiceDocumentation() { return getConfig().getServiceDocumentation(); }
-  public String[] getSubjectTypesSupported() { return getConfig().getSubjectTypesSupported(); }
-  public String[] getCodechallengeMethodsSupported() { return getConfig().getCodeChallengeMethodsSupported(); }
-  public String getUserinfoEndpoint() { return getConfig().getUserinfoEndpoint(); }
+
+  public String getTokenEndpoint() {
+    return getConfig().getTokenEndpoint();
+  }
+
+  public String getJwksUri() {
+    return getConfig().getJwksUri();
+  }
+
+  public String[] getIdTokenSigningAlgValuesSupported() {
+    return getConfig().getIdTokenSigningAlgValuesSupported();
+  }
+
+  public String getServiceDocumentation() {
+    return getConfig().getServiceDocumentation();
+  }
+
+  public String[] getSubjectTypesSupported() {
+    return getConfig().getSubjectTypesSupported();
+  }
+
+  public String[] getCodechallengeMethodsSupported() {
+    return getConfig().getCodeChallengeMethodsSupported();
+  }
+
+  public String getUserinfoEndpoint() {
+    return getConfig().getUserinfoEndpoint();
+  }
 
   public DiscoveryConfig getOpenIdConfiguration() {
     return getConfig();
