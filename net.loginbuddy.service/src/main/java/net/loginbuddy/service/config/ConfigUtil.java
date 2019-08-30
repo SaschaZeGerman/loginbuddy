@@ -18,8 +18,9 @@ import java.util.List;
 import java.util.logging.Logger;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
+import net.loginbuddy.service.server.Overlord;
 
-public class ConfigUtil {
+public class ConfigUtil extends Overlord {
 
   private Logger LOGGER = Logger.getLogger(String.valueOf(ConfigUtil.class));
 

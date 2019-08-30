@@ -42,7 +42,9 @@ public class Registration extends HttpServlet {
       discoveryUrl = issuerResult.getValue() + "/.well-known/openid-configuration";
     }
 
-    JSONObject registration = HttpHelper.retrieveAndRegister(issuerResult.getValue(), discoveryUrl, LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri());
+    JSONObject registration = HttpHelper
+        .retrieveAndRegister(issuerResult.getValue(), discoveryUrl, LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri());
+
     if(registration.get("error") != null) {
       response.setStatus(400);
     } else {

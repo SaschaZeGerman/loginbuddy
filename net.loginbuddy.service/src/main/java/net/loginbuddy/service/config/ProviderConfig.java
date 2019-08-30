@@ -201,6 +201,7 @@ public class ProviderConfig {
     return mappings == null ? "{}" : mappings.toString();
   }
 
+
   public JSONObject getMappingsAsJson() {
     try {
       return (JSONObject) new JSONParser().parse(getMappings());
