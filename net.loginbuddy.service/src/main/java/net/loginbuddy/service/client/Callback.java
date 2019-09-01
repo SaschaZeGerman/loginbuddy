@@ -38,7 +38,7 @@ public class Callback extends HttpServlet {
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
   @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     doGet(req, resp);
   }
 
@@ -96,22 +96,31 @@ public class Callback extends HttpServlet {
 
       String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
-      ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
-          .getProviderConfigByProvider(provider);
+      ProviderConfig providerConfig = null;
+      if(Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
+        providerConfig = LoginbuddyConfig.getInstance().getConfigUtil()
+            .getProviderConfigByProvider(provider);
+      } else {
+        providerConfig = new ProviderConfig();
+        // dynamically registered providers are in a separate container and not available here. Get them out of the session
+        providerConfig.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
+        providerConfig.setClientSecret(sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
+        providerConfig.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
+        providerConfig.setIssuer(provider);
+      }
+
 
       ExchangeBean eb = new ExchangeBean();
       eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
       eb.setIat(new Date().getTime() / 1000);
-      eb.setAud(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
-      eb.setNonce(sessionCtx.getString(Constants.NONCE.getKey()));
+      eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
+      eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
       eb.setProvider(provider);
 
       String access_token = null;
       String id_token = null;
 
-      MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(),
-          providerConfig.getRedirectUri(), codeResult.getValue(),
-          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
+      MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), codeResult.getValue(), sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
       if (tokenResponse != null) {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
@@ -124,7 +133,7 @@ public class Callback extends HttpServlet {
               MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
               JSONObject idTokenPayload = new Jwt()
                   .validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(), providerConfig.getClientId(),
-                      sessionCtx.getString(Constants.NONCE.getKey()));
+                      sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
               eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {
               LOGGER.warning("No id_token was issued or it was invalid!");

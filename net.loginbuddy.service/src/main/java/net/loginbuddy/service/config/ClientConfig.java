@@ -34,6 +34,13 @@ public class ClientConfig {
     @JsonProperty("providers")
     private String[] clientProviders;
 
+    @JsonProperty("accept_dynamic_provider")
+    private boolean acceptDynamicProvider;
+
+    public ClientConfig() {
+        acceptDynamicProvider = false;
+    }
+
     public String getRedirectUri() {
         return redirectUri;
     }
@@ -76,5 +83,13 @@ public class ClientConfig {
 
     public void setClientProviders(String[] clientProviders) {
         this.clientProviders = clientProviders;
+    }
+
+    public boolean isAcceptDynamicProvider() {
+        return acceptDynamicProvider;
+    }
+
+    public void setAcceptDynamicProvider(boolean acceptDynamicProvider) {
+        this.acceptDynamicProvider = acceptDynamicProvider;
     }
 }

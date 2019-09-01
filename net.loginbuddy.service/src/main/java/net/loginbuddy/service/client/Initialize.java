@@ -12,6 +12,8 @@ import static net.loginbuddy.common.api.HttpHelper.getErrorForRedirect;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,6 +31,8 @@ import net.loginbuddy.common.util.PkcePair;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.util.SessionContext;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -51,6 +55,10 @@ public class Initialize extends HttpServlet {
         .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
     ParameterValidatorResult sessionIdResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.SESSION.getKey()));
+    ParameterValidatorResult issuerResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.ISSUER.getKey()));
+    ParameterValidatorResult discoveryUrlResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.DISCOVERY_URL.getKey()));
 
     if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing session, cannot initiate the authorization flow!");
@@ -75,10 +83,10 @@ public class Initialize extends HttpServlet {
       return;
     }
 
-    String providerSession = (sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey())).trim();
-    if ("".equals(providerSession)) {
+    String selectedProvider = (sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey())).trim();
+    if ("".equals(selectedProvider)) {
       if (providerResult.getResult().equals(RESULT.VALID)) {
-        providerSession = providerResult.getValue();
+        selectedProvider = providerResult.getValue();
       } else {
         LOGGER.warning("No provider has been selected or an invalid parameters has been given");
         response.sendRedirect(
@@ -91,7 +99,30 @@ public class Initialize extends HttpServlet {
     // TODO Verify that the selected provider is valid for this client
     ProviderConfig providerConfig = null;
     try {
-      providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(providerSession);
+
+      // dynamic registration of unknown provider
+      // we need: 'dynamic_provider', and 'issuer', client must be registered to accept dynamic provider
+      if(checkForDynamicProvider(selectedProvider, issuerResult, discoveryUrlResult, sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey()))) {
+
+        List<NameValuePair> formParameters = new ArrayList<>();
+        formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuerResult.getValue()));
+        formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrlResult.getValue()));
+        formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
+
+        MsgResponse msg = HttpHelper.postMessage(formParameters, "https://loginbuddy-selfissued:445/selfissued/register", "application/json");
+        if(msg.getStatus() == 200) {
+          providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
+          selectedProvider = providerConfig.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
+          sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_SELFISSUED.getKey());
+          sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providerConfig.getClientId()); // we have to store this in the session to make it available later
+          sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providerConfig.getClientSecret()); // we have to store this in the session to make it available later
+          sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providerConfig.getRedirectUri()); // we have to store this in the session to make it available later
+        }
+      } else {
+        providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(selectedProvider);
+        sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
+      }
+
       if (providerConfig == null) {
         LOGGER.warning("The given provider is unknown or invalid");
         response.sendRedirect(
@@ -99,10 +130,11 @@ public class Initialize extends HttpServlet {
                 "The given provider is unknown or invalid"));
         return;
       } else {
-        sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), providerSession);
+        sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), selectedProvider);
       }
     } catch (Exception e) {
       // should never occur
+      e.printStackTrace();
       LOGGER.severe("The system has not been configured yet!");
       response.sendRedirect(
           getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "server_error",
@@ -113,6 +145,7 @@ public class Initialize extends HttpServlet {
     StringBuilder authorizeUrl = new StringBuilder();
 
     // using the well-known endpoint
+    String providerTokenEndpoint, providerJwksEndpoint, providerUserinfoEndpoint;
     String oidcConfigUrl = providerConfig.getOpenidConfigurationUri();
     if (oidcConfigUrl != null) {
       MsgResponse openIdConfig = HttpHelper.getAPI(oidcConfigUrl);
@@ -129,9 +162,9 @@ public class Initialize extends HttpServlet {
           return;
         }
         authorizeUrl.append(msg.get(Constants.AUTHORIZATION_ENDPOINT.getKey()).toString());
-        sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), msg.get(Constants.TOKEN_ENDPOINT.getKey()).toString());
-        sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), msg.get(Constants.USERINFO_ENDPOINT.getKey()).toString());
-        sessionCtx.put(Constants.JWKS_URI.getKey(), msg.get(Constants.JWKS_URI.getKey()).toString());
+        providerTokenEndpoint = msg.get(Constants.TOKEN_ENDPOINT.getKey()).toString();
+        providerJwksEndpoint = msg.get(Constants.JWKS_URI.getKey()).toString();
+        providerUserinfoEndpoint = msg.get(Constants.USERINFO_ENDPOINT.getKey()).toString();
       } else {
         LOGGER.warning(String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl));
         response.sendRedirect(
@@ -142,10 +175,15 @@ public class Initialize extends HttpServlet {
     } else {
       // using the configured URLs since a well-known endpoint has not been configured
       authorizeUrl.append(providerConfig.getAuthorizationEndpoint());
-      sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), providerConfig.getTokenEndpoint());
-      sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), providerConfig.getUserinfoEndpoint());
-      sessionCtx.put(Constants.JWKS_URI.getKey(), providerConfig.getJwksUri());
+      providerTokenEndpoint = providerConfig.getTokenEndpoint();
+      providerJwksEndpoint = providerConfig.getJwksUri();
+      providerUserinfoEndpoint = providerConfig.getUserinfoEndpoint();
     }
+
+    boolean isHandlerLoginbuddy = sessionCtx.get(Constants.ISSUER_HANDLER.getKey()).equals(Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
+    sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerTokenEndpoint : String.format("https://loginbuddy-selfissued:445/selfissued/token?target=%s", URLEncoder.encode(providerTokenEndpoint, "UTF-8")));
+    sessionCtx.put(Constants.JWKS_URI.getKey(), isHandlerLoginbuddy ? providerJwksEndpoint : String.format("https://loginbuddy-selfissued:445/selfissued/jwks?target=%s", URLEncoder.encode(providerJwksEndpoint, "UTF-8")));
+    sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerUserinfoEndpoint : String.format("https://loginbuddy-selfissued:445/selfissued/userinfo?target=%s", URLEncoder.encode(providerUserinfoEndpoint, "UTF-8")));
 
     // use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
     String pkce = null;
@@ -166,7 +204,7 @@ public class Initialize extends HttpServlet {
         .append("&").append(Constants.SCOPE.getKey())
         .append("=").append(URLEncoder.encode(scope, "UTF-8"))
         .append("&").append(Constants.NONCE.getKey())
-        .append("=").append(sessionCtx.get(Constants.NONCE.getKey()))
+        .append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
         .append("&").append(Constants.REDIRECT_URI.getKey())
         .append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
         .append(pkce == null ? "" : pkce)
@@ -184,5 +222,18 @@ public class Initialize extends HttpServlet {
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 
     response.sendRedirect(authorizeUrl.toString());
+  }
+
+  private boolean checkForDynamicProvider(String provider, ParameterValidatorResult issuer, ParameterValidatorResult discoveryUrlResult, boolean acceptDynamicProvider) {
+    boolean result = false;
+    if(acceptDynamicProvider) {
+      result = "dynamic_provider".equalsIgnoreCase(provider);
+      result = result && issuer.getResult().equals(RESULT.VALID);
+      result = result && HttpHelper.couldBeAUrl(issuer.getValue());
+      if(discoveryUrlResult.getResult().equals(RESULT.VALID)) {
+        result = result && HttpHelper.couldBeAUrl(discoveryUrlResult.getValue());
+      }
+    }
+    return result;
   }
 }

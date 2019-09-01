@@ -6,7 +6,8 @@
         "client_type": "public",
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
-        "providers": ["server_loginbuddy"]
+        "providers": ["server_loginbuddy"],
+        "accept_dynamic_provider": true
       },
       {
         "client_id": "clientIdForTestingPurposesConfidential",

@@ -20,17 +20,20 @@
 
     private String createProvidersTable(HttpServletRequest request) {
 
-        if(request.getParameter("session") == null || request.getParameterValues("session").length > 1 || request.getParameter("session").equals(request.getSession().getId())) {
+        if (request.getParameter("session") == null || request.getParameterValues("session").length > 1 || request
+                .getParameter("session").equals(request.getSession().getId())) {
             LOGGER.warning("The current session is invalid or it has expired!");
             throw new IllegalStateException("The current session is invalid or it has expired!");
         }
         String sessionId = request.getParameter("session");
 
-        SessionContext sessionCtx = (SessionContext)LoginbuddyCache.getInstance().get(sessionId);
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(sessionId);
         List<ProviderConfig> providerConfigs = null;
         try {
-            providerConfigs = LoginbuddyConfig.getInstance().getConfigUtil().getProviders(sessionCtx.getString(Constants.CLIENT_ID.getKey()));
+            providerConfigs = LoginbuddyConfig.getInstance().getConfigUtil()
+                    .getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
         } catch (Exception e) {
+          e.printStackTrace();
             // should never occur, this would have been caught in Providers
             LOGGER.severe("The system has not been configured yet!");
             throw new IllegalStateException("The system has not been configured yet!");
@@ -46,11 +49,14 @@
             } else {
                 providers.append("<td style=\"text-align: center; vertical-align: middle;\">");
             }
-            providers.append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
+            providers
+                    .append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
             providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(sessionId).append("\">");
-            providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
+            providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider())
+                    .append("\">");
             providers.append("<button type=\"submit\">");
-            providers.append("<img alt=\"").append(nextProvider.getProvider()).append("\" width=\"100\" margin=\"0\" src=\"images/");
+            providers.append("<img alt=\"").append(nextProvider.getProvider())
+                    .append("\" width=\"100\" margin=\"0\" src=\"images/");
             providers.append(nextProvider.getProvider());
             providers.append(".png\"/></button></form></td>");
             if (count % 3 == 2) {
@@ -64,6 +70,22 @@
             providers.append("</tr>");
         }
         providers.append("</table>");
+
+        if (sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey())) {
+            providers.append("<hr/><h3>Use your own!</h3>");
+            providers
+                    .append("<p>Provide the OpenID Connect <strong>issuer</strong> below to use a non listed but OpenID Connect compliant provider.</p>");
+            providers.append("<p>The configuration needs to include at least these values: <strong>issuer</strong> and <strong>registration_endpoint</strong></p>");
+            providers.append("<p>Add the OpenID Connect configuration endpoint if <strong>{issuer}.concat(/.well-known/openid-configuration)</strong> cannot be used to create the URL.</p>");
+            providers
+                    .append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
+            providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(sessionId).append("\">");
+            providers.append("<input type=\"hidden\" name=\"provider\" value=\"dynamic_provider\"/>");
+            providers.append("<div class=\"form-group\"><label for=\"issuer\">Issuer: <small>(i.e.: https://myserver.com)</small></label><input type=\"text\" maxlength=\"128\" class=\"form-control\" name=\"issuer\" id=\"issuer\"></div>");
+            providers.append("<div class=\"form-group\"><label for=\"discovery_url\">URL: <small>(i.e.: https://myserver.com/.well-known/openid-configuration)</small></label><input type=\"url\" maxlength=\"128\" class=\"form-control\" name=\"discovery_url\" id=\"discovery_url\"></div>");
+            providers.append("<button type=\"submit\" class=\"btn btn-primary\">Submit</button>");
+            providers.append("</form>");
+        }
 
         return providers.toString();
     }
@@ -99,7 +121,8 @@
 <div class="container" id="content">
 
     <h1>Welcome to Loginbuddy!</h1>
-    <p>This page displays all configured social login providers! This page can be customized so that it fits your web design.</p>
+    <p>This page displays all configured social login providers! This page can be customized so that it fits your web
+        design.</p>
     <hr/>
     <h2>Choose your provider</h2>
     <p>The images below represent configured and supported providers one can choose from. <strong>fake</strong> is a
@@ -107,7 +130,7 @@
         than simulating a 'real' provider. Clicking it will result in an example response how it would look.</p>
 
     <%=
-        createProvidersTable(request)
+    createProvidersTable(request)
     %>
 
 </div>

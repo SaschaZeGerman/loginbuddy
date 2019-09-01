@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                      http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <servlet>
+        <servlet-name>SelfIssuedRegistation</servlet-name>
+        <servlet-class>net.loginbuddy.selfissued.oidc.Registration</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SelfIssuedTokenExchange</servlet-name>
+        <servlet-class>net.loginbuddy.selfissued.oidc.TokenExchange</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SelfIssuedJwksUri</servlet-name>
+        <servlet-class>net.loginbuddy.selfissued.oidc.JwksUri</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SelfIssuedUserinfo</servlet-name>
+        <servlet-class>net.loginbuddy.selfissued.oidc.Userinfo</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SelfIssuedCallback</servlet-name>
+        <servlet-class>net.loginbuddy.selfissued.oidc.Callback</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>SelfIssuedRegistation</servlet-name>
+        <url-pattern>/selfissued/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SelfIssuedTokenExchange</servlet-name>
+        <url-pattern>/selfissued/token</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SelfIssuedJwksUri</servlet-name>
+        <url-pattern>/selfissued/jwks</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SelfIssuedUserinfo</servlet-name>
+        <url-pattern>/selfissued/userinfo</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SelfIssuedCallback</servlet-name>
+        <url-pattern>/selfissued/callback</url-pattern>
+    </servlet-mapping>
+
+    <mime-mapping>
+        <extension>json</extension>
+        <mime-type>application/json</mime-type>
+    </mime-mapping>
+
+</web-app>

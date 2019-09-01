@@ -69,8 +69,7 @@ public class ConfigUtil extends Overlord {
           providers = Arrays.asList(MAPPER.readValue(providerNode.toString(), ProviderConfig[].class));
           for (ProviderConfig next : providers) {
             if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
-              next.enhanceToFull(MAPPER
-                  .readValue(HttpHelper.retrieveAndRegister(next.getIssuer(), next.getOpenidConfigurationUri(),
+              next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
                       LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()).toJSONString(),
                       ProviderConfig.class));
             }
@@ -123,6 +122,16 @@ public class ConfigUtil extends Overlord {
         .filter(provider -> provider.getProvider().equalsIgnoreCase(providerHint))
         .findFirst()
         .orElse(null);
+  }
+
+  public ProviderConfig getProviderConfigFromJsonString(String providerHint) {
+    try {
+      return MAPPER.readValue(providerHint, ProviderConfig.class);
+    } catch (IOException e) {
+      LOGGER.warning("The provider configuration could no be mapped to ProviderConfig");
+      e.printStackTrace();;
+      return null;
+    }
   }
 
   public boolean isConfigured() {

@@ -47,20 +47,12 @@
     </Connector>
 
     <Engine name="Catalina" defaultHost="@@hostname@@">
-      <Host name="@@hostname@@" appBase="webapps" unpackWARs="true" autoDeploy="true">
+      <Host name="@@hostname@@"  appBase="webapps" unpackWARs="true" autoDeploy="true">
         <Alias>@@hostname@@</Alias>
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
           prefix="loginbuddy_access_log" suffix=".txt"
           pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
         <Context path="" docBase="/usr/local/tomcat/webapps/ROOT" debug="0" reloadable="true">
-          <Resource name="bean/ConfigUtilFactory" auth="Container"
-            type="net.loginbuddy.service.config.ConfigUtil"
-            factory="org.apache.naming.factory.BeanFactory"
-            path="webapps/ROOT/WEB-INF/classes/config.json"/>
-          <Resource name="bean/DiscoveryUtilFactory" auth="Container"
-            type="net.loginbuddy.service.config.DiscoveryUtil"
-            factory="org.apache.naming.factory.BeanFactory"
-            path="webapps/ROOT/WEB-INF/classes/discovery.json"/>
           <Resource name="bean/CacheFactory" auth="Container"
             type="net.loginbuddy.common.cache.DefaultCache"
             factory="org.apache.naming.factory.BeanFactory"/>

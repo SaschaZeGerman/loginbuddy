@@ -30,9 +30,9 @@ public class SessionContext extends LoginbuddyContext {
    */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
-      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid) {
+      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider) {
 
-    put(Constants.CLIENT_ID.getKey(), clientId);
+    put(Constants.CLIENT_CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
     put(Constants.CLIENT_RESPONSE_TYPE.getKey(), response_type);
     put(Constants.CLIENT_CODE_CHALLENGE.getKey(), code_challenge);
@@ -44,9 +44,10 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_PROMPT.getKey(), prompt == null ? "" : prompt);
     put(Constants.CLIENT_LOGIN_HINT.getKey(), loginHint == null ? "" : loginHint);
     put(Constants.CLIENT_ID_TOKEN_HINT.getKey(), idtokenHint == null ? "" : idtokenHint);
+    put(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey(), acceptDynamicProvider);
     put(Constants.CHECK_REDIRECT_URI.getKey(), checkRedirectUri);
 
-    put(Constants.NONCE.getKey(), nonce == null ? UUID.randomUUID().toString() : nonce);
+    put(Constants.CLIENT_NONCE.getKey(), nonce == null ? UUID.randomUUID().toString() : nonce);
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
   }
 

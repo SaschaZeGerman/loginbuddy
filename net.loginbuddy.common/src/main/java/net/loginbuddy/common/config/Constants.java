@@ -12,6 +12,7 @@ public enum Constants {
 
     // General values
     ACCESS_TOKEN("access_token"),
+    ACCEPT_DYNAMIC_PROVIDER("accept_dynamic_provider"),
     AUTHORIZATION("Authorization"),
     AUTHORIZATION_CODE("authorization_code"),
     AUTHORIZATION_ENDPOINT("authorization_endpoint"),
@@ -35,6 +36,9 @@ public enum Constants {
     ID_TOKEN("id_token"),
     ID_TOKEN_HINT("id_token_hint"),
     ISSUER("issuer"),
+    ISSUER_HANDLER("issuer_handler"),
+    ISSUER_HANDLER_SELFISSUED("issuer_handler_selfissued"),
+    ISSUER_HANDLER_LOGINBUDDY("issuer_handler_loginbuddy"),
     JWKS_URI("jwks_uri"),
     LOGIN_HINT("login_hint"),
     NONCE("nonce"),
@@ -46,6 +50,7 @@ public enum Constants {
     RESPONSE_TYPE("response_type"),
     SESSION("session"),
     SCOPE("scope"),
+    SCOPES_SUPPORTED("scopes_supported"),
     STATE("state"),
     TOKEN_ENDPOINT("token_endpoint"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
@@ -61,6 +66,7 @@ public enum Constants {
 
     // references client (application) values
     CLIENT_STATE("clientState"),
+    CLIENT_ACCEPT_DYNAMIC_PROVIDER("clientAcceptDynamicProvider"),
     CLIENT_REDIRECT("clientRedirectUri"),
     CLIENT_REDIRECT_VALID("clientRedirectUriValid"),
     CLIENT_CODE_CHALLENGE("clientCodeChallenge"),
@@ -71,7 +77,14 @@ public enum Constants {
     CLIENT_PROMPT("clientPrompt"),
     CLIENT_LOGIN_HINT("clientLoginHint"),
     CLIENT_ID_TOKEN_HINT("clientIdtokenHint"),
-    MAPPING_OIDC("{\"sub\":\"sub\", \"name\": \"name\",\"given_name\": \"given_name\",\"family_name\": \"family_name\",\"picture\": \"picture\",\"email\":\"email\", \"email_verified\":\"email_verified\", \"provider\":\"asis:provider\"}");
+    CLIENT_CLIENT_ID("clientClientId"),
+    CLIENT_NONCE("clientNonce"),
+    MAPPING_OIDC("{\"sub\":\"sub\", \"name\": \"name\",\"given_name\": \"given_name\",\"family_name\": \"family_name\",\"picture\": \"picture\",\"email\":\"email\", \"email_verified\":\"email_verified\", \"provider\":\"asis:provider\"}"),
+
+    // references for dynamically registered providers
+    PROVIDER_CLIENT_ID("providerClientId"),
+    PROVIDER_CLIENT_SECRET("providerClientSecret"),
+    PROVIDER_REDIRECT_URI("providerRedirectUri");
 
     private final String key;
 

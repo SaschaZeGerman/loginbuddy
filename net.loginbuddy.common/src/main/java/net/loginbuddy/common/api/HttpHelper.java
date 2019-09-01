@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import org.apache.http.Header;
@@ -30,7 +32,16 @@ public class HttpHelper {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(HttpHelper.class));
 
+  private static Pattern urlPattern = Pattern.compile("^http[s]?://[a-zA-Z0-9.\\-:/]{1,92}");
+
   public HttpHelper() {
+  }
+
+  public static boolean couldBeAUrl(String url) {
+    if(url == null) {
+      return false;
+    }
+    return urlPattern.matcher(url).matches();
   }
 
   public  static JSONObject getErrorAsJson(String error, String errorDescription) {
@@ -88,7 +99,7 @@ public class HttpHelper {
     return postMessage(formParameters, tokenEndpoint, "application/json");
   }
 
-  protected static MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String acceptContentType)
+  public static MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String acceptContentType)
       throws IOException {
 
     HttpPost req = new HttpPost(targetUrl);
@@ -117,7 +128,11 @@ public class HttpHelper {
         EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
   }
 
-  public static JSONObject retrieveAndRegister(String issuer, String discoveryUrl, String redirectUri) {
+  public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri) {
+    return retrieveAndRegister(discoveryUrl, redirectUri, false, false);
+  }
+
+    public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri, boolean updateProvider, boolean updateIssuer) {
 
     JSONObject errorResp = new JSONObject();
     try {
@@ -125,6 +140,7 @@ public class HttpHelper {
       if (oidcConfig.getStatus() == 200) {
         if (oidcConfig.getContentType().startsWith("application/json")) {
           JSONObject doc = (JSONObject) new JSONParser().parse(oidcConfig.getMsg());
+          // TODO check for 'code' and 'authorization_code' as supported
           String registerUrl = (String) doc.get("registration_endpoint");
           if (registerUrl == null || registerUrl.trim().length() == 0) {
             throw new IllegalArgumentException("The registration_url is invalid or not provided");
@@ -137,7 +153,7 @@ public class HttpHelper {
             MsgResponse registrationResponse = postMessage(registrationMSg, registerUrl, "application/json");
             if (registrationResponse.getStatus() == 200) {
               if (registrationResponse.getContentType().startsWith("application/json")) {
-                return providerTemplate(doc, (JSONObject) new JSONParser().parse(registrationResponse.getMsg()), redirectUri);
+                return providerTemplate(doc, (JSONObject) new JSONParser().parse(registrationResponse.getMsg()), redirectUri, updateProvider, updateIssuer);
               } else {
                 // TODO handle the strange case of not getting JSON as content-type
                 return getErrorAsJson("invalid_configuration", "the registration response is not JSON");
@@ -215,18 +231,45 @@ public class HttpHelper {
     return redirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription);
   }
 
-  private static JSONObject providerTemplate(JSONObject oidcConfig, JSONObject registration, String redirectUri) {
+  public static String stringArrayToString(String[] jsonArray) {
+    return stringArrayToString(jsonArray, " ");
+  }
+
+  /**
+   * Turn ["first","second"] to "first second"
+   * @param jsonArray
+   * @return
+   */
+  public static String jsonArrayToString(JSONArray jsonArray) {
+    return jsonArray.toJSONString().substring(1, jsonArray.toJSONString().length()-1).replaceAll("[,\"]{1,5}", " ").trim();
+  }
+
+  /**
+   *
+   * @param jsonArray
+   * @param separator one of [,; ] as a separator between strings. Default: [ ]
+   * @return
+   */
+  public static String stringArrayToString(String[] jsonArray, String separator) {
+    String str = Arrays.toString(jsonArray);
+    return str.substring(1, str.length() - 1).replace(",", separator.matches("[,; ]") ? separator : " ");
+  }
+
+  private static JSONObject providerTemplate(JSONObject oidcConfig, JSONObject registration, String redirectUri, boolean updateProvider, boolean updateIssuer) {
     JSONObject config = new JSONObject();
     config.put("client_id", registration.get(Constants.CLIENT_ID.getKey()));
     config.put("client_secret", registration.get(Constants.CLIENT_SECRET.getKey()));
     config.put("redirect_uri", redirectUri);
-    config.put("scope", registration.get(Constants.SCOPE.getKey()));
+    config.put("scope", HttpHelper.jsonArrayToString((JSONArray)oidcConfig.get(Constants.SCOPES_SUPPORTED.getKey())));
     config.put("authorization_endpoint", oidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
     config.put("token_endpoint", oidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
     config.put("userinfo_endpoint", oidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
     config.put("jwks_uri", oidcConfig.get(Constants.JWKS_URI.getKey()));
+    if(updateIssuer)
+      config.put("issuer", oidcConfig.get(Constants.ISSUER.getKey()));
+    if(updateProvider)
+      config.put("provider", oidcConfig.get(Constants.ISSUER.getKey()));
     config.put("response_type", "code");
     return config;
   }
-
 }

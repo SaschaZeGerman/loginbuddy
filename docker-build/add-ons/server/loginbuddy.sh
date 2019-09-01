@@ -7,7 +7,7 @@ then
   printf "===============\n"
   printf "== Loginbuddy: Using the default hostname local.loginbuddy.net\n"
   printf "== Loginbuddy: Please configure the enviroment variable HOSTNAME_LOGINBUDDY containing the hostname you want to use\n"
-  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY=yourhostname saschazegerman/loginbuddy:latest-sidecar\n"
+  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY=yourhostname saschazegerman/loginbuddy:latest\n"
   printf "== Loginbuddy: or add HOSTNAME_LOGINBUDDY=yourhostname in the environments section in docker-compose.yml\n"
   printf "===============\n"
   HOSTNAME_LOGINBUDDY=local.loginbuddy.net

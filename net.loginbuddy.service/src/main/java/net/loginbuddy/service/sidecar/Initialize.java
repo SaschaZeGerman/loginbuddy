@@ -68,6 +68,8 @@ public class Initialize extends SidecarMaster {
         .getSingleValue(request.getParameterValues(Constants.ID_TOKEN_HINT.getKey()), "");
     ParameterValidatorResult loginHintResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.LOGIN_HINT.getKey()), "");
+    ParameterValidatorResult acceptDynamicProvider = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.ACCEPT_DYNAMIC_PROVIDER.getKey()), "false");
 
     SessionContext sessionCtx = new SessionContext();
 
@@ -137,6 +139,7 @@ public class Initialize extends SidecarMaster {
     }
 
     String scope = providerConfig.getScope() == null ? Constants.OPENID_SCOPE.getKey() : providerConfig.getScope();
+    boolean adp = Boolean.parseBoolean( (acceptDynamicProvider.getValue() == null) ? "false" : "true".equalsIgnoreCase(acceptDynamicProvider.getValue()) ? "true" : "false");
 
     sessionCtx.setSessionInit(
         providerConfig.getClientId(),
@@ -152,7 +155,8 @@ public class Initialize extends SidecarMaster {
         loginHintResult.getValue(),
         idTokenHintResult.getValue(),
         false,
-        "");
+        "",
+        adp);
 
     authorizeUrl.append("?")
         .append(Constants.CLIENT_ID.getKey())

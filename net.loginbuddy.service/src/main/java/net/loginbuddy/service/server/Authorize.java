@@ -205,7 +205,7 @@ public class Authorize extends HttpServlet {
         clientCodeChallengeResult.getValue(), clientCodeChallendeMethodResult.getValue(),
         clientRedirectUri, clientNonceResult.getValue(), clientStateResult.getValue(), clientProviderResult.getValue(),
         clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
-        checkRedirectUri, clientRedirectUriValid);
+        checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider());
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
 

@@ -11,8 +11,8 @@ package net.loginbuddy.service.config;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
-import java.util.Arrays;
 import java.util.logging.Logger;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 
 public class DiscoveryUtil {
@@ -54,7 +54,14 @@ public class DiscoveryUtil {
    * A helper method for dynamic registrations
    */
   public String getRedirectUri() {
-    return getIssuer() + "/callback";
+    return getRedirectUri("/callback");
+  }
+
+  /**
+   * A helper method for dynamic registrations on dynamic providers
+   */
+  public String getRedirectUri(String path) {
+    return getIssuer() + path;
   }
 
   public String getIssuer() {
@@ -118,19 +125,14 @@ public class DiscoveryUtil {
   }
 
   public String getTokenEndpointAuthMethodsSupportedAsString() {
-    return jsonArrayToString(getTokenEndpointAuthMethodsSupported());
+    return HttpHelper.stringArrayToString(getTokenEndpointAuthMethodsSupported());
   }
 
   public String getScopesSupportedAsString() {
-    return jsonArrayToString(getScopesSupported());
+    return HttpHelper.stringArrayToString(getScopesSupported());
   }
 
   public boolean isConfigured() {
     return getConfig() != null;
-  }
-
-  private String jsonArrayToString(String[] jsonArray) {
-    String str = Arrays.toString(jsonArray);
-    return str.substring(1, str.length() - 1).replace(",", " ");
   }
 }
