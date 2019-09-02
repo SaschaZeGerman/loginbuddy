@@ -2,7 +2,6 @@ package net.loginbuddy.selfissued.oidc;
 
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
@@ -20,7 +19,7 @@ public class TokenExchange extends SelfIssuedMaster {
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     ParameterValidatorResult targetEndpointResult = ParameterValidator
-        .getSingleValue(request.getParameterValues("target"));
+        .getSingleValue(request.getParameterValues(Constants.TARGET_PROVIDER.getKey()));
     ParameterValidatorResult authCodeResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
     ParameterValidatorResult clientIdResult = ParameterValidator

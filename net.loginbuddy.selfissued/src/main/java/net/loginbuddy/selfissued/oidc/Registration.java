@@ -2,7 +2,6 @@ package net.loginbuddy.selfissued.oidc;
 
 import java.io.IOException;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
@@ -27,8 +26,16 @@ public class Registration extends SelfIssuedMaster {
     ParameterValidatorResult redirectUriResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.REDIRECT_URI.getKey()));
 
+// ***************************************************************
+// ** Whatever happens, we'll return JSON
+// ***************************************************************
+
     response.setStatus(400);
     response.setContentType("application/json");
+
+// ***************************************************************
+// ** Check the given parameters
+// ***************************************************************
 
     if (!issuerResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing or invalid or multiple issuer parameters given");
@@ -37,6 +44,7 @@ public class Registration extends SelfIssuedMaster {
               .toJSONString());
       return;
     }
+
     if (!redirectUriResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing or invalid or multiple redirect_uri parameters given");
       response.getWriter()
@@ -44,17 +52,24 @@ public class Registration extends SelfIssuedMaster {
               .toJSONString());
       return;
     }
+
+// ***************************************************************
+// ** If non was given we'll create the default: {issuer}/.well-known/openid-configuration
+// ***************************************************************
+
     String discoveryUrl = null;
     if (discoveryUrlResult.getResult().equals(RESULT.VALID)) {
       discoveryUrl = discoveryUrlResult.getValue();
     } else {
-      LOGGER.info(
-          "Missing or invalid or multiple discovery_url parameters were given. Adding /.well-known/openid-configuration of the issuer to generate one");
+      LOGGER.info("Missing or invalid or multiple discovery_url parameters were given. Adding /.well-known/openid-configuration of the issuer to generate one");
       discoveryUrl = issuerResult.getValue() + "/.well-known/openid-configuration";
     }
 
-    JSONObject registration = HttpHelper
-        .retrieveAndRegister(discoveryUrl, redirectUriResult.getValue(), true, true);
+// ***************************************************************
+// ** Register at the given provider
+// ***************************************************************
+
+    JSONObject registration = HttpHelper.retrieveAndRegister(discoveryUrl, redirectUriResult.getValue(), true, true);
 
     if (registration.get("error") != null) {
       response.setStatus(400);

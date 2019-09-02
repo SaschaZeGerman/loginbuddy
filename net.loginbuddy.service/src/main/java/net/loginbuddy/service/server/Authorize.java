@@ -59,12 +59,18 @@ public class Authorize extends HttpServlet {
         .getSingleValue(request.getParameterValues(Constants.SCOPE.getKey()));
     ParameterValidatorResult clientNonceResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.NONCE.getKey()));
+
+    // these three parameters are forwarded to the provider, not handled by loginbuddy
     ParameterValidatorResult clientPromptResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.PROMPT.getKey()), "");
     ParameterValidatorResult clientLoginHintResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.LOGIN_HINT.getKey()), "");
     ParameterValidatorResult clientIdTokenHintResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.ID_TOKEN_HINT.getKey()), "");
+
+// ***************************************************************
+// ** Let's start with checking for a valid client_id
+// ***************************************************************
 
     if (!clientIdResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing or invalid or multiple client_id parameters given!");
@@ -79,6 +85,10 @@ public class Authorize extends HttpServlet {
       response.sendError(400, "An invalid client_id was provided!");
       return;
     }
+
+// ***************************************************************
+// ** Check the given redirect_uri. Confidential clients only need to have one registered but not passed in
+// ***************************************************************
 
     if (clientRedirectUriResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Too many redirect_uri parameters given!");
@@ -109,9 +119,13 @@ public class Authorize extends HttpServlet {
       return;
     }
 
-    //
-    // As of here we can return errors to the clients redirect_uri
-    //
+// ***************************************************************
+// ** As of here we can return errors to the clients redirect_uri
+// ***************************************************************
+
+// ***************************************************************
+// ** Build the rdirect_uri for success and error cases including the optional state parameter
+// ***************************************************************
 
     String clientRedirectUriValid;
     if (clientRedirectUri.contains("?")) {
@@ -122,13 +136,16 @@ public class Authorize extends HttpServlet {
 
     if (clientStateResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Multiple state parameters received!");
-      response.sendRedirect(
-          HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple state parameters received"));
+      response.sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple state parameters received"));
       return;
     }
 
     clientRedirectUriValid = "".equals(clientStateResult.getValue()) ? clientRedirectUriValid
         : clientRedirectUriValid.concat("state=").concat(clientStateResult.getValue()).concat("&");
+
+// ***************************************************************
+// ** Check the given response type
+// ***************************************************************
 
     if (!clientResponseTypeResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("The given response_type parameter is invalid or was provided multiple times");
@@ -150,6 +167,10 @@ public class Authorize extends HttpServlet {
           .sendRedirect(HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple provider parameter"));
       return;
     }
+
+// ***************************************************************
+// ** PKCE: if it was used it has to be used at the /token endpoint. Remember if it was used
+// ***************************************************************
 
     if (clientCodeChallengeResult.getResult().equals(RESULT.MULTIPLE)) {
       LOGGER.warning("Multiple code_challenge parameters found!");
@@ -179,6 +200,10 @@ public class Authorize extends HttpServlet {
       return;
     }
 
+// ***************************************************************
+// ** Check the given scope
+// ***************************************************************
+
     // TODO somehow tie incoming and outgoing SCOPE values together. 'Initialize' uses SCOPEs independent of these ones
     String clientScope = scopeResult.getValue();
     if (clientScope == null) {
@@ -200,6 +225,10 @@ public class Authorize extends HttpServlet {
       return;
     }
 
+// ***************************************************************
+// ** Create the session so that it can be handled through out multiple requests
+// ***************************************************************
+
     SessionContext sessionCtx = new SessionContext();
     sessionCtx.setSessionInit(clientIdResult.getValue(), clientScope, clientResponseTypeResult.getValue(),
         clientCodeChallengeResult.getValue(), clientCodeChallendeMethodResult.getValue(),
@@ -208,6 +237,10 @@ public class Authorize extends HttpServlet {
         checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider());
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
+
+// ***************************************************************
+// ** Present the provider selection page if non was given in this request. Otherwise, fast forward
+// ***************************************************************
 
     if ("".equals(clientProviderResult.getValue())) {
       request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))

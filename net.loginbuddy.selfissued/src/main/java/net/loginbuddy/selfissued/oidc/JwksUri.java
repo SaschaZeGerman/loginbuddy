@@ -19,7 +19,7 @@ public class JwksUri  extends SelfIssuedMaster {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     ParameterValidatorResult targetEndpointResult = ParameterValidator
-        .getSingleValue(request.getParameterValues("target"));
+        .getSingleValue(request.getParameterValues(Constants.TARGET_PROVIDER.getKey()));
 
     MsgResponse msg= HttpHelper.getAPI(targetEndpointResult.getValue());
 

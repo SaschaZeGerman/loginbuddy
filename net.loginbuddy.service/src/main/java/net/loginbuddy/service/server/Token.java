@@ -35,15 +35,14 @@ public class Token extends HttpServlet {
 
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    // Whatever happens, we'll return JSON
-    //
+// ***************************************************************
+// ** Whatever happens, we'll return JSON
+// ***************************************************************
+
     response.setContentType("application/json");
     response.addHeader("Cache-Control", "no-store");
     response.addHeader("Pragma", "no-cache");
     response.setStatus(400);
-
-    // find the clientId. Either as POST parameter or in the Authorization header but not at both locations
-    //
 
     ParameterValidatorResult clientIdResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
@@ -57,6 +56,10 @@ public class Token extends HttpServlet {
         .getSingleValue(request.getParameterValues(Constants.REDIRECT_URI.getKey()));
     ParameterValidatorResult codeVerifierResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.CODE_VERIFIER.getKey()));
+
+// ***************************************************************
+// ** Find the clientId. Either as POST parameter or in the Authorization header but not at both locations
+// ***************************************************************
 
     String clientId = clientIdResult.getValue();
     String authHeader = request.getHeader("Authorization");
@@ -77,11 +80,14 @@ public class Token extends HttpServlet {
       }
     }
 
+// ***************************************************************
+// ** Lookup the client registration details to verify given credentials
+// ***************************************************************
+
     ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
     if (cc != null) {
       // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
-      String supportedMethods = LoginbuddyConfig.getInstance().getDiscoveryUtil()
-          .getTokenEndpointAuthMethodsSupportedAsString();
+      String supportedMethods = LoginbuddyConfig.getInstance().getDiscoveryUtil().getTokenEndpointAuthMethodsSupportedAsString();
       if (supportedMethods == null) {
         supportedMethods = usedAuthMethod;
       }
@@ -89,14 +95,12 @@ public class Token extends HttpServlet {
       if (Stream.of((supportedMethods).split("[,; ]")).anyMatch(usedAuthMethod::equalsIgnoreCase)) {
         // Public clients cannot use a Basic authorization header. They miss the 'secret' portion of the string 'client_id:'
         //
-        if (Constants.CLIENT_TYPE_PUBLIC.getKey().equals(cc.getClientType()) && Constants.CLIENT_SECRET_BASIC.getKey()
-            .equals(usedAuthMethod)) {
+        if (Constants.CLIENT_TYPE_PUBLIC.getKey().equals(cc.getClientType()) && Constants.CLIENT_SECRET_BASIC.getKey().equals(usedAuthMethod)) {
           response.getWriter().write(createJsonErrorResponse(
               "unsupported authentication method for public clients was used"));
           return;
         } else if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equalsIgnoreCase(cc.getClientType())) {
-          String clientSecret = Constants.CLIENT_SECRET_POST.getKey().equals(usedAuthMethod) ? clientSecretResult.getValue()
-              : clientCreds.split(":")[1];
+          String clientSecret = Constants.CLIENT_SECRET_POST.getKey().equals(usedAuthMethod) ? clientSecretResult.getValue() : clientCreds.split(":")[1];
           if (clientSecret == null || clientSecret.trim().length() == 0) {
             response.getWriter().write(createJsonErrorResponse("missing client_secret"));
             return;
@@ -114,22 +118,31 @@ public class Token extends HttpServlet {
       return;
     }
 
+// ***************************************************************
+// ** Check for grant_type parameter and if the given one is supported
+// ***************************************************************
+
     if (!grantTypeResult.getResult().equals(RESULT.VALID)) {
-      response.getWriter().write(createJsonErrorResponse(
-          "the given grant_type parameter is invalid or was provided multiple times"));
+      response.getWriter().write(createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
       return;
-    } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getGrantTypesSupported()))
-        .noneMatch(grantTypeResult.getValue()::equals)) {
-      response.getWriter()
-          .write(createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
+    } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
+      response.getWriter().write(createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
       return;
     }
+
+// ***************************************************************
+// ** Check for a valid code parameter
+// ***************************************************************
 
     if (!codeResult.getResult().equals(RESULT.VALID)) {
       response.getWriter().write(createJsonErrorResponse(
           "the given code parameter is invalid or was provided multiple times"));
       return;
     }
+
+// ***************************************************************
+// ** Check for the current session and remove it. An authorization code can be used only once!
+// ***************************************************************
 
     SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(codeResult.getValue());
     if (sessionCtx == null) {
@@ -148,6 +161,10 @@ public class Token extends HttpServlet {
         }
       }
 
+// ***************************************************************
+// ** If the client initially used PKCE, it now has to use PKCE also
+// ***************************************************************
+
       String clientCodeChallenge = sessionCtx.getString(Constants.CLIENT_CODE_CHALLENGE.getKey());
       if (clientCodeChallenge != null) {
         if (codeVerifierResult.getResult().equals(RESULT.VALID)) {
@@ -161,6 +178,11 @@ public class Token extends HttpServlet {
           return;
         }
       }
+
+// ***************************************************************
+// ** Send the token response to the client
+// ***************************************************************
+
       response.setStatus(200);
       response.getWriter().write(sessionCtx.getString("eb"));
     }

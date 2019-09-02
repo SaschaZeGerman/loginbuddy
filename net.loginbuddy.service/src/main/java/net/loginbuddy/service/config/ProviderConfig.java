@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.logging.Logger;
+import net.loginbuddy.common.config.Constants;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -69,6 +70,7 @@ public class ProviderConfig {
 
   public ProviderConfig() {
     this.pkce = true;
+    this.scope = Constants.OPENID_SCOPE.getKey();
   }
 
   /**

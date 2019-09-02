@@ -82,6 +82,7 @@ public enum Constants {
     MAPPING_OIDC("{\"sub\":\"sub\", \"name\": \"name\",\"given_name\": \"given_name\",\"family_name\": \"family_name\",\"picture\": \"picture\",\"email\":\"email\", \"email_verified\":\"email_verified\", \"provider\":\"asis:provider\"}"),
 
     // references for dynamically registered providers
+    TARGET_PROVIDER("target"),
     PROVIDER_CLIENT_ID("providerClientId"),
     PROVIDER_CLIENT_SECRET("providerClientSecret"),
     PROVIDER_REDIRECT_URI("providerRedirectUri");

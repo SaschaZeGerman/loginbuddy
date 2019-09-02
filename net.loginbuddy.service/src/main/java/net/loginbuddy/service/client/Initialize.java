@@ -60,6 +60,10 @@ public class Initialize extends HttpServlet {
     ParameterValidatorResult discoveryUrlResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.DISCOVERY_URL.getKey()));
 
+// ***************************************************************
+// ** Check for the current session
+// ***************************************************************
+
     if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing session, cannot initiate the authorization flow!");
       response.sendError(400, "Missing session, cannot initiate the authorization flow!");
@@ -73,15 +77,21 @@ public class Initialize extends HttpServlet {
       return;
     }
 
+// ***************************************************************
+// ** Check if we expected this call
+// ***************************************************************
+
     if (!Constants.ACTION_INITIALIZE.getKey().equals(sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()))) {
-      LOGGER.warning(
-          "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
-              + "', expected: '" + Constants.ACTION_INITIALIZE.getKey() + "'");
-      response.sendRedirect(
-          getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
-              "the request was not expected"));
+      LOGGER.warning("The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
+          + "', expected: '" + Constants.ACTION_INITIALIZE.getKey() + "'");
+      response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
+          "the request was not expected"));
       return;
     }
+
+// ***************************************************************
+// ** Check if a provider was chosen
+// ***************************************************************
 
     String selectedProvider = (sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey())).trim();
     if ("".equals(selectedProvider)) {
@@ -89,12 +99,15 @@ public class Initialize extends HttpServlet {
         selectedProvider = providerResult.getValue();
       } else {
         LOGGER.warning("No provider has been selected or an invalid parameters has been given");
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
-                "No provider has been selected or an invalid parameters has been given"));
+        response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
+            "No provider has been selected or an invalid parameters has been given"));
         return;
       }
     }
+
+// ***************************************************************
+// ** Find the provider configuration. We may register dynamically
+// ***************************************************************
 
     // TODO Verify that the selected provider is valid for this client
     ProviderConfig providerConfig = null;
@@ -102,45 +115,32 @@ public class Initialize extends HttpServlet {
 
       // dynamic registration of unknown provider
       // we need: 'dynamic_provider', and 'issuer', client must be registered to accept dynamic provider
-      if(checkForDynamicProvider(selectedProvider, issuerResult, discoveryUrlResult, sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey()))) {
-
-        List<NameValuePair> formParameters = new ArrayList<>();
-        formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuerResult.getValue()));
-        formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrlResult.getValue()));
-        formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
-
-        MsgResponse msg = HttpHelper.postMessage(formParameters, "https://loginbuddy-selfissued:445/selfissued/register", "application/json");
-        if(msg.getStatus() == 200) {
-          providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
-          selectedProvider = providerConfig.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
-          sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_SELFISSUED.getKey());
-          sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providerConfig.getClientId()); // we have to store this in the session to make it available later
-          sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providerConfig.getClientSecret()); // we have to store this in the session to make it available later
-          sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providerConfig.getRedirectUri()); // we have to store this in the session to make it available later
-        }
+      if (checkForDynamicProvider(selectedProvider, issuerResult, discoveryUrlResult, sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey()))) {
+        providerConfig = registerProvider(issuerResult.getValue(), discoveryUrlResult.getValue(), sessionCtx);
+        selectedProvider = providerConfig.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
       } else {
         providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(selectedProvider);
-        sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
       }
 
       if (providerConfig == null) {
         LOGGER.warning("The given provider is unknown or invalid");
-        response.sendRedirect(
-            getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
-                "The given provider is unknown or invalid"));
+        response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "The given provider is unknown or invalid"));
         return;
       } else {
         sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), selectedProvider);
       }
-    } catch (Exception e) {
+    } catch (
+        Exception e) {
       // should never occur
       e.printStackTrace();
       LOGGER.severe("The system has not been configured yet!");
-      response.sendRedirect(
-          getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "server_error",
-              "The system has not been configured yet!"));
+      response.sendRedirect(getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "server_error", "The system has not been configured yet!"));
       return;
     }
+
+// ***************************************************************
+// ** Build the authorization URL
+// ***************************************************************
 
     StringBuilder authorizeUrl = new StringBuilder();
 
@@ -166,7 +166,8 @@ public class Initialize extends HttpServlet {
         providerJwksEndpoint = msg.get(Constants.JWKS_URI.getKey()).toString();
         providerUserinfoEndpoint = msg.get(Constants.USERINFO_ENDPOINT.getKey()).toString();
       } else {
-        LOGGER.warning(String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl));
+        LOGGER.warning(
+            String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s", oidcConfigUrl));
         response.sendRedirect(
             getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "message_error",
                 "The OpenID Configuration could not be retrieved!"));
@@ -180,12 +181,23 @@ public class Initialize extends HttpServlet {
       providerUserinfoEndpoint = providerConfig.getUserinfoEndpoint();
     }
 
-    boolean isHandlerLoginbuddy = sessionCtx.get(Constants.ISSUER_HANDLER.getKey()).equals(Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
-    sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerTokenEndpoint : String.format("https://loginbuddy-selfissued:445/selfissued/token?target=%s", URLEncoder.encode(providerTokenEndpoint, "UTF-8")));
-    sessionCtx.put(Constants.JWKS_URI.getKey(), isHandlerLoginbuddy ? providerJwksEndpoint : String.format("https://loginbuddy-selfissued:445/selfissued/jwks?target=%s", URLEncoder.encode(providerJwksEndpoint, "UTF-8")));
-    sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerUserinfoEndpoint : String.format("https://loginbuddy-selfissued:445/selfissued/userinfo?target=%s", URLEncoder.encode(providerUserinfoEndpoint, "UTF-8")));
+// ***************************************************************
+// ** Prepare provider endpoints to be used via loginbuddy-selfissued if dynamic provider registration was used
+// ***************************************************************
 
-    // use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
+    // if this provider was dynamically registered we'll delegate other requests to loginbuddy-selfissued later also
+    boolean isHandlerLoginbuddy = sessionCtx.get(Constants.ISSUER_HANDLER.getKey()).equals(Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
+    sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerTokenEndpoint : String
+        .format("https://loginbuddy-selfissued:445/selfissued/token?%s=%s", Constants.TARGET_PROVIDER.getKey(), URLEncoder.encode(providerTokenEndpoint, "UTF-8")));
+    sessionCtx.put(Constants.JWKS_URI.getKey(), isHandlerLoginbuddy ? providerJwksEndpoint : String
+        .format("https://loginbuddy-selfissued:445/selfissued/jwks?%s=%s", Constants.TARGET_PROVIDER.getKey(), URLEncoder.encode(providerJwksEndpoint, "UTF-8")));
+    sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerUserinfoEndpoint : String
+        .format("https://loginbuddy-selfissued:445/selfissued/userinfo?%s=%s", Constants.TARGET_PROVIDER.getKey(), URLEncoder.encode(providerUserinfoEndpoint, "UTF-8")));
+
+// ***************************************************************
+// ** use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
+// ***************************************************************
+
     String pkce = null;
     if (providerConfig.getPkce()) {
       PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
@@ -194,28 +206,25 @@ public class Initialize extends HttpServlet {
           Constants.CODE_CHALLENGE_METHOD.getKey());
     }
 
-    String scope = providerConfig.getScope() == null ? Constants.OPENID_SCOPE.getKey() : providerConfig.getScope();
+// ***************************************************************
+// ** Create the authorization URL to redirect the client
+// ***************************************************************
 
-    authorizeUrl.append("?")
-        .append(Constants.CLIENT_ID.getKey())
-        .append("=").append(providerConfig.getClientId())
-        .append("&").append(Constants.RESPONSE_TYPE.getKey())
-        .append("=").append(providerConfig.getResponseType())
-        .append("&").append(Constants.SCOPE.getKey())
-        .append("=").append(URLEncoder.encode(scope, "UTF-8"))
-        .append("&").append(Constants.NONCE.getKey())
-        .append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
-        .append("&").append(Constants.REDIRECT_URI.getKey())
-        .append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
+    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(providerConfig.getClientId()).
+        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(providerConfig.getResponseType())
+        .append("&").append(Constants.SCOPE.getKey()).append("=").append(URLEncoder.encode(providerConfig.getScope(), "UTF-8"))
+        .append("&").append(Constants.NONCE.getKey()).append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
+        .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(URLEncoder.encode(providerConfig.getRedirectUri(), "utf-8"))
         .append(pkce == null ? "" : pkce)
-        .append("&").append(Constants.PROMPT.getKey()).append("=")
-        .append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
+        .append("&").append(Constants.PROMPT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
         .append("&").append(Constants.LOGIN_HINT.getKey()).append("=")
         .append(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()))
-        .append("&").append(Constants.ID_TOKEN_HINT.getKey()).append("=")
-        .append(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()))
-        .append("&").append(Constants.STATE.getKey())
-        .append("=").append(sessionCtx.getId());
+        .append("&").append(Constants.ID_TOKEN_HINT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()))
+        .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId());
+
+// ***************************************************************
+// ** Finalize and update the session details
+// ***************************************************************
 
     sessionCtx.setSessionCallback();
 
@@ -224,16 +233,44 @@ public class Initialize extends HttpServlet {
     response.sendRedirect(authorizeUrl.toString());
   }
 
-  private boolean checkForDynamicProvider(String provider, ParameterValidatorResult issuer, ParameterValidatorResult discoveryUrlResult, boolean acceptDynamicProvider) {
+  /**
+   * Check if the user chose to dynamically set a provider
+   */
+  private boolean checkForDynamicProvider(String provider, ParameterValidatorResult issuer,
+      ParameterValidatorResult discoveryUrlResult, boolean acceptDynamicProvider) {
     boolean result = false;
-    if(acceptDynamicProvider) {
+    if (acceptDynamicProvider) {
       result = "dynamic_provider".equalsIgnoreCase(provider);
       result = result && issuer.getResult().equals(RESULT.VALID);
       result = result && HttpHelper.couldBeAUrl(issuer.getValue());
-      if(discoveryUrlResult.getResult().equals(RESULT.VALID)) {
+      if (discoveryUrlResult.getResult().equals(RESULT.VALID)) {
         result = result && HttpHelper.couldBeAUrl(discoveryUrlResult.getValue());
       }
     }
     return result;
+  }
+
+  /**
+   * Register loginbuddy at the provider and remember a few details for later use
+   */
+  private ProviderConfig registerProvider(String issuer, String discoveryUrl, SessionContext sessionCtx)
+      throws IOException {
+
+    List<NameValuePair> formParameters = new ArrayList<>();
+    formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuer));
+    formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrl));
+    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),
+        LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
+
+    MsgResponse msg = HttpHelper
+        .postMessage(formParameters, "https://loginbuddy-selfissued:445/selfissued/register", "application/json");
+    if (msg.getStatus() == 200) {
+      ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
+      sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_SELFISSUED.getKey());
+      sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providerConfig.getClientId()); // we have to store this in the session to make it available later
+      sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providerConfig.getClientSecret()); // we have to store this in the session to make it available later
+      sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providerConfig.getRedirectUri()); // we have to store this in the session to make it available later
+    }
+    return null;
   }
 }
