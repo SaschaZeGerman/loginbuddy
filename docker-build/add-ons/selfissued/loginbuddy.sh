@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# configures the environment variables HOSTNAME_LOGINBUDDY to 'loginbuddy-selfissued' and SSL_PORT to 445
+#
+printf "===============\n"
+printf "== Loginbuddy: Overwriting HOSTNAME_LOGINBUDDY and SSL_PORT to loginbuddy-selfissued and 445\n"
+printf "== Loginbuddy: Currently these values are required for this setup\n"
+printf "===============\n"
+
+export HOSTNAME_LOGINBUDDY=loginbuddy-selfissued
+export SSL_PORT=445
+
 # generating a UUID as password for the generated keystore
 #
 UUID=$(cat /proc/sys/kernel/random/uuid)
@@ -25,6 +35,6 @@ export SSL_PORT=
 export UUID=
 
 # run the original tomcat entry point command as specified in tomcat's Dockerfile
-# IMPORTANT: this container supprots dynamic registration! For that reason, a security manager is difficult to support since no restrictions on socket connections can be applied
+# IMPORTANT: this container supports dynamic registration! For that reason, a security manager is difficult to support since no restrictions on socket connections can be applied
 #
 sh /usr/local/tomcat/bin/catalina.sh run

@@ -5,9 +5,16 @@
 #
 version: '3.4'
 services:
+
   loginbuddy-demosetup:
     image: saschazegerman/loginbuddy:latest-demo
     restart: always
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - "SUPPORT_SELFISSUED=true"
+
+  loginbuddy-selfissued:
+    image: saschazegerman/loginbuddy:latest-selfissued
+    restart: always

@@ -11,7 +11,6 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY net.loginbuddy.selfissued/target/selfissued-1.0.0 /usr/local/tomcat/webapps/ROOT
 
 COPY docker-build/add-ons/selfissued/server.xml /usr/local/tomcat/conf/server.xml
-COPY docker-build/add-ons/selfissued/loginbuddy_selfissued.sh /opt/docker/loginbuddy_selfissued.sh
 COPY docker-build/add-ons/selfissued/loginbuddy.sh /opt/docker/loginbuddy.sh
 
 # Create directory for holding SSL keys
@@ -26,4 +25,4 @@ RUN chown -R tomcat:tomcat /usr/local/tomcat/
 
 # Run the entrypoint script to run tomcat with security manager
 #
-CMD ["/opt/docker/loginbuddy_selfissued.sh"]
+CMD ["/opt/docker/loginbuddy.sh"]

@@ -47,36 +47,50 @@
     <p>Below is an example form, give it a try. It simulates an authorization request of your application (no need to modify anything ... and also not suggested):</p>
     <form action="initialize" method="post" enctype="application/x-www-form-urlencoded">
         <div class="form-group">
-            <label for="client_id">Client_ID *</label>
-            <input type="text" id="client_id" name="client_id" size="80" readonly class="form-control" value="clientIdForTestingPurposes">
-        </div>
-        <div class="form-group">
-            <label for="response_type">Response_Type *</label>
-            <input type="text" id="response_type" name="response_type" size="80" readonly class="form-control" value="code">
-        </div>
-        <div class="form-group">
-            <label for="redirect_uri">Redirect_URI</label>
-            <input type="text" id="redirect_uri" name="redirect_uri" size="80" readonly class="form-control" value="https://<%=System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT")%>/callback">
-        </div>
-        <div class="form-group">
-            <label for="state">Nonce</label>
-            <input type="text" id="nonce" name="nonce" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
-        </div>
-        <div class="form-group">
-            <label for="state">State</label>
-            <input type="text" id="state" name="state" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
-        </div>
-        <div class="form-group">
-            <label for="state">Scope</label>
-            <input type="text" id="scope" name="scope" size="80" class="form-control" readonly value="openid email profile">
-        </div>
-        <div class="form-group">
             <label for="provider">Provider (leave it blank first, then try 'server_loginbuddy')</label>
             <input type="text" id="provider" name="provider" class="form-control" size="80">
         </div>
+        <input type="hidden" id="client_id" name="client_id" size="80" readonly class="form-control" value="clientIdForTestingPurposes">
+        <input type="hidden" id="response_type" name="response_type" size="80" readonly class="form-control" value="code">
+        <input type="hidden" id="redirect_uri" name="redirect_uri" size="80" readonly class="form-control" value="https://<%=System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT")%>/callback">
+        <input type="hidden" id="nonce" name="nonce" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
+        <input type="hidden" id="state" name="state" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
+        <input type="hidden" id="scope" name="scope" size="80" class="form-control" readonly value="openid email profile">
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <hr/>
+    <h3>Details for developers</h3>
+    <p>Here is the list of parameters that are send to initiate an authorization_request:</p>
+    <form>
+        <div class="form-group">
+            <label for="provider">Provider (the value provided by the user)</label>
+            <input type="text" readonly class="form-control" size="80">
+        </div>
+        <div class="form-group">
+            <label for="client_id">Client_ID *</label>
+            <input type="text" size="80" readonly class="form-control" value="clientIdForTestingPurposes">
+        </div>
+        <div class="form-group">
+            <label for="response_type">Response_Type *</label>
+            <input type="text" size="80" readonly class="form-control" value="code">
+        </div>
+        <div class="form-group">
+            <label for="redirect_uri">Redirect_URI</label>
+            <input type="text" size="80" readonly class="form-control" value="https://<%=System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT")%>/callback">
+        </div>
+        <div class="form-group">
+            <label for="state">Nonce</label>
+            <input type="text" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
+        </div>
+        <div class="form-group">
+            <label for="state">State</label>
+            <input type="text" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
+        </div>
+        <div class="form-group">
+            <label for="state">Scope</label>
+            <input type="text" size="80" class="form-control" readonly value="openid email profile">
+        </div>
+    </form>
     <p>This is the description of above parameters:</p>
     <ol>
         <li><strong>client_id *: </strong>This MUST match the registered client_id.</li>

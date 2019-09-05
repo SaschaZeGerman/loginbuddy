@@ -29,12 +29,6 @@ apitest/soapui/properties/*.properties
 # temporary test files
 apitest/tempfiles/*
 
-# local docker files
-docker-build/add-ons/local/
-
-# personal docker-compose file
-docker-compose-sascha.yml
-
 # images - logos
 **.png
 !**/simple_overview_01.png

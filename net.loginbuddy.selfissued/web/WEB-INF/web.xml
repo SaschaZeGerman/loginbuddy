@@ -37,10 +37,6 @@
         <servlet-name>SelfIssuedUserinfo</servlet-name>
         <servlet-class>net.loginbuddy.selfissued.oidc.Userinfo</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>SelfIssuedCallback</servlet-name>
-        <servlet-class>net.loginbuddy.selfissued.oidc.Callback</servlet-class>
-    </servlet>
 
     <servlet-mapping>
         <servlet-name>SelfIssuedRegistation</servlet-name>
@@ -58,10 +54,10 @@
         <servlet-name>SelfIssuedUserinfo</servlet-name>
         <url-pattern>/selfissued/userinfo</url-pattern>
     </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>SelfIssuedCallback</servlet-name>
-        <url-pattern>/selfissued/callback</url-pattern>
-    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>120</session-timeout>
+    </session-config>
 
     <mime-mapping>
         <extension>json</extension>

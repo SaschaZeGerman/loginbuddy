@@ -55,26 +55,9 @@ sed -i "s/@@hostname@@"/${HOSTNAME_LOGINBUDDY}/g /usr/local/tomcat/conf/server.x
 sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 
-# Wait for loginbuddy-selfissued to import its certificate:
+## check if self issued providers should be supported
 #
-MAX_RETRIES=5
-INTERVAL=5
-retry_count=0
-
-until nc -w 1 -v loginbuddy-selfissued 445; do
-    if [ $retry_count -gt $MAX_RETRIES ]; then
-        echo "Max retry exceeded while waiting for loginbuddy-selfissued to come up"
-        exit 1
-    fi
-    echo "waiting for loginbuddy-selfissued..."
-    /bin/sleep $INTERVAL
-    retry_count=$(( retry_count + 1 ))
-done
-
-# Import loginbuddy-selfissued certificates as trusted certificate
-#
-keytool -printcert -sslserver loginbuddy-selfissued:445 -rfc > /usr/local/tomcat/ssl/loginbuddy-selfissued.crt
-keytool -importcert -alias loginbuddy-selfissued -file /usr/local/tomcat/ssl/loginbuddy-selfissued.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
+sh /opt/docker/loginbuddy_selfissued_import.sh
 
 # overwrite the variables since they are not needed anywhere anymore
 # for this demo do wnot overwrite HOSTNAME_LOGINBUDDY!

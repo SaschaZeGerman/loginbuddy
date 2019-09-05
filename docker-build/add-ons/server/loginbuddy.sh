@@ -52,6 +52,10 @@ export HOSTNAME_LOGINBUDDY=
 export SSL_PORT=
 export UUID=
 
+## check if self issued providers should be supported
+#
+sh /opt/docker/loginbuddy_selfissued_import.sh
+
 # run the original tomcat entry point command as specified in tomcat's Dockerfile
 #
 sh /usr/local/tomcat/bin/catalina.sh run -security

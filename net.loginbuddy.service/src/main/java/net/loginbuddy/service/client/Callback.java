@@ -77,8 +77,7 @@ public class Callback extends HttpServlet {
 // ***************************************************************
 
       if (errorResult.getValue() != null) {
-        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(),
-            errorDescriptionResult.getValue()));
+        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(), errorDescriptionResult.getValue()));
         return;
       }
 
@@ -90,9 +89,7 @@ public class Callback extends HttpServlet {
         LOGGER.warning(
             "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                 + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-        response.sendRedirect(
-            HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
-                "the request was not expected"));
+        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "the request was not expected"));
         return;
       }
 
@@ -102,8 +99,7 @@ public class Callback extends HttpServlet {
 
       if (!codeResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing code parameter returned from provider!");
-        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session",
-            "missing or invalid code parameter"));
+        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "missing or invalid code parameter"));
         return;
       }
 
@@ -155,7 +151,7 @@ public class Callback extends HttpServlet {
                   providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
               eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {
-              LOGGER.warning(String.format("No id_token was issued or it was invalid! Detauls: %s", e.getMessage()));
+              LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
             }
           } else {
             response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
@@ -167,16 +163,12 @@ public class Callback extends HttpServlet {
           // need to handle error cases
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
-                (String) err.get("error"),
-                (String) err.get("error_description")));
+            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String) err.get("error"), (String) err.get("error_description")));
             return;
           }
         }
       } else {
-        response.sendRedirect(
-            HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request",
-                "the code exchange failed. An access_token could not be retrieved"));
+        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "the code exchange failed. An access_token could not be retrieved"));
         return;
       }
 
