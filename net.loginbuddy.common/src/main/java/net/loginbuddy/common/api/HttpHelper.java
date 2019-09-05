@@ -38,13 +38,13 @@ public class HttpHelper {
   }
 
   public static boolean couldBeAUrl(String url) {
-    if(url == null) {
+    if (url == null) {
       return false;
     }
     return urlPattern.matcher(url).matches();
   }
 
-  public  static JSONObject getErrorAsJson(String error, String errorDescription) {
+  public static JSONObject getErrorAsJson(String error, String errorDescription) {
     if ("".equals(error)) {
       error = "unknown";
     }
@@ -132,7 +132,7 @@ public class HttpHelper {
     return retrieveAndRegister(discoveryUrl, redirectUri, false, false);
   }
 
-    public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri, boolean updateProvider, boolean updateIssuer) {
+  public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri, boolean updateProvider, boolean updateIssuer) {
 
     JSONObject errorResp = new JSONObject();
     try {
@@ -179,8 +179,7 @@ public class HttpHelper {
   }
 
   /**
-   * Mappings attributes so that receiving clients can expect the same details at the same location in the response
-   * message
+   * Mappings attributes so that receiving clients can expect the same details at the same location in the response message
    */
   public static JSONObject normalizeDetails(String provider, JSONObject mappings, JSONObject userinfoRespObject) {
     JSONObject result = new JSONObject();
@@ -220,13 +219,12 @@ public class HttpHelper {
     return result;
   }
 
-  public static String getErrorForRedirect(String redirectUri, String error, String errorDescription)
-      throws UnsupportedEncodingException {
+  public static String getErrorForRedirect(String redirectUri, String error, String errorDescription) {
     if ("".equals(errorDescription)) {
       errorDescription = "An error without any description, sorry";
     }
-    error = URLEncoder.encode(error, "UTF-8");
-    errorDescription = URLEncoder.encode(errorDescription, "UTF-8");
+    error = urlEncode(error);
+    errorDescription = urlEncode(errorDescription);
 
     return redirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription);
   }
@@ -237,22 +235,27 @@ public class HttpHelper {
 
   /**
    * Turn ["first","second"] to "first second"
-   * @param jsonArray
-   * @return
    */
   public static String jsonArrayToString(JSONArray jsonArray) {
-    return jsonArray.toJSONString().substring(1, jsonArray.toJSONString().length()-1).replaceAll("[,\"]{1,5}", " ").trim();
+    return jsonArray.toJSONString().substring(1, jsonArray.toJSONString().length() - 1).replaceAll("[,\"]{1,5}", " ").trim();
   }
 
   /**
-   *
-   * @param jsonArray
    * @param separator one of [,; ] as a separator between strings. Default: [ ]
-   * @return
    */
   public static String stringArrayToString(String[] jsonArray, String separator) {
     String str = Arrays.toString(jsonArray);
     return str.substring(1, str.length() - 1).replace(",", separator.matches("[,; ]") ? separator : " ");
+  }
+
+  public static String urlEncode(String input) {
+    try {
+      return URLEncoder.encode(input, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      // do not expect this to happen. Therefore -- 'severe'
+      LOGGER.severe("Encoding to UTF-8 failed");
+      return null;
+    }
   }
 
   private static JSONObject providerTemplate(JSONObject oidcConfig, JSONObject registration, String redirectUri, boolean updateProvider, boolean updateIssuer) {
@@ -260,15 +263,17 @@ public class HttpHelper {
     config.put("client_id", registration.get(Constants.CLIENT_ID.getKey()));
     config.put("client_secret", registration.get(Constants.CLIENT_SECRET.getKey()));
     config.put("redirect_uri", redirectUri);
-    config.put("scope", HttpHelper.jsonArrayToString((JSONArray)oidcConfig.get(Constants.SCOPES_SUPPORTED.getKey())));
+    config.put("scope", HttpHelper.jsonArrayToString((JSONArray) oidcConfig.get(Constants.SCOPES_SUPPORTED.getKey())));
     config.put("authorization_endpoint", oidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
     config.put("token_endpoint", oidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
     config.put("userinfo_endpoint", oidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
     config.put("jwks_uri", oidcConfig.get(Constants.JWKS_URI.getKey()));
-    if(updateIssuer)
+    if (updateIssuer) {
       config.put("issuer", oidcConfig.get(Constants.ISSUER.getKey()));
-    if(updateProvider)
+    }
+    if (updateProvider) {
       config.put("provider", oidcConfig.get(Constants.ISSUER.getKey()));
+    }
     config.put("response_type", "code");
     return config;
   }

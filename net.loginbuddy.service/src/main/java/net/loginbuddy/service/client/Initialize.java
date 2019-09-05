@@ -84,8 +84,7 @@ public class Initialize extends HttpServlet {
       return;
     }
 
-    String authorizationUrl = HeadOfInitialize.processInitializeRequest(sessionCtx, response, providerResult, issuerResult, discoveryUrlResult);
-
-    response.sendRedirect(authorizationUrl);
+    // this will be the authorization_url or an error_url
+    response.sendRedirect(HeadOfInitialize.processInitializeRequest(sessionCtx, providerResult, issuerResult, discoveryUrlResult));
   }
 }

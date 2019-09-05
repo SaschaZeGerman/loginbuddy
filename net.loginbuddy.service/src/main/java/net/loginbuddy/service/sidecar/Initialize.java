@@ -93,11 +93,13 @@ public class Initialize extends HttpServlet {
         "",
         Boolean.parseBoolean(clientAcceptDynamicProvider.getValue().equals("true") ? clientAcceptDynamicProvider.getValue() : "false"));
 
-//    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
-
-    String authorizationUrl = HeadOfInitialize.processInitializeRequest(sessionCtx, response, providerResult, issuerResult, discoveryUrlResult);
-
-    response.setStatus(201);
+    // this will be the authorization_url or an error_url
+    String authorizationUrl = HeadOfInitialize.processInitializeRequest(sessionCtx, providerResult, issuerResult, discoveryUrlResult);
+    if(authorizationUrl.startsWith("error")) {
+      response.setStatus(400);
+    } else {
+      response.setStatus(201);
+    }
     response.setContentType("text/plain");
     response.addHeader("Location", authorizationUrl);
   }

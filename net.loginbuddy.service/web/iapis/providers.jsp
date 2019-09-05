@@ -81,7 +81,7 @@
                     .append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
             providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(sessionId).append("\">");
             providers.append("<input type=\"hidden\" name=\"provider\" value=\"dynamic_provider\"/>");
-            providers.append("<div class=\"form-group\"><label for=\"issuer\">Issuer: <small>(i.e.: https://myserver.com)</small></label><input type=\"text\" maxlength=\"128\" class=\"form-control\" name=\"issuer\" id=\"issuer\"></div>");
+            providers.append("<div class=\"form-group\"><label for=\"issuer\">Issuer: <small>(i.e.: https://myserver.com)</small></label><input type=\"url\" required maxlength=\"128\" class=\"form-control\" name=\"issuer\" id=\"issuer\"></div>");
             providers.append("<div class=\"form-group\"><label for=\"discovery_url\">URL: <small>(i.e.: https://myserver.com/.well-known/openid-configuration)</small></label><input type=\"url\" maxlength=\"128\" class=\"form-control\" name=\"discovery_url\" id=\"discovery_url\"></div>");
             providers.append("<button type=\"submit\" class=\"btn btn-primary\">Submit</button>");
             providers.append("</form>");
