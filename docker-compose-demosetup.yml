@@ -1,7 +1,5 @@
 #
-# This docker compose file is usable for development purposes:
-#
-# NOTE: use this only for local development purposes!
+# This docker compose file is usable for demo purposes:
 #
 version: '3.4'
 services:

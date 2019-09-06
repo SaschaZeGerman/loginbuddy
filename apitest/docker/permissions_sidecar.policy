@@ -1,0 +1,11 @@
+// Add SocketPermissions for valid target endpoints
+// Each API that loginbuddy should be able to connect to has to be listed
+// If you are not sure, use a browser and connect to the openID configuration endpoint of of your desired OpenID Provider
+// Take each domain of that document and add them to the list below (see example: connect to demoserver.loginbuddy.net)
+// This file will be attached to the default catalina.policy file
+//
+//
+grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
+    permission java.net.SocketPermission "demoserver.loginbuddy.net", "connect,resolve";
+    permission java.net.SocketPermission "loginbuddy-selfissued", "connect,resolve";
+};
