@@ -105,6 +105,13 @@
       <version>4.10</version>
       <scope>test</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.tomcat/tomcat-catalina -->
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-catalina</artifactId>
+      <version>9.0.14</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
 </project>
