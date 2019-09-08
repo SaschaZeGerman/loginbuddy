@@ -169,6 +169,7 @@ grant {
 // [Loginbuddy]: adding permissions for loginbuddy
 grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.util.PropertyPermission "user.dir", "read";
+    permission java.util.PropertyPermission "JSON_SMART_SIMPLE", "read";
     permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
     permission java.util.PropertyPermission "com.fasterxml.jackson.core.util.BufferRecyclers.trackReusableBuffers", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";

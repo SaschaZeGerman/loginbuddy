@@ -8,29 +8,26 @@
 
 package net.loginbuddy.service.client;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Date;
-import java.util.UUID;
-import java.util.logging.Logger;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.util.ExchangeBean;
-import net.loginbuddy.common.util.Jwt;
-import net.loginbuddy.common.util.MsgResponse;
-import net.loginbuddy.common.util.ParameterValidator;
-import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 public class Callback extends HttpServlet {
 
@@ -181,7 +178,7 @@ public class Callback extends HttpServlet {
         if (userinfoResp.getContentType().startsWith("application/json")) {
           JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
           eb.setUserinfo(userinfoRespObject);
-          eb.setNormalized(HttpHelper.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject));
+          eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject, access_token));
         }
       } // TODO : handle non 200 response
 

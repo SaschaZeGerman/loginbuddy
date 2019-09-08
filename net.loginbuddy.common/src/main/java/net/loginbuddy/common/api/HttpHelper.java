@@ -6,8 +6,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import net.loginbuddy.common.config.Constants;
@@ -26,7 +24,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class HttpHelper {
 
@@ -178,48 +175,7 @@ public class HttpHelper {
     }
   }
 
-  /**
-   * Mappings attributes so that receiving clients can expect the same details at the same location in the response message
-   */
-  public static JSONObject normalizeDetails(String provider, JSONObject mappings, JSONObject userinfoRespObject) {
-    JSONObject result = new JSONObject();
-    try {
-      mappings = (mappings == null || mappings.size() == 0) ? (JSONObject) new JSONParser()
-          .parse(Constants.MAPPING_OIDC.getKey().replace("asis:provider", "asis:" + provider)) : mappings;
-    } catch (ParseException e) {
-      // should not occur!
-      LOGGER.severe(
-          "The default mapping for OpenID Connect claims is invalid! Continuing as if nothing has happened ... .");
-    }
-    if (userinfoRespObject != null && userinfoRespObject.size() > 0) {
-      for (Object nextEntry : mappings.entrySet()) {
-        Map.Entry entry = (Entry) nextEntry;
-        String mappingKey = (String) entry.getKey();
-        String mappingRule = (String) entry.getValue();
-        String outputValue = "";
-        if (mappingRule.contains("[")) {
-          String userinfoClaim = (String) userinfoRespObject.get(mappingRule.substring(0, mappingRule.indexOf("[")));
-          int idx = Integer.parseInt(Character.toString(mappingRule.charAt(mappingRule.indexOf("[") + 1)));
-          try {
-            outputValue = userinfoClaim.split(" ")[idx];
-          } catch (Exception e) {
-            LOGGER.warning(String
-                .format("invalid indexed mapping: 'mappings.%s' --> 'userinfo.%s': invalid index: %s", mappingKey,
-                    mappingRule, e.getMessage()));
-          }
-        } else if (mappingRule.startsWith("asis:")) {
-          outputValue = mappingRule.substring(5);
-        } else if (mappingRule.trim().length() > 0) {
-          Object value = userinfoRespObject.get(mappingRule);
-          outputValue = value == null ? "" : String.valueOf(value);
-        }
-        result.put(mappingKey, outputValue == null ? "" : outputValue);
-      }
-    }
-    return result;
-  }
-
-  public static String getErrorForRedirect(String redirectUri, String error, String errorDescription) {
+   public static String getErrorForRedirect(String redirectUri, String error, String errorDescription) {
     if ("".equals(errorDescription)) {
       errorDescription = "An error without any description, sorry";
     }

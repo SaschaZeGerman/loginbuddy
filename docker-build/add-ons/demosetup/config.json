@@ -6,7 +6,9 @@
         "client_type": "public",
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
-        "providers": ["server_loginbuddy"],
+        "providers": [
+          "server_loginbuddy"
+        ],
         "accept_dynamic_provider": true
       },
       {
@@ -15,7 +17,10 @@
         "client_type": "confidential",
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
-        "providers": ["server_loginbuddy", "not_for_public_client"]
+        "providers": [
+          "server_loginbuddy",
+          "not_for_public_client"
+        ]
       }
     ],
     "providers": [
@@ -31,19 +36,6 @@
         "scope": "openid profile email",
         "response_type": "code",
         "redirect_uri": "https://local.loginbuddy.net/callback"
-      },
-      {
-        "provider": "not_for_public_client",
-        "issuer": "https://not_for_public_client/server",
-        "client_id": "not_for_public_client",
-        "client_secret": "not_for_public_client",
-        "authorization_endpoint": "https://not_for_public_client/authorize",
-        "token_endpoint": "https://not_for_public_client/token",
-        "userinfo_endpoint": "https://not_for_public_client/userinfo",
-        "jwks_uri": "https://not_for_public_client/jwks.json",
-        "scope": "openid profile email",
-        "response_type": "code",
-        "redirect_uri": "https://not_for_public_client/callback"
       },
       {
         "provider": "google",
@@ -74,6 +66,32 @@
           "email_verified": "asis:true",
           "provider": "asis:github",
           "sub": "id"
+        }
+      },
+      {
+        "provider": "linkedin",
+        "issuer": "https://www.linkedin.com",
+        "client_id": "",
+        "client_secret": "",
+        "authorization_endpoint": "https://www.linkedin.com/oauth/v2/authorization",
+        "token_endpoint": "https://www.linkedin.com/oauth/v2/accessToken",
+        "userinfo_endpoint": "https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))",
+        "response_type": "code",
+        "scope": "r_liteprofile r_emailaddress",
+        "redirect_uri": "https://local.loginbuddy.net/callback",
+        "pkce": false,
+        "mappings": {
+          "sub": "$.id",
+          "given_name": "$.localizedFirstName",
+          "family_name": "$.localizedLastName",
+          "picture": "$.profilePicture.displayImage~.elements[0].identifiers[0].identifier",
+          "email": {
+            "resource": "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
+            "resource_type": "protected",
+            "mapping_rule": "$.elements[0].handle~.emailAddress"
+          },
+          "email_verified": "asis:true",
+          "provider": "asis:linkedin"
         }
       }
     ]
