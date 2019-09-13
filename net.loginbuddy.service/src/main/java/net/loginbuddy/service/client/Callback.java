@@ -191,6 +191,20 @@ public class Callback extends HttpServlet {
       sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
       LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx);
 
+// ***************************************************************
+// ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxies those calls
+// ***************************************************************
+
+      JSONObject jo = new JSONObject();
+      jo.put(Constants.USERINFO_ENDPOINT.getKey(), sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
+      jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
+      String[] hint = access_token.split(".");
+      if(hint.length == 3) {
+        LoginbuddyCache.getInstance().put(hint[2], jo);
+      } else {
+        LoginbuddyCache.getInstance().put(access_token, jo, 60L);
+      }
+
       response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "code", authorizationCode));
 
     } catch (Exception e) {

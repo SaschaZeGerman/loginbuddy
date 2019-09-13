@@ -114,8 +114,8 @@ public class LoginbuddyProviderToken extends HttpServlet {
         long accessTokenLifetime = sessionValues.sessionToken(access_token, refresh_token, id_token);
 
         // associate with access_token. We'll ignore the refresh_token for now. Remember, this is all 'fake'
-        LoginbuddyCache.getInstance().putWithExpiration(access_token, sessionValues, accessTokenLifetime);
-        LoginbuddyCache.getInstance().putWithExpiration(refresh_token, sessionValues, sessionValues.get("refresh_token_expiration", Long.class));
+        LoginbuddyCache.getInstance().put(access_token, sessionValues, accessTokenLifetime);
+        LoginbuddyCache.getInstance().put(refresh_token, sessionValues, sessionValues.get("refresh_token_expiration", Long.class));
 
         // create the response message that includes the issued token
         JSONObject fakeProviderResponse = new JSONObject();

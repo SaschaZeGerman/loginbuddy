@@ -124,6 +124,13 @@ public class ConfigUtil extends Overlord {
         .orElse(null);
   }
 
+  public ProviderConfig getProviderConfigByIssuer(String issuerHint) {
+    return getProviders().stream()
+        .filter(provider -> provider.getIssuer().equalsIgnoreCase(issuerHint))
+        .findFirst()
+        .orElse(null);
+  }
+
   public ProviderConfig getProviderConfigFromJsonString(String providerHint) {
     try {
       return MAPPER.readValue(providerHint, ProviderConfig.class);

@@ -47,7 +47,8 @@
     </filter>
     <filter-mapping>
         <filter-name>httpHeaderSecurity</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/error.jsp</url-pattern>
+        <url-pattern>/providers.jsp</url-pattern>
     </filter-mapping>
 
     <servlet>
@@ -111,7 +112,7 @@
     </servlet>
     <servlet>
         <servlet-name>Userinfo</servlet-name>
-        <servlet-class>net.loginbuddy.service.server.Userinfo</servlet-class>
+        <servlet-class>net.loginbuddy.service.resources.Userinfo</servlet-class>
     </servlet>
     <!-- sidecar resources -->
     <servlet>

@@ -8,8 +8,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
+import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -202,6 +205,23 @@ public class HttpHelper {
   public static String stringArrayToString(String[] jsonArray, String separator) {
     String str = Arrays.toString(jsonArray);
     return str.substring(1, str.length() - 1).replace(",", separator.matches("[,; ]") ? separator : " ");
+  }
+
+  public static String extractAccessToken(ParameterValidatorResult accessTokenParam, String authHeader) {
+    String token = null;
+    if(authHeader != null && authHeader.trim().length() > 0 && accessTokenParam.getResult().equals(RESULT.NONE)) {
+      if(Stream.of(authHeader.split(" ")).anyMatch("bearer"::equalsIgnoreCase)) {
+        token = authHeader.split(" ")[1];
+      }
+    }
+    if(accessTokenParam.getResult().equals(RESULT.VALID) && authHeader == null) {
+      token = accessTokenParam.getValue();
+    }
+    if(token == null ) {
+      LOGGER.warning("the access_token is missing or was provided multiple times");
+      throw new IllegalArgumentException(getErrorAsJson("invalid_request", "Either none or multiple access_token were provided").toJSONString());
+    }
+    return token;
   }
 
   public static String urlEncode(String input) {

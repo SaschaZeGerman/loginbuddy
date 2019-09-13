@@ -1,8 +1,20 @@
 package net.loginbuddy.common.util;
 
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 
 public class ParameterValidator {
+
+  public static ParameterValidatorResult getSingleValue(Enumeration<String> input) {
+    return getSingleValue(input, null);
+  }
+
+  public static ParameterValidatorResult getSingleValue(Enumeration<String> input, String defaultValue) {
+    List<String> values = Collections.list(input);
+    return getSingleValue( values.toArray(new String[0]), defaultValue);
+  }
 
   /**
    * the array should have one, non-empty string
