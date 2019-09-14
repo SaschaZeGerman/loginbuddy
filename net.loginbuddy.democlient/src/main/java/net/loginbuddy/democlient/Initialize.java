@@ -1,15 +1,16 @@
 package net.loginbuddy.democlient;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
+import net.loginbuddy.common.cache.LoginbuddyCache;
+import net.loginbuddy.common.config.Constants;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import net.loginbuddy.common.cache.LoginbuddyCache;
-import net.loginbuddy.common.config.Constants;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Initialize extends HttpServlet {
 

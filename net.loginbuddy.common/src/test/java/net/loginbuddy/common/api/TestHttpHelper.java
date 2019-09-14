@@ -1,10 +1,9 @@
 package net.loginbuddy.common.api;
 
-import static org.junit.Assert.assertEquals;
-
-import net.loginbuddy.common.config.Constants;
 import org.json.simple.JSONArray;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestHttpHelper {
 

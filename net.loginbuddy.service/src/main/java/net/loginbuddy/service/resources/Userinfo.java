@@ -1,23 +1,18 @@
 package net.loginbuddy.service.resources;
 
-import java.io.IOException;
-import java.util.Base64;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.server.Overlord;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import sun.misc.BASE64Decoder;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class Userinfo extends Overlord {
 

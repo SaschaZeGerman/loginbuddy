@@ -8,12 +8,6 @@
 
 package net.loginbuddy.common.util;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Objects;
-import java.util.logging.Logger;
-
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.VerificationJwkSelector;
@@ -23,6 +17,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * Implementation details taken from {@link "https://bitbucket.org/b_c/jose4j/wiki/Home"}

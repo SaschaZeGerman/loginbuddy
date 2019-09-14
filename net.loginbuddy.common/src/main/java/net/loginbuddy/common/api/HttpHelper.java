@@ -1,14 +1,5 @@
 package net.loginbuddy.common.api;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidatorResult;
@@ -27,6 +18,16 @@ import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class HttpHelper {
 

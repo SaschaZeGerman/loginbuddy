@@ -1,9 +1,10 @@
 package net.loginbuddy.common.util;
 
+import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 
 public class ParameterValidator {
 

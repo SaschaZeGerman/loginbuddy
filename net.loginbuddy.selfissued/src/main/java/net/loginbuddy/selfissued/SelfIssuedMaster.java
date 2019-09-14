@@ -1,8 +1,9 @@
 package net.loginbuddy.selfissued;
 
+import net.loginbuddy.common.api.HttpHelper;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import net.loginbuddy.common.api.HttpHelper;
 
 public class SelfIssuedMaster extends HttpServlet {
 

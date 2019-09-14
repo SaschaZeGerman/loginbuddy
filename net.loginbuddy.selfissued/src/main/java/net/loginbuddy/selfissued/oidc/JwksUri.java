@@ -1,15 +1,16 @@
 package net.loginbuddy.selfissued.oidc;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.selfissued.SelfIssuedMaster;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 public class JwksUri  extends SelfIssuedMaster {
 
