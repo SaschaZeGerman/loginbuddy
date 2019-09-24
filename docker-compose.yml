@@ -5,7 +5,7 @@
 # - have the key signed by a public CA (i.e.: Let's Encrypt)
 # - update the 'volumes' section to map the correct p12 keystore location
 #
-# As long as you are in development mode, use 'docker-compose-demosetup-dev.yml' instead. It takes care of
+# As long as you are in development mode, use 'docker-compose-demosetup.yml' instead. It takes care of
 # creating and updating temporary keystore files.
 #
 # The loginbuddy wiki has instructions on how to leverage 'Let's Encrypt' for signing purposes!
@@ -23,3 +23,5 @@
 #      - /opt/loginbuddy/config.json:/usr/local/tomcat/webapps/ROOT/classes/config.json
 #      - /opt/loginbuddy/discovery.json:/usr/local/tomcat/webapps/ROOT/classes/discovery.json
 #      - /opt/certs/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
+#    environment:
+#      - "SSL_PWD=thepasswordfortheprivatekeythatwasmappedasvolume"

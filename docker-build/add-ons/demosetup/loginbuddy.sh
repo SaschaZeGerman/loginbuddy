@@ -24,23 +24,35 @@ then
   SSL_PORT=443
 fi
 
-# generating a UUID as password for the generated keystore
+# creating a keystore and generating a password for it
 #
-UUID=$(cat /proc/sys/kernel/random/uuid)
+UUID=${SSL_PWD}
+if [ -z "$UUID" ]
+then
+  printf "===============\n"
+  printf "== Loginbuddy: Creating a TLS keystore including a password\n"
+  printf "===============\n"
+  # generating a UUID as password for the generated keystore
+  #
+  UUID=$(cat /proc/sys/kernel/random/uuid)
+  # Create private key
+  #
+  keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 1 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}" -ext san=dns:${HOSTNAME_LOGINBUDDY},dns:demoserver.loginbuddy.net,dns:democlient.loginbuddy.net
 
-# Create private key
-#
-keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 1 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}" -ext san=dns:${HOSTNAME_LOGINBUDDY},dns:demoserver.loginbuddy.net,dns:democlient.loginbuddy.net
+  # Export the public certificates
+  #
+  keytool -export -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storepass ${UUID}
 
-# Export the public certificates
-#
-keytool -export -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storepass ${UUID}
+  # Import the certs as trusted certificates
+  #
+  keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
+else
+  printf "===============\n"
+  printf "== Loginbuddy: Assuming a TLS keystore exists, none created! Do not forget to map your key as a volume!\n"
+  printf "===============\n"
+fi
 
-# Import the certs as trusted certificates
-#
-keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
-
-## Find the policy file that contains socket permissions and add them to the default catalina.policy file
+# Find the policy file that contains socket permissions and add them to the default catalina.policy file
 # default is located here: /usr/local/tomcat/conf/catalina.policy
 #
 cat /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy >> /usr/local/tomcat/conf/catalina.policy
@@ -55,13 +67,13 @@ sed -i "s/@@hostname@@"/${HOSTNAME_LOGINBUDDY}/g /usr/local/tomcat/conf/server.x
 sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 
-## check if self issued providers should be supported
+# check if self issued providers should be supported
 #
 sh /opt/docker/loginbuddy_selfissued_import.sh
 
-# overwrite the variables since they are not needed anywhere anymore
-# for this demo do wnot overwrite HOSTNAME_LOGINBUDDY!
+# overwrite the variables since they are not needed anywhere anymore. For this demo we do not overwrite HOSTNAME_LOGINBUDDY!
 #
+#export HOSTNAME_LOGINBUDDY=
 export SSL_PORT=
 export UUID=
 

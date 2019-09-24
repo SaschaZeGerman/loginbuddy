@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#
 # configures the environment variables HOSTNAME_LOGINBUDDY to 'loginbuddy-selfissued' and SSL_PORT to 445
 #
 printf "===============\n"

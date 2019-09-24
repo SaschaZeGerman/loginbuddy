@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#
 # a default hostname will be used if none was given
 #
 if [ -z "$HOSTNAME_LOGINBUDDY" ]
@@ -23,15 +24,27 @@ then
   SSL_PORT=443
 fi
 
-# generating a UUID as password for the generated keystore
+# creating a keystore and generating a password for it
 #
-UUID=$(cat /proc/sys/kernel/random/uuid)
+UUID=${SSL_PWD}
+if [ -z "$UUID" ]
+then
+  printf "===============\n"
+  printf "== Loginbuddy: Creating a TLS keystore including a password\n"
+  printf "===============\n"
+  # generating a UUID as password for the generated keystore
+  #
+  UUID=$(cat /proc/sys/kernel/random/uuid)
+  # Create private key
+  #
+  keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 90 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}"
+else
+  printf "===============\n"
+  printf "== Loginbuddy: Assuming a TLS keystore exists, none created!\n"
+  printf "===============\n"
+fi
 
-# Create private key
-#
-keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 90 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}"
-
-## Find the policy file that contains socket permissions and add them to the default catalina.policy file
+# Find the policy file that contains socket permissions and add them to the default catalina.policy file
 # default is located here: /usr/local/tomcat/conf/catalina.policy
 #
 cat /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy >> /usr/local/tomcat/conf/catalina.policy
@@ -46,15 +59,15 @@ sed -i "s/@@hostname@@"/${HOSTNAME_LOGINBUDDY}/g /usr/local/tomcat/conf/server.x
 sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 
+# check if self issued providers should be supported
+#
+sh /opt/docker/loginbuddy_selfissued_import.sh
+
 # overwrite the variables since they are not needed anywhere anymore
 #
 export HOSTNAME_LOGINBUDDY=
 export SSL_PORT=
 export UUID=
-
-## check if self issued providers should be supported
-#
-sh /opt/docker/loginbuddy_selfissued_import.sh
 
 # run the original tomcat entry point command as specified in tomcat's Dockerfile
 #
