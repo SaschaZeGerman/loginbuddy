@@ -13,7 +13,7 @@ script:
 - docker build --no-cache --tag saschazegerman/loginbuddy:latest .
 - docker build --no-cache --tag saschazegerman/loginbuddy:latest-demo -f Dockerfile_demosetup .
 - docker build --no-cache --tag saschazegerman/loginbuddy:latest-sidecar -f Dockerfile_sidecar .
-- docker build --no-cache --tag saschazegerman/loginbuddy:latest-selfissued -f Dockerfile_selfissued .-
+- docker build --no-cache --tag saschazegerman/loginbuddy:latest-selfissued -f Dockerfile_selfissued .
 after_success:
 - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USER" --password-stdin
 - docker push saschazegerman/loginbuddy:latest
