@@ -40,7 +40,7 @@ then
   keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 90 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}"
 else
   printf "===============\n"
-  printf "== Loginbuddy: Assuming a TLS keystore exists, none created!\n"
+  printf "== Loginbuddy: Assuming a TLS keystore exists, none created! Do not forget to map your key as a volume to: '/usr/local/tomcat/ssl/loginbuddy.p12'!\n"
   printf "===============\n"
 fi
 

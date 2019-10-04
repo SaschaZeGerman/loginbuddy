@@ -48,7 +48,7 @@ then
   keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
 else
   printf "===============\n"
-  printf "== Loginbuddy: Assuming a TLS keystore exists, none created! Do not forget to map your key as a volume!\n"
+  printf "== Loginbuddy: Assuming a TLS keystore exists, none created! Do not forget to map your key as a volume to: '/usr/local/tomcat/ssl/loginbuddy.p12'!\n"
   printf "===============\n"
 fi
 
@@ -68,6 +68,7 @@ sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 
 # check if self issued providers should be supported
+# this script is part of the default loginbuddy docker image
 #
 sh /opt/docker/loginbuddy_selfissued_import.sh
 

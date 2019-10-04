@@ -17,7 +17,7 @@ COPY docker-build/add-ons/selfissued/loginbuddy.sh /opt/docker/loginbuddy.sh
 #
 RUN mkdir /usr/local/tomcat/ssl
 
-# create non-priviliged user (with its own group) to run tomcat
+# create non-privileged user (with its own group) to run tomcat
 #
 RUN addgroup tomcat
 RUN adduser -SG tomcat tomcat
