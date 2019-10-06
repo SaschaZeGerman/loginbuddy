@@ -16,5 +16,6 @@ COPY docker-build/add-ons/server/loginbuddy_selfissued_import.sh /opt/docker/log
 
 ENV HOSTNAME_LOGINBUDDY local.loginbuddy.net
 ENV HOSTNAME_LOGINBUDDY_DEMOCLIENT democlient.loginbuddy.net
+ENV HOSTNAME_LOGINBUDDY_DEMOSERVER demoserver.loginbuddy.net
 
 ENTRYPOINT ["/opt/docker/loginbuddy.sh"]

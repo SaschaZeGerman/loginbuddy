@@ -14,6 +14,28 @@ then
   HOSTNAME_LOGINBUDDY=local.loginbuddy.net
 fi
 
+if [ -z "$HOSTNAME_LOGINBUDDY_CLIENT" ]
+then
+  printf "===============\n"
+  printf "== Loginbuddy: Using the default democlient hostname democlient.loginbuddy.net\n"
+  printf "== Loginbuddy: Please configure the enviroment variable HOSTNAME_LOGINBUDDY_DEMOCLIENT containing the hostname you want to use\n"
+  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY_DEMOCLIENT=yourhostname saschazegerman/loginbuddy:latest-demo\n"
+  printf "== Loginbuddy: or add HOSTNAME_LOGINBUDDY_DEMOCLIENT=yourhostname in the environments section in docker-compose-demosetup.yml\n"
+  printf "===============\n"
+  HOSTNAME_LOGINBUDDY_DEMOCLIENT=democlient.loginbuddy.net
+fi
+
+if [ -z "$HOSTNAME_LOGINBUDDY_DEMOSERVER" ]
+then
+  printf "===============\n"
+  printf "== Loginbuddy: Using the default demoserver hostname demoserver.loginbuddy.net\n"
+  printf "== Loginbuddy: Please configure the enviroment variable HOSTNAME_LOGINBUDDY_DEMOSERVER containing the hostname you want to use\n"
+  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY_DEMOSERVER=yourhostname saschazegerman/loginbuddy:latest-demo\n"
+  printf "== Loginbuddy: or add HOSTNAME_LOGINBUDDY_DEMOSERVER=yourhostname in the environments section in docker-compose-demosetup.yml\n"
+  printf "===============\n"
+  HOSTNAME_LOGINBUDDY_DEMOSERVER=demoserver.loginbuddy.net
+fi
+
 # setting the SSL port to 443 if none was given
 #
 if [ -z "$SSL_PORT" ]
@@ -37,7 +59,7 @@ then
   UUID=$(cat /proc/sys/kernel/random/uuid)
   # Create private key
   #
-  keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 1 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}" -ext san=dns:${HOSTNAME_LOGINBUDDY},dns:demoserver.loginbuddy.net,dns:democlient.loginbuddy.net
+  keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 1 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}" -ext san=dns:${HOSTNAME_LOGINBUDDY},dns:${HOSTNAME_LOGINBUDDY_DEMOSERVER},dns:${HOSTNAME_LOGINBUDDY_DEMOCLIENT}
 
   # Export the public certificates
   #
@@ -64,6 +86,8 @@ export CATALINA_OPTS="${SYSTEM_PROPS} -Dorg.jose4j.jws.default-allow-none=false"
 # replace @@variable@@ in server.xml with the real values
 #
 sed -i "s/@@hostname@@"/${HOSTNAME_LOGINBUDDY}/g /usr/local/tomcat/conf/server.xml
+sed -i "s/@@hostname_demoserver@@"/${HOSTNAME_LOGINBUDDY_DEMOSERVER}/g /usr/local/tomcat/conf/server.xml
+sed -i "s/@@hostname_democlient@@"/${HOSTNAME_LOGINBUDDY_DEMOCLIENT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 

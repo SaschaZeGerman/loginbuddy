@@ -44,7 +44,7 @@
           certificateKeyAlias="loginbuddy"
           certificateVerification="true"/>
       </SSLHostConfig>
-      <SSLHostConfig hostName="demoserver.loginbuddy.net"
+      <SSLHostConfig hostName="@@hostname_demoserver@@"
         protocols="TLSv1.2"
         sslProtocol="TLS">
         <Certificate
@@ -53,7 +53,7 @@
           certificateKeyAlias="loginbuddy"
           certificateVerification="true"/>
       </SSLHostConfig>
-      <SSLHostConfig hostName="democlient.loginbuddy.net"
+      <SSLHostConfig hostName="@@hostname_democlient@@"
         protocols="TLSv1.2"
         sslProtocol="TLS">
         <Certificate
@@ -86,8 +86,8 @@
         </Context>
       </Host>
 
-      <Host name="demoserver.loginbuddy.net" appBase="webapps" unpackWARs="true" autoDeploy="true">
-        <Alias>demoserver.loginbuddy.net</Alias>
+      <Host name="@@hostname_demoserver@@" appBase="webapps" unpackWARs="true" autoDeploy="true">
+        <Alias>@@hostname_demoserver@@</Alias>
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
           prefix="demoserver_access_log" suffix=".txt"
           pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
@@ -98,8 +98,8 @@
         </Context>
       </Host>
 
-      <Host name="democlient.loginbuddy.net" appBase="webapps" unpackWARs="true" autoDeploy="true">
-        <Alias>democlient.loginbuddy.net</Alias>
+      <Host name="@@hostname_democlient@@" appBase="webapps" unpackWARs="true" autoDeploy="true">
+        <Alias>@@hostname_democlient@@</Alias>
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
           prefix="democlient_access_log" suffix=".txt"
           pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
