@@ -14,7 +14,7 @@ then
   HOSTNAME_LOGINBUDDY=local.loginbuddy.net
 fi
 
-if [ -z "$HOSTNAME_LOGINBUDDY_CLIENT" ]
+if [ -z "$HOSTNAME_LOGINBUDDY_DEMOCLIENT" ]
 then
   printf "===============\n"
   printf "== Loginbuddy: Using the default democlient hostname democlient.loginbuddy.net\n"

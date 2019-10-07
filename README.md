@@ -4,7 +4,7 @@ A container based solution that helps developers support social login for their 
 
 The latest docker image is always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
 
-A running version of the latest Loginbuddy may be here: [http://latest.loginbuddy.net](http://latest.loginbuddy.net). (If the URL is not working, I am trying to figure out something new)
+A running version of the latest Loginbuddy may be here: [http://client.loginbuddy.net](http://client.loginbuddy.net). (If the URL is not working, I am trying to figure out something new)
 
 # Loginbuddy - Your authenticator
 
