@@ -40,7 +40,7 @@
     <p>This is a demo setup of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
         It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
-    <p>The link below takes one to a simple website displaying a few details about the features of loginbuddy. If you are brave enough, just click it ... </p>
+    <p>The link below takes one to a simple website displaying a few details about the features of loginbuddy.<br/>If you are brave enough, just click it ... </p>
     <p><a href="democlientApp.jsp">Demo Client</a></p>
 
 </div>

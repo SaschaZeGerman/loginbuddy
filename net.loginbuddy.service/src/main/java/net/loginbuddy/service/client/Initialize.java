@@ -54,6 +54,8 @@ public class Initialize extends HttpServlet {
         .getSingleValue(request.getParameterValues(Constants.ISSUER.getKey()));
     ParameterValidatorResult discoveryUrlResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.DISCOVERY_URL.getKey()));
+    ParameterValidatorResult providerAddition = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.PROVIDER_ADDITION.getKey()));
 
 // ***************************************************************
 // ** Check for the current session
@@ -62,6 +64,12 @@ public class Initialize extends HttpServlet {
     if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
       LOGGER.warning("Missing session, cannot initiate the authorization flow!");
       response.sendError(400, "Missing session, cannot initiate the authorization flow!");
+      return;
+    }
+
+    if (providerAddition.equals(RESULT.VALID)) {
+      LOGGER.warning(String.format("Invalid request! Unused field had values: '%s'", providerAddition));
+      response.sendError(400, "Invalid request, please try again!");
       return;
     }
 

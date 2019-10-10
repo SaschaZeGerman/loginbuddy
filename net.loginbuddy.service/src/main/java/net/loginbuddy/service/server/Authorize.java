@@ -26,6 +26,7 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
+import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.util.SessionContext;
@@ -115,7 +116,7 @@ public class Authorize extends HttpServlet {
     }
     if (Stream.of(cc.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
       LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
-      response.sendError(400, String.format("Invalid redirect_uri: %s", clientRedirectUri));
+      response.sendError(400, String.format("Invalid redirect_uri: %s", Sanetizer.sanetizeUrl(clientRedirectUri, 256)));
       return;
     }
 
@@ -157,7 +158,7 @@ public class Authorize extends HttpServlet {
       LOGGER.warning(
           String.format("The given response_type is not supported: %s", clientResponseTypeResult.getValue()));
       response.sendRedirect(
-          HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", String.format("unsupported response_type: %s", clientResponseTypeResult.getValue())));
+          HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", String.format("unsupported response_type: %s", Sanetizer.sanetize(clientResponseTypeResult.getValue()))));
       return;
     }
 

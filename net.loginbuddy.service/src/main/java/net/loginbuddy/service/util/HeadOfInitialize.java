@@ -219,6 +219,7 @@ public class HeadOfInitialize {
       sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providerConfig.getRedirectUri()); // we have to store this in the session to make it available later
       return providerConfig;
     } else {
+      LOGGER.warning(msg.getMsg());
       return null;
     }
   }

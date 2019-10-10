@@ -1,4 +1,5 @@
 <%@ page import="java.util.UUID" %>
+<%@ page import="java.net.URLEncoder" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%--
@@ -42,9 +43,11 @@
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
         It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
-    <p>If you are developing an application and if you want to support social login, loginbuddy can help achieving that.
-        Once you have registered your application, your application only needs to communicate with loginbuddy whereas loginbuddy communicates with configured social platforms.</p>
-    <p>Below is an example form, give it a try. It simulates an authorization request of your application (no need to modify anything ... and also not suggested):</p>
+    <h3>What do I see here?</h3>
+    <p>If you are developing an application and if you want to support social login, Loginbuddy can help achieving that. Your application would send an authorization request
+        to Loginbuddy using the shown parameters below. Loginbuddy will then either forward your user to a provider that was given on this page, or it will display a
+        provider selection page next. In either case, your application will get the final response after the authorization flow with a provider has finished.</p>
+    <p>If this would be your application, the lower form would not be shown, here it is meant for educational purposes:</p>
     <form action="initialize" method="post" enctype="application/x-www-form-urlencoded">
         <div class="form-group">
             <label for="provider">Provider (leave it blank first, then try 'server_loginbuddy')</label>
@@ -56,14 +59,29 @@
         <input type="hidden" id="nonce" name="nonce" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
         <input type="hidden" id="state" name="state" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
         <input type="hidden" id="scope" name="scope" size="80" class="form-control" readonly value="openid email profile">
+        <input type="hidden" name="provider_addition" value="">
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     <hr/>
     <h3>Details for developers</h3>
-    <p>Here is the list of parameters that are send to initiate an authorization_request:</p>
+    <p>This is the actual statement your application would have to send (plus 'provider' if given):</p>
+    <%
+        String clientNonce = UUID.randomUUID().toString();
+        String clientState = UUID.randomUUID().toString();
+        String authRequest = String.format("https://%s/authorize?client_id=%s&response_type=%s&redirect_uri=%s&nonce=%s&state=%s&scope=%s",
+                System.getenv("HOSTNAME_LOGINBUDDY"),
+                URLEncoder.encode("clientIdForTestingPurposes", "UTF-8"),
+                URLEncoder.encode("code", "UTF-8"),
+                URLEncoder.encode("https://" + System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT"), "UTF-8"),
+                URLEncoder.encode(clientNonce, "UTF-8"),
+                URLEncoder.encode(clientState, "UTF-8"),
+                URLEncoder.encode("openid email profile", "UTF-8"));
+    %>
+    <code>GET <%=authRequest%></code><br/>
+    <p>Below is the list of the non-URL Encoded authorization request values:</p>
     <form>
         <div class="form-group">
-            <label for="provider">Provider (the value provided by the user)</label>
+            <label for="provider">Provider (the value provided above by the user)</label>
             <input type="text" readonly class="form-control" size="80">
         </div>
         <div class="form-group">
@@ -80,11 +98,11 @@
         </div>
         <div class="form-group">
             <label for="state">Nonce</label>
-            <input type="text" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
+            <input type="text" size="80" class="form-control" readonly value="<%=clientNonce%>">
         </div>
         <div class="form-group">
             <label for="state">State</label>
-            <input type="text" size="80" class="form-control" readonly value="<%=UUID.randomUUID().toString()%>">
+            <input type="text" size="80" class="form-control" readonly value="<%=clientState%>">
         </div>
         <div class="form-group">
             <label for="state">Scope</label>

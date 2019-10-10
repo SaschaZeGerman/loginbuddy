@@ -2,6 +2,8 @@ package net.loginbuddy.democlient;
 
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.Sanetizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,8 +13,11 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class Initialize extends HttpServlet {
+
+  private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -24,9 +29,16 @@ public class Initialize extends HttpServlet {
 
     // No validation whatsoever. This is just for demo!
 
+    String providerAddition = request.getParameter(Constants.PROVIDER_ADDITION.getKey()); // optional
+    if (providerAddition.equals(ParameterValidatorResult.RESULT.VALID)) {
+      LOGGER.warning(String.format("Invalid request! Unused field had values: '%s'", providerAddition));
+      response.sendError(400, "Invalid request, please try again!");
+      return;
+    }
+
     String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
     String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
-    String clientRedirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
+    String clientRedirectUri = Sanetizer.sanetizeUrl(request.getParameter(Constants.REDIRECT_URI.getKey()), 256);
     String clientNonce = request.getParameter(Constants.NONCE.getKey());
     String clientState = request.getParameter(Constants.STATE.getKey());
     String clientScope = request.getParameter(Constants.SCOPE.getKey());

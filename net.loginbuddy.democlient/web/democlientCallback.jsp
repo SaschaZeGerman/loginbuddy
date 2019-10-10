@@ -40,7 +40,7 @@
     <h1>Welcome back to Loginbuddy-Democlient!</h1>
     <hr/>
     <h2>Provider response</h2>
-    <p>Below are the values returned by the social platform which the user has chosen.</p>
+    <p>Below are the values returned by the social platform which the user has chosen. Since the window is pretty small (for now), copy the content and paste it into a JSON capable editor. Or at jsonlint.com.</p>
     <hr/>
     <%
         String result = "{\"error\":\"session_expired\"}";
@@ -61,6 +61,12 @@
     <div>
         <pre><code class="language-json" id="idProviderResponse"><%=result%></code></pre>
     </div>
+    <p>In addition to values of the social platform, Loginbuddy has added the following:</p>
+    <ol>
+        <li><strong>details_provider: </strong>the validated id_token payload, the chosen provider, the userinfo response</li>
+        <li><strong>details_loginbuddy: </strong>values of the Loginbuddy session</li>
+        <li><strong>details_normalized: </strong>a normalized version of the userinfo response. Your application could use that and would not have to worry about potential differences</li>
+    </ol>
     <hr/>
     <p><a href="democlientApp.jsp"><strong>Try it again!</strong></a></p>
 

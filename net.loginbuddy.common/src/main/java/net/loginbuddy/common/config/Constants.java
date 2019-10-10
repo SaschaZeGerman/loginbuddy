@@ -44,6 +44,7 @@ public enum Constants {
     NONCE("nonce"),
     OPENID_SCOPE("openid profile email"),
     PROVIDER("provider"),
+    PROVIDER_ADDITION("provider_addition"),
     PROMPT("prompt"),
     PKCE("pkce"),
     REDIRECT_URI("redirect_uri"),

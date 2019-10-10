@@ -49,11 +49,10 @@
             } else {
                 providers.append("<td style=\"text-align: center; vertical-align: middle;\">");
             }
-            providers
-                    .append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
+            providers.append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
             providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(sessionId).append("\">");
-            providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider())
-                    .append("\">");
+            providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
+            providers.append("<input type=\"hidden\" name=\"provider_addition\" value=\"\"/>");
             providers.append("<button type=\"submit\">");
             providers.append("<img alt=\"").append(nextProvider.getProvider())
                     .append("\" width=\"100\" margin=\"0\" src=\"images/");
@@ -72,17 +71,19 @@
         providers.append("</table>");
 
         if (sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey())) {
-            providers.append("<hr/><h3>Use your own!</h3>");
+            providers.append("<hr/><h3>Use your own!<br/><small>Support for <a href=\"https://openid.net/specs/openid-connect-registration-1_0.html\" target=\"_blank\">OpenID Connect Dynamic Registration</a></small></h3>");
             providers
                     .append("<p>Provide the OpenID Connect <strong>issuer</strong> below to use a non listed but OpenID Connect compliant provider.</p>");
-            providers.append("<p>The configuration needs to include at least these values: <strong>issuer</strong> and <strong>registration_endpoint</strong></p>");
-            providers.append("<p>Add the OpenID Connect configuration endpoint if <strong>{issuer}.concat(/.well-known/openid-configuration)</strong> cannot be used to create the URL.</p>");
+            providers.append("<p>The retrieved OpenID Provider configuration needs to include at least these values: <strong>issuer</strong> and <strong>registration_endpoint</strong></p>");
+            providers.append("<p><strong>Note: </strong>The current implementation uses <strong>response_type=code, grant_type=authorization_code, token_endpoint_auth_method=client_secret_post</strong></p>");
             providers
                     .append("<form action=\"initialize\" enctype=\"application/x-www-form-urlencoded\" method=\"post\">");
             providers.append("<input type=\"hidden\" name=\"session\" value=\"").append(sessionId).append("\">");
             providers.append("<input type=\"hidden\" name=\"provider\" value=\"dynamic_provider\"/>");
+            providers.append("<input type=\"hidden\" name=\"provider_addition\" value=\"\"/>");
             providers.append("<div class=\"form-group\"><label for=\"issuer\">Issuer: <small>(i.e.: https://myserver.com)</small></label><input type=\"url\" required maxlength=\"128\" class=\"form-control\" name=\"issuer\" id=\"issuer\"></div>");
-            providers.append("<div class=\"form-group\"><label for=\"discovery_url\">URL: <small>(i.e.: https://myserver.com/.well-known/openid-configuration)</small></label><input type=\"url\" maxlength=\"128\" class=\"form-control\" name=\"discovery_url\" id=\"discovery_url\"></div>");
+            providers.append("<p>Add the OpenID Connect discovery endpoint if <strong>{issuer}.concat(/.well-known/openid-configuration)</strong> cannot be used to create the URL.</p>");
+            providers.append("<div class=\"form-group\"><label for=\"discovery_url\">Discovery endpoint: <small>(i.e.: https://myserver.com/.well-known/openid-configuration)</small></label><input type=\"url\" maxlength=\"128\" class=\"form-control\" name=\"discovery_url\" id=\"discovery_url\"></div>");
             providers.append("<button type=\"submit\" class=\"btn btn-primary\">Submit</button>");
             providers.append("</form>");
         }
@@ -120,11 +121,12 @@
 
 <div class="container" id="content">
 
-    <h1>Welcome to Loginbuddy!</h1>
-    <p>This page displays all configured social login providers! This page can be customized so that it fits your web
-        design.</p>
+    <h1>Welcome to Loginbuddy!<br/><small>Provider Selection Page</small></h1>
     <hr/>
-    <h2>Choose your provider</h2>
+    <h3>What do I see here?</h3>
+    <p>In a real world scenario your application would host this page, making it look nicer. If not, Loginbuddy will generate this page, displaying all social providers that have been configured.</p>
+    <p><strong>Note: </strong>This page only appears if no pre-selection of a provider has been made (via parameter 'provider').</p>
+    <h3>Choose your provider</h3>
     <p>The images below represent configured and supported providers one can choose from. <strong>fake</strong> is a
         place holder and does not do anything else
         than simulating a 'real' provider. Clicking it will result in an example response how it would look.</p>

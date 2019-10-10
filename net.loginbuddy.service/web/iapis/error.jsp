@@ -1,3 +1,4 @@
+<%@ page import="net.loginbuddy.common.util.Sanetizer" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%--
   ~ Copyright (c) 2018. . All rights reserved.
@@ -42,23 +43,27 @@
         // Analyze the servlet exception
         Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
         Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-        String errorMsg = (String)request.getAttribute("javax.servlet.error.message");
+        String errorMsg = (String) request.getAttribute("javax.servlet.error.message");
         String servletName = (String) request.getAttribute("javax.servlet.error.servlet_name");
-        if (servletName == null) { servletName = "Unknown"; }
+        if (servletName == null) {
+            servletName = "Unknown";
+        }
         String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri");
-        if (requestUri == null) { requestUri = "Unknown"; }
-        if(statusCode != 500){
-        %>
-            <%="<h3>Error Details</h3>"%>
-            <%="<strong>Requested URI:</strong> " + requestUri + "<br>"%>
-            <%="<strong>Error Message:</strong> " + errorMsg + "<br>"%>
-        <%
-        }else{
+        if (requestUri == null) {
+            requestUri = "Unknown";
+        }
+        if (statusCode != 500) {
+    %>
+    <%="<h3>Error Details</h3>"%>
+    <%="<strong>Requested URI:</strong> " + Sanetizer.sanetizeUrl(requestUri, 256) + "<br>"%>
+    <%="<strong>Error Message:</strong> " + errorMsg + "<br>"%>
+    <%
+        } else {
             response.getWriter().write("<h3>Exception Details</h3>");
-            response.getWriter().write("<ul><li>Servlet Name:"+servletName+"</li>");
-            response.getWriter().write("<li>Exception Name:"+throwable.getClass().getName()+"</li>");
-            response.getWriter().write("<li>Requested URI:"+requestUri+"</li>");
-            response.getWriter().write("<li>Exception Message:"+throwable.getMessage()+"</li>");
+            response.getWriter().write("<ul><li>Servlet Name:" + servletName + "</li>");
+            response.getWriter().write("<li>Exception Name:" + throwable.getClass().getName() + "</li>");
+            response.getWriter().write("<li>Requested URI:" + Sanetizer.sanetizeUrl(requestUri, 256) + "</li>");
+            response.getWriter().write("<li>Exception Message:" + throwable.getMessage() + "</li>");
             response.getWriter().write("</ul>");
         }
 

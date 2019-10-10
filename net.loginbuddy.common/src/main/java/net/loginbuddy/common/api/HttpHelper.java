@@ -137,13 +137,16 @@ public class HttpHelper {
 
     JSONObject errorResp = new JSONObject();
     try {
+      if(discoveryUrl.startsWith("http:")) {
+        throw new IllegalArgumentException("The discovery_url is invalid or not provided");
+      }
       MsgResponse oidcConfig = getAPI(discoveryUrl);
       if (oidcConfig.getStatus() == 200) {
         if (oidcConfig.getContentType().startsWith("application/json")) {
           JSONObject doc = (JSONObject) new JSONParser().parse(oidcConfig.getMsg());
           // TODO check for 'code' and 'authorization_code' as supported
           String registerUrl = (String) doc.get("registration_endpoint");
-          if (registerUrl == null || registerUrl.trim().length() == 0) {
+          if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
             throw new IllegalArgumentException("The registration_url is invalid or not provided");
           } else {
             JSONObject registrationMSg = new JSONObject();
@@ -169,13 +172,25 @@ public class HttpHelper {
           return getErrorAsJson("invalid_configuration", "the openid-configuration response is not JSON");
         }
       } else {
-        // TODO handdle non 200 responses
-        return getErrorAsJson("invalid_configuration", "the opeid-configuration could not be retrieved");
+        // TODO handle non 200 responses
+        return getErrorAsJson("invalid_configuration", "the openid-configuration could not be retrieved");
       }
     } catch (Exception e) {
       // TODO need to handle errors
       e.printStackTrace();
-      return getErrorAsJson("invalid_server", "no idea what went wrong");
+      if(e.getMessage().contains("refused")) {
+        return getErrorAsJson("invalid_server", "connection to openid provider was refused");
+      } else if(e.getMessage().contains("registration_url")) {
+        return getErrorAsJson("invalid_server", e.getMessage());
+      } else if(e.getMessage().contains("discovery_url")) {
+        return getErrorAsJson("invalid_server", e.getMessage());
+      } else if(e.getMessage().contains("PKIX path building failed")) {
+        return getErrorAsJson("invalid_server", "OpenID Providers using a self-signed SSL certificate are not supported");
+      }  else if(e.getMessage().contains("failed to respond")) {
+        return getErrorAsJson("invalid_server", "OpenID Provider did not respond. Need to use HTTPS?");
+      } else {
+        return getErrorAsJson("invalid_server", "no idea what went wrong");
+      }
     }
   }
 
