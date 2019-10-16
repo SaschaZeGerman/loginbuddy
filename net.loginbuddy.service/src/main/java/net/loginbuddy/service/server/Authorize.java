@@ -237,7 +237,7 @@ public class Authorize extends HttpServlet {
         clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
         checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider());
 
-    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
+    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 
 // ***************************************************************
 // ** Present the provider selection page if non was given in this request. Otherwise, fast forward

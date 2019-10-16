@@ -175,7 +175,7 @@ public class HeadOfInitialize {
 
     sessionCtx.setSessionCallback();
 
-    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx);
+    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
     return authorizeUrl.toString();
   }

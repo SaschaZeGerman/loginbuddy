@@ -14,6 +14,7 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.PropertiesUtil;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
@@ -189,10 +190,10 @@ public class Callback extends HttpServlet {
       String authorizationCode = UUID.randomUUID().toString();
       sessionCtx.put("eb", eb.toString());
       sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-      LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx);
+      LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
 
 // ***************************************************************
-// ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxies those calls
+// ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
 // ***************************************************************
 
       JSONObject jo = new JSONObject();
@@ -200,9 +201,9 @@ public class Callback extends HttpServlet {
       jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
       String[] hint = access_token.split(".");
       if(hint.length == 3) {
-        LoginbuddyCache.getInstance().put(hint[2], jo);
+        LoginbuddyCache.getInstance().put(hint[2], jo, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
       } else {
-        LoginbuddyCache.getInstance().put(access_token, jo, 60L);
+        LoginbuddyCache.getInstance().put(access_token, jo, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
       }
 
       response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "code", authorizationCode));
