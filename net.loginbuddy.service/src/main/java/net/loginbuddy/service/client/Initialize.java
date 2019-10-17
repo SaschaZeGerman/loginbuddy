@@ -8,29 +8,22 @@
 
 package net.loginbuddy.service.client;
 
-import static net.loginbuddy.common.api.HttpHelper.getErrorForRedirect;
+import net.loginbuddy.common.cache.LoginbuddyCache;
+import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.ParameterValidator;
+import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
+import net.loginbuddy.service.util.HeadOfInitialize;
+import net.loginbuddy.service.util.SessionContext;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.common.cache.LoginbuddyCache;
-import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.util.MsgResponse;
-import net.loginbuddy.common.util.ParameterValidator;
-import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.util.HeadOfInitialize;
-import net.loginbuddy.service.util.SessionContext;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import static net.loginbuddy.common.api.HttpHelper.getErrorForRedirect;
 
 @WebServlet(name = "Initialize")
 public class Initialize extends HttpServlet {

@@ -1,8 +1,9 @@
 package net.loginbuddy.demoserver.provider;
 
-import java.util.Date;
-import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.cache.LoginbuddyContext;
+import net.loginbuddy.common.config.Constants;
+
+import java.util.Date;
 
 public class SessionContext extends LoginbuddyContext {
 

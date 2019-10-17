@@ -1,11 +1,12 @@
 package net.loginbuddy.service.server;
 
-import java.io.IOException;
+import net.loginbuddy.service.config.LoginbuddyConfig;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import net.loginbuddy.service.config.LoginbuddyConfig;
+import java.io.IOException;
 
 public class Discovery extends HttpServlet {
 

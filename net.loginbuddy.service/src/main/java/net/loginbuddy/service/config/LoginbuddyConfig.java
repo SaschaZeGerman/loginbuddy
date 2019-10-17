@@ -8,17 +8,13 @@
 
 package net.loginbuddy.service.config;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import java.io.BufferedReader;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 public class LoginbuddyConfig {
 

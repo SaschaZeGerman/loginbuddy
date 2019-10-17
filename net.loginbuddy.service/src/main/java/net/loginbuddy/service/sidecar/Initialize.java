@@ -8,16 +8,17 @@
 
 package net.loginbuddy.service.sidecar;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.util.HeadOfInitialize;
 import net.loginbuddy.service.util.SessionContext;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * This class accepts connections only from localhost. The intention is easy access if loginbuddy is used as a sidecar deployment where it becomes part of the actual web application. This setup makes

@@ -12,17 +12,18 @@
  */
 package net.loginbuddy.demoserver.provider;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.UUID;
-import java.util.logging.Logger;
+import net.loginbuddy.common.cache.LoginbuddyCache;
+import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.Pkce;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import net.loginbuddy.common.cache.LoginbuddyCache;
-import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.util.Pkce;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 public class LoginbuddyProviderAuthorize extends HttpServlet {
 

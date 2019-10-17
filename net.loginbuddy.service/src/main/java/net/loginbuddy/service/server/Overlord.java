@@ -1,11 +1,12 @@
 package net.loginbuddy.service.server;
 
-import java.io.IOException;
-import java.util.logging.Logger;
+import net.loginbuddy.service.config.LoginbuddyConfig;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
-import net.loginbuddy.service.config.LoginbuddyConfig;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 public class Overlord extends HttpServlet {
 
