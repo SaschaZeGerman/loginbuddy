@@ -158,16 +158,20 @@ public class HeadOfInitialize {
 // ** Create the authorization URL to redirect the client
 // ***************************************************************
 
+    // do not include empty parameters. Some providers will fail the request if included
+    String cp = "".equals(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey())) ? "" : "&" + Constants.PROMPT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_PROMPT.getKey());
+    String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey());
+    String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey());
+
     authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(providerConfig.getClientId()).
         append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(providerConfig.getResponseType())
         .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getScope()))
         .append("&").append(Constants.NONCE.getKey()).append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
         .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getRedirectUri()))
         .append(pkce == null ? "" : pkce)
-        .append("&").append(Constants.PROMPT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()))
-        .append("&").append(Constants.LOGIN_HINT.getKey()).append("=")
-        .append(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()))
-        .append("&").append(Constants.ID_TOKEN_HINT.getKey()).append("=").append(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()))
+        .append(cp)
+        .append(lh)
+        .append(ith)
         .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId());
 
 // ***************************************************************

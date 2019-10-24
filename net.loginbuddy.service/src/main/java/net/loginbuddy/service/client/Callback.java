@@ -173,14 +173,18 @@ public class Callback extends HttpServlet {
 // ** Now, let's get the userinfo response
 // ***************************************************************
 
-      MsgResponse userinfoResp = HttpHelper.getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
-      if (userinfoResp.getStatus() == 200) {
-        if (userinfoResp.getContentType().startsWith("application/json")) {
-          JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
-          eb.setUserinfo(userinfoRespObject);
-          eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject, access_token));
-        }
-      } // TODO : handle non 200 response
+      try {
+        MsgResponse userinfoResp = HttpHelper.getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
+        if (userinfoResp.getStatus() == 200) {
+          if (userinfoResp.getContentType().startsWith("application/json")) {
+            JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
+            eb.setUserinfo(userinfoRespObject);
+            eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject, access_token));
+          }
+        } // TODO : handle non 200 response
+      } catch (Exception e) {
+        LOGGER.warning("retrieving userinfo failed");
+      }
 
 // ***************************************************************
 // ** Issue our own authorization_code and add details for the final client response
