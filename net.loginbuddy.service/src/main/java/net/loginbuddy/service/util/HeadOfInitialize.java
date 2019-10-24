@@ -155,6 +155,15 @@ public class HeadOfInitialize {
     }
 
 // ***************************************************************
+// ** some providers do expect 'response_mode' for certain SCOPE combinations. Include it if specified
+// ***************************************************************
+
+    String responseMode = providerConfig.getResponseMode();
+    if (Constants.RESPONSE_MODE_QUERY.getKey().equalsIgnoreCase(responseMode) || Constants.RESPONSE_MODE_FORM_POST.getKey().equalsIgnoreCase(responseMode)) {
+      responseMode = "&response_mode=" + responseMode;
+    }
+
+// ***************************************************************
 // ** Create the authorization URL to redirect the client
 // ***************************************************************
 
@@ -169,6 +178,7 @@ public class HeadOfInitialize {
         .append("&").append(Constants.NONCE.getKey()).append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
         .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getRedirectUri()))
         .append(pkce == null ? "" : pkce)
+        .append(responseMode == null ? "" : responseMode)
         .append(cp)
         .append(lh)
         .append(ith)

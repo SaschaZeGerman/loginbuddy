@@ -63,6 +63,9 @@ public class ProviderConfig {
   @JsonProperty("jwks_uri")
   private String jwksUri;
 
+  @JsonProperty("response_mode")
+  private String responseMode;
+
   @JsonProperty("pkce")
   private boolean pkce;
 
@@ -204,6 +207,13 @@ public class ProviderConfig {
     return mappings == null ? "{}" : mappings.toString();
   }
 
+  public String getResponseMode() {
+    return responseMode;
+  }
+
+  public void setResponseMode(String responseMode) {
+    this.responseMode = responseMode;
+  }
 
   public JSONObject getMappingsAsJson() {
     try {

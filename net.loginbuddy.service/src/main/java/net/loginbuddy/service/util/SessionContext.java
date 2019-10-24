@@ -27,7 +27,6 @@ public class SessionContext extends LoginbuddyContext {
    * @param idtokenHint
    * @param checkRedirectUri
    * @param redirectUriValid
-   * @return the used or generated 'nonce' value
    */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,

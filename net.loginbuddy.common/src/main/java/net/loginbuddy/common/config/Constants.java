@@ -49,6 +49,8 @@ public enum Constants {
     PKCE("pkce"),
     REDIRECT_URI("redirect_uri"),
     RESPONSE_TYPE("response_type"),
+    RESPONSE_MODE_QUERY("query"),
+    RESPONSE_MODE_FORM_POST("form_post"),
     SESSION("session"),
     SCOPE("scope"),
     SCOPES_SUPPORTED("scopes_supported"),
