@@ -141,6 +141,7 @@ public class Callback  extends HttpServlet {
 
       MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), codeResult.getValue(),
           sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
+      JSONObject idTokenPayload = null;
       if (tokenResponse != null) {
         if (tokenResponse.getStatus() == 200) {
           if (tokenResponse.getContentType().startsWith("application/json")) {
@@ -151,7 +152,7 @@ public class Callback  extends HttpServlet {
             try {
               id_token = tokenResponseObject.get("id_token").toString();
               MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-              JSONObject idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
+              idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
                   providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
               eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {
@@ -190,7 +191,8 @@ public class Callback  extends HttpServlet {
           }
         } // TODO : handle non 200 response
       } catch (Exception e) {
-        LOGGER.warning("retrieving userinfo failed");
+        LOGGER.warning("retrieving userinfo failed. Will use id_token_payload for 'details_normalized' if it exists!");
+        eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), idTokenPayload, access_token));
       }
 
 // ***************************************************************

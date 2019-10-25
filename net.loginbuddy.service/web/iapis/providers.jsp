@@ -5,13 +5,13 @@
   ~ See http://www.apache.org/licenses/LICENSE-2.0 for details.
   ~
   --%>
-<%@ page import="java.util.logging.Logger" %>
-<%@ page import="net.loginbuddy.service.config.ProviderConfig" %>
-<%@ page import="net.loginbuddy.service.config.LoginbuddyConfig" %>
-<%@ page import="java.util.List" %>
 <%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
-<%@ page import="net.loginbuddy.service.util.SessionContext" %>
 <%@ page import="net.loginbuddy.common.config.Constants" %>
+<%@ page import="net.loginbuddy.service.config.LoginbuddyConfig" %>
+<%@ page import="net.loginbuddy.service.config.ProviderConfig" %>
+<%@ page import="net.loginbuddy.service.util.SessionContext" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.logging.Logger" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!
