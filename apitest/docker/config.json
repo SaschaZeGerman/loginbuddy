@@ -35,7 +35,8 @@
         "jwks_uri": "https://demoserver.loginbuddy.net/jwks.json",
         "scope": "openid profile email",
         "response_type": "code",
-        "redirect_uri": "https://local.loginbuddy.net/callback"
+        "redirect_uri": "https://local.loginbuddy.net/callback",
+        "response_mode": "query"
       },
       {
         "provider": "not_for_public_client",
@@ -48,7 +49,8 @@
         "jwks_uri": "https://not_for_public_client/jwks.json",
         "scope": "openid profile email",
         "response_type": "code",
-        "redirect_uri": "https://not_for_public_client/callback"
+        "redirect_uri": "https://not_for_public_client/callback",
+        "response_mode": "form_post"
       }
     ]
   }
