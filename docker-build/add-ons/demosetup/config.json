@@ -16,11 +16,7 @@
         "client_secret": "myFancyAndSecureClientSecret",
         "client_type": "confidential",
         "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
-        "providers": [
-          "server_loginbuddy",
-          "not_for_public_client"
-        ]
+        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect"
       }
     ],
     "providers": [
@@ -93,6 +89,35 @@
           "email_verified": "asis:true",
           "provider": "asis:linkedin"
         }
+      },
+      {
+        "provider": "apple",
+        "issuer": "https://appleid.apple.com",
+        "client_id": "",
+        "client_secret": "",
+        "authorization_endpoint": "https://appleid.apple.com/auth/authorize",
+        "token_endpoint": "https://appleid.apple.com/auth/token",
+        "userinfo_endpoint": "",
+        "jwks_uri": "https://appleid.apple.com/auth/keys",
+        "response_type": "code",
+        "redirect_uri": "https://local.loginbuddy.net/callback",
+        "scope": "openid email name",
+        "response_mode":"form_post",
+        "mappings": {
+          "name": "asis:unknown",
+          "given_name": "asis:unknown",
+          "family_name": "asis:unknown",
+          "picture": "",
+          "email": "asis:unknown",
+          "email_verified": "asis:false",
+          "provider": "asis:apple",
+          "sub": "$.sub"
+        }
+      },
+      {
+        "provider": "dynamic",
+        "issuer": "https://{your-server-that-supports-dynamic-registration}",
+        "openid_configuration_uri": "https://{your-server-that-supports-dynamic-registration}/.well-known/openid-configuration"
       }
     ]
   }
