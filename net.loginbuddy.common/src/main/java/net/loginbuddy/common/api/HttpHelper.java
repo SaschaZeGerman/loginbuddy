@@ -242,7 +242,7 @@ public class HttpHelper {
 
   public static String urlEncode(String input) {
     try {
-      return URLEncoder.encode(input, "UTF-8").replaceAll("[+]", "%20");
+      return URLEncoder.encode(input == null ? "" : input, "UTF-8").replaceAll("[+]", "%20");
     } catch (UnsupportedEncodingException e) {
       // do not expect this to happen. Therefore -- 'severe'
       LOGGER.severe("Encoding to UTF-8 failed");
