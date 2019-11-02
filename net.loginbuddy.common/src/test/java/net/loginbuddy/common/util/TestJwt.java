@@ -71,7 +71,7 @@ public class TestJwt {
             new Jwt().validateJwt("", null, "", "", "");
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("All parameters are required!", e.getMessage());
+            assertEquals("The given JWT could not be parsed or decoded!", e.getMessage());
         }
         try {
             new Jwt().validateJwt("", "", null, "", "");

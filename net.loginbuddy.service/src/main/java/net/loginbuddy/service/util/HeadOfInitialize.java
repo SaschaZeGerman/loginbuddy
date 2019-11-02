@@ -28,7 +28,7 @@ public class HeadOfInitialize {
   public static String processInitializeRequest(SessionContext sessionCtx, ParameterValidatorResult providerResult, ParameterValidatorResult issuerResult,
       ParameterValidatorResult discoveryUrlResult) {
 
-    // ***************************************************************
+// ***************************************************************
 // ** Check if a provider was chosen
 // ***************************************************************
 
@@ -172,10 +172,10 @@ public class HeadOfInitialize {
     String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey());
     String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey());
 
-    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(providerConfig.getClientId()).
-        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(providerConfig.getResponseType())
+    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getClientId())).
+        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getResponseType()))
         .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getScope()))
-        .append("&").append(Constants.NONCE.getKey()).append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
+        .append("&").append(Constants.NONCE.getKey()).append("=").append(HttpHelper.urlEncode((String)sessionCtx.get(Constants.CLIENT_NONCE.getKey())))
         .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getRedirectUri()))
         .append(pkce == null ? "" : pkce)
         .append(responseMode == null ? "" : responseMode)

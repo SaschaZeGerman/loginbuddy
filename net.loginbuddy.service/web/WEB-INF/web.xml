@@ -95,6 +95,10 @@
         <servlet-class>net.loginbuddy.service.client.Callback</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>CallbackSelfIssued</servlet-name>
+        <servlet-class>net.loginbuddy.service.client.CallbackSelfissued</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Authorize</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Authorize</servlet-class>
     </servlet>
@@ -143,6 +147,10 @@
     <servlet-mapping>
         <servlet-name>Callback</servlet-name>
         <url-pattern>/callback</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CallbackSelfIssued</servlet-name>
+        <url-pattern>/callback/selfissued</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Authorize</servlet-name>

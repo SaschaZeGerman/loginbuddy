@@ -58,13 +58,13 @@ public class Jwt {
      * Validates the signature, aud, iss, exp and nonce of a given JWT. Other values have to be verified on demand
      *
      * @param jwt The JWT to be validated
-     * @param jsonWebKeySetJson The JSON Web Key Set as a JSON string
+     * @param jsonWebKeySetJson The JSON Web Key Set as a JSON string. This may be null if the JWT includes the 'sub_jwk' claim
      * @param expectedIss Expected issuer of the JWT
      * @param expectedAud Expected audience
      * @param expectedNonce Expected nonce
      */
     public JSONObject validateJwt(String jwt, String jsonWebKeySetJson, String expectedIss, String expectedAud, String expectedNonce) {
-        if(jwt==null || jsonWebKeySetJson == null || expectedIss == null || expectedAud == null || expectedNonce == null) {
+        if(jwt==null || expectedIss == null || expectedAud == null || expectedNonce == null) {
             LOGGER.warning("All parameters are required! Verify that neither empty nor null values have been used!");
             throw new IllegalArgumentException("All parameters are required!");
         }
@@ -79,9 +79,14 @@ public class Jwt {
                 if(validateAud(expectedAud, jo.get("aud"))) {
                     if(expectedNonce.equals(jo.get("nonce"))) {
                         if ((new Date().getTime() / 1000) < Long.parseLong(String.valueOf(jo.get("exp")))) {
-                            JsonWebKeySet jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetJson);
-                            VerificationJwkSelector jwkSelector = new VerificationJwkSelector();
-                            JsonWebKey jwk = jwkSelector.select(jws, jsonWebKeySet.getJsonWebKeys());
+                            JsonWebKey jwk = null;
+                            if(jo.get("sub_jwk") != null && jsonWebKeySetJson == null) {
+                                jwk = JsonWebKey.Factory.newJwk((String)jo.get("sub_jwk"));
+                            } else {
+                                JsonWebKeySet jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetJson);
+                                VerificationJwkSelector jwkSelector = new VerificationJwkSelector();
+                                jwk = jwkSelector.select(jws, jsonWebKeySet.getJsonWebKeys());
+                            }
                             jws.setKey(jwk.getKey());
                             String jwkAlg = jwk.getAlgorithm() == null ? "RS256" : jwk.getAlgorithm(); // since 'alg' in JWKS is optional, we use RS256 as the default value
                             if(jwkAlg.equalsIgnoreCase(jws.getAlgorithmHeaderValue())) {

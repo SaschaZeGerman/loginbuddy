@@ -38,7 +38,7 @@ public class Initialize extends HttpServlet {
 
     String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
     String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
-    String clientRedirectUri = Sanetizer.sanetizeUrl(request.getParameter(Constants.REDIRECT_URI.getKey()), 256);
+    String clientRedirectUri = Sanetizer.checkForUrlPattern(request.getParameter(Constants.REDIRECT_URI.getKey()), 256);
     String clientNonce = request.getParameter(Constants.NONCE.getKey());
     String clientState = request.getParameter(Constants.STATE.getKey());
     String clientScope = request.getParameter(Constants.SCOPE.getKey());
