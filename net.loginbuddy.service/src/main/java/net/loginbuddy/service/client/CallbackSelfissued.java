@@ -28,6 +28,7 @@ public class CallbackSelfissued extends CallbackParent {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         if (request.getParameterMap().get("state") == null) {
+            // TODO: prevent endless back and forth
             StringBuilder sb = new StringBuilder();
             sb.append("<html><header><script>");
             sb.append("if(window.location.search) { window.location = window.location.replace('#', '&');\n" +
@@ -79,6 +80,14 @@ public class CallbackSelfissued extends CallbackParent {
                     LOGGER.warning(String.format("No id_token is invalid! Details: %s", e.getMessage()));
                     throw e;
                 }
+
+// ***************************************************************
+// ** In this flow there is no token response, we'll create ia manually
+// ***************************************************************
+
+                JSONObject tokenResponseObject = new JSONObject();
+                tokenResponseObject.put("id_token", idTokenResult.getValue());
+                eb.setTokenResponse(tokenResponseObject);
 
 // ***************************************************************
 // ** Issue our own authorization_code and add details for the final client response

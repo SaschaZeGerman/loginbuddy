@@ -54,8 +54,7 @@
             providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
             providers.append("<input type=\"hidden\" name=\"provider_addition\" value=\"\"/>");
             providers.append("<button type=\"submit\">");
-            providers.append("<img alt=\"").append(nextProvider.getProvider())
-                    .append("\" width=\"100\" margin=\"0\" src=\"images/");
+            providers.append("<img alt=\"").append(nextProvider.getProvider()).append("\" margin=\"0\" src=\"images/");
             providers.append(nextProvider.getProvider());
             providers.append(".png\"/></button></form></td>");
             if (count % 3 == 2) {

@@ -8,21 +8,21 @@
 
 package net.loginbuddy.common.util;
 
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.JsonWebKeySet;
-import org.jose4j.jwk.VerificationJwkSelector;
+import org.jose4j.jwk.*;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
  * Implementation details taken from {@link "https://bitbucket.org/b_c/jose4j/wiki/Home"}
- *
  */
 public class Jwt {
 
@@ -55,16 +55,50 @@ public class Jwt {
     }
 
     /**
+     * Generate a JWT based on a private key. Nothing fancy, using the example implementation of jose4j
+     *
+     * @return JWT compact URL-safe serialization
+     * @see <a href="https://bitbucket.org/b_c/jose4j/wiki/JWT%20Examples#markdown-header-producing-and-consuming-a-signed-jwt"></a>
+     */
+    public JsonWebSignature createSignedJwtRs256(String issuer, String audience, int lifetimeInMinutes, String subject, String nonce, boolean includePublicKey) throws Exception {
+
+        // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
+        RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+        rsaJsonWebKey.setKeyId(UUID.randomUUID().toString());
+
+        // Create the Claims, which will be the content of the JWT
+        JwtClaims claims = new JwtClaims();
+        claims.setIssuer(issuer);  // who creates the token and signs it
+        claims.setSubject(subject); // the subject/principal is whom the token is about
+        claims.setAudience(audience); // to whom the token is intended to be sent
+        claims.setClaim("nonce", nonce);
+        claims.setExpirationTimeMinutesInTheFuture(lifetimeInMinutes); // time when the token will expire (10 minutes from now)
+        claims.setIssuedAtToNow();  // when the token was issued/created (now)
+        claims.setGeneratedJwtId(); // a unique identifier for the token
+        claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
+        if(includePublicKey) {
+            claims.setClaim("sub_jwk", new JSONParser().parse(rsaJsonWebKey.toJson()));
+        }
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setPayload(claims.toJson());
+        jws.setKey(rsaJsonWebKey.getPrivateKey());
+        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
+        jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+        return jws;
+
+    }
+
+    /**
      * Validates the signature, aud, iss, exp and nonce of a given JWT. Other values have to be verified on demand
      *
-     * @param jwt The JWT to be validated
+     * @param jwt               The JWT to be validated
      * @param jsonWebKeySetJson The JSON Web Key Set as a JSON string. This may be null if the JWT includes the 'sub_jwk' claim
-     * @param expectedIss Expected issuer of the JWT
-     * @param expectedAud Expected audience
-     * @param expectedNonce Expected nonce
+     * @param expectedIss       Expected issuer of the JWT
+     * @param expectedAud       Expected audience
+     * @param expectedNonce     Expected nonce
      */
     public JSONObject validateJwt(String jwt, String jsonWebKeySetJson, String expectedIss, String expectedAud, String expectedNonce) {
-        if(jwt==null || expectedIss == null || expectedAud == null || expectedNonce == null) {
+        if (jwt == null || expectedIss == null || expectedAud == null || expectedNonce == null) {
             LOGGER.warning("All parameters are required! Verify that neither empty nor null values have been used!");
             throw new IllegalArgumentException("All parameters are required!");
         }
@@ -72,16 +106,16 @@ public class Jwt {
 
             JsonWebSignature jws = new JsonWebSignature();
             jws.setCompactSerialization(jwt);
-            JSONObject jo = (JSONObject)new org.json.simple.parser.JSONParser().parse(jws.getUnverifiedPayload());
+            JSONObject jo = (JSONObject) new org.json.simple.parser.JSONParser().parse(jws.getUnverifiedPayload());
 
             // simple string comparisons first
-            if(expectedIss.equals(jo.get("iss"))) {
-                if(validateAud(expectedAud, jo.get("aud"))) {
-                    if(expectedNonce.equals(jo.get("nonce"))) {
+            if (expectedIss.equals(jo.get("iss"))) {
+                if (validateAud(expectedAud, jo.get("aud"))) {
+                    if (expectedNonce.equals(jo.get("nonce"))) {
                         if ((new Date().getTime() / 1000) < Long.parseLong(String.valueOf(jo.get("exp")))) {
                             JsonWebKey jwk = null;
-                            if(jo.get("sub_jwk") != null && jsonWebKeySetJson == null) {
-                                jwk = JsonWebKey.Factory.newJwk((String)jo.get("sub_jwk"));
+                            if (jo.get("sub_jwk") != null && jsonWebKeySetJson == null) {
+                                jwk = JsonWebKey.Factory.newJwk(((JSONObject)jo.get("sub_jwk")).toJSONString());
                             } else {
                                 JsonWebKeySet jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetJson);
                                 VerificationJwkSelector jwkSelector = new VerificationJwkSelector();
@@ -89,7 +123,7 @@ public class Jwt {
                             }
                             jws.setKey(jwk.getKey());
                             String jwkAlg = jwk.getAlgorithm() == null ? "RS256" : jwk.getAlgorithm(); // since 'alg' in JWKS is optional, we use RS256 as the default value
-                            if(jwkAlg.equalsIgnoreCase(jws.getAlgorithmHeaderValue())) {
+                            if (jwkAlg.equalsIgnoreCase(jws.getAlgorithmHeaderValue())) {
                                 if (jws.verifySignature()) {
                                     return jo;
                                 } else {
@@ -122,8 +156,8 @@ public class Jwt {
         if (expectedAud == null || actualAud == null) {
             return false;
         }
-        if(actualAud instanceof JSONArray) {
-            JSONArray actualAudiences = (JSONArray)actualAud;
+        if (actualAud instanceof JSONArray) {
+            JSONArray actualAudiences = (JSONArray) actualAud;
             for (Object actualAudience : actualAudiences) {
                 if (expectedAud.equals(actualAudience)) {
                     return true;

@@ -12,6 +12,7 @@ COPY docker-build/add-ons/demosetup/loginbuddy.sh /opt/docker/loginbuddy.sh
 COPY docker-build/add-ons/demosetup/permissions.policy /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
 COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/demosetup/server_loginbuddy.png /usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
+COPY docker-build/add-ons/demosetup/self-issued.png /usr/local/tomcat/webapps/ROOT/images/self-issued.png
 COPY docker-build/add-ons/server/loginbuddy_selfissued_import.sh /opt/docker/loginbuddy_selfissued_import.sh
 
 ENV HOSTNAME_LOGINBUDDY local.loginbuddy.net

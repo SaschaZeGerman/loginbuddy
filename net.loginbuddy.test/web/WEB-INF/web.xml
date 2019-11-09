@@ -1,0 +1,19 @@
+<!DOCTYPE web-app PUBLIC
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+
+    <display-name>Loginbuddy test</display-name>
+
+    <servlet>
+        <servlet-name>JWTProvider</servlet-name>
+        <servlet-class>net.loginbuddy.test.SOAPUIHelper</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>JWTProvider</servlet-name>
+        <url-pattern>/test/generate/jwt</url-pattern>
+    </servlet-mapping>
+
+</web-app>

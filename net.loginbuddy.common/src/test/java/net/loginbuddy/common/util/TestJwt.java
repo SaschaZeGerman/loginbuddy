@@ -10,6 +10,8 @@ package net.loginbuddy.common.util;
 
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,15 +19,14 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class TestJwt {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(Jwt.class));
 
     /**
-     * Example JWT, created at {@link https://jwt.io}
+     * Example JWT, created @see <a href="https://jwt.io"></a>
      * <p>
      * JWT-Header: {
      * "alg": "RS256",
@@ -144,6 +145,17 @@ public class TestJwt {
                     jws.getCompactSerialization()
             );
         } catch (JoseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testCreateJwtRs256() {
+        try {
+            JsonWebSignature jws = new Jwt().createSignedJwtRs256("https://self-issued.me", "https://local.loginbuddy.net/callback", 5, "01234567890", "randomnonce", true);
+            assertEquals("RS256", jws.getAlgorithm().getAlgorithmIdentifier());
+            assertNotNull( ((JSONObject)new JSONParser().parse( jws.getUnverifiedPayload())).get("sub_jwk") );
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
