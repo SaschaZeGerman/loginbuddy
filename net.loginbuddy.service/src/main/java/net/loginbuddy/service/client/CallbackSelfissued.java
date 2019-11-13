@@ -7,6 +7,7 @@ import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.util.SessionContext;
@@ -51,7 +52,7 @@ public class CallbackSelfissued extends CallbackParent {
 
                 ParameterValidatorResult idTokenResult = ParameterValidator
                         .getSingleValue(request.getParameterValues(Constants.ID_TOKEN.getKey()));
-                if (!idTokenResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+                if (!idTokenResult.getResult().equals(RESULT.VALID)) {
                     LOGGER.warning("Missing id_token parameter returned from provider!");
                     response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "missing or invalid id_token parameter"));
                     return;

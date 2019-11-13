@@ -22,37 +22,53 @@
          version="3.1">
 
     <servlet>
+        <servlet-name>OidcDrRegistation</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.oidc.Registration</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>OidcDrTokenExchange</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.oidc.TokenExchange</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>OidcDrJwksUri</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.oidc.JwksUri</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>OidcDrUserinfo</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.oidc.Userinfo</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>SelfIssuedRegistation</servlet-name>
-        <servlet-class>net.loginbuddy.selfissued.oidc.Registration</servlet-class>
+        <servlet-class>net.loginbuddy.oidcdr.selfissued.Registration</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>SelfIssuedTokenExchange</servlet-name>
-        <servlet-class>net.loginbuddy.selfissued.oidc.TokenExchange</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>SelfIssuedJwksUri</servlet-name>
-        <servlet-class>net.loginbuddy.selfissued.oidc.JwksUri</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>SelfIssuedUserinfo</servlet-name>
-        <servlet-class>net.loginbuddy.selfissued.oidc.Userinfo</servlet-class>
+        <servlet-name>SelfIssuedDiscovery</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.selfissued.Discovery</servlet-class>
     </servlet>
 
+    <servlet-mapping>
+        <servlet-name>OidcDrRegistation</servlet-name>
+        <url-pattern>/oidcdr/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OidcDrTokenExchange</servlet-name>
+        <url-pattern>/oidcdr/token</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OidcDrJwksUri</servlet-name>
+        <url-pattern>/oidcdr/jwks</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OidcDrUserinfo</servlet-name>
+        <url-pattern>/oidcdr/userinfo</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>SelfIssuedRegistation</servlet-name>
         <url-pattern>/selfissued/register</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>SelfIssuedTokenExchange</servlet-name>
-        <url-pattern>/selfissued/token</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>SelfIssuedJwksUri</servlet-name>
-        <url-pattern>/selfissued/jwks</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>SelfIssuedUserinfo</servlet-name>
-        <url-pattern>/selfissued/userinfo</url-pattern>
+        <servlet-name>SelfIssuedDiscovery</servlet-name>
+        <url-pattern>/selfissued/openid-configuration</url-pattern>
     </servlet-mapping>
 
     <session-config>

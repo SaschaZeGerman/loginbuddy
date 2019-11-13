@@ -8,10 +8,10 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 #
 # Default loginbuddy services
 #
-COPY net.loginbuddy.selfissued/target/selfissued-1.0.0 /usr/local/tomcat/webapps/ROOT
+COPY net.loginbuddy.oidcdr/target/oidcdr-1.0.0 /usr/local/tomcat/webapps/ROOT
 
-COPY docker-build/add-ons/selfissued/server.xml /usr/local/tomcat/conf/server.xml
-COPY docker-build/add-ons/selfissued/loginbuddy.sh /opt/docker/loginbuddy.sh
+COPY docker-build/add-ons/oidcdr/server.xml /usr/local/tomcat/conf/server.xml
+COPY docker-build/add-ons/oidcdr/loginbuddy.sh /opt/docker/loginbuddy.sh
 
 # Create directory for holding SSL keys
 #

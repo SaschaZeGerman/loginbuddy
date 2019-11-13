@@ -9,7 +9,6 @@
 package net.loginbuddy.service.sidecar;
 
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
@@ -19,14 +18,13 @@ import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Logger;
 
-public class Callback  extends HttpServlet {
+public class Callback  extends CallbackParent {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
@@ -39,61 +37,9 @@ public class Callback  extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     try {
-      SidecarMaster.checkClientConnection(request);
-    } catch (IllegalAccessException e) {
-      LOGGER.warning(e.getMessage());
-      response.setStatus(400);
-      response.setContentType("application/json");
-      response.getWriter().write(e.getMessage());
-      return;
-    }
 
-    try {
-
-      ParameterValidatorResult sessionIdResult = ParameterValidator
-          .getSingleValue(request.getParameterValues(Constants.STATE.getKey()));
-      ParameterValidatorResult codeResult = ParameterValidator
-          .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
-      ParameterValidatorResult errorResult = ParameterValidator
-          .getSingleValue(request.getParameterValues(Constants.ERROR.getKey()));
-      ParameterValidatorResult errorDescriptionResult = ParameterValidator
-          .getSingleValue(request.getParameterValues(Constants.ERROR_DESCRIPTION.getKey()), "");
-
-// ***************************************************************
-// ** Check for the current session
-// ***************************************************************
-
-      if (!sessionIdResult.getResult().equals(RESULT.VALID)) {
-        LOGGER.warning("Missing or invalid state parameter returned from provider!");
-        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_response", "Missing or invalid state parameter returned from provider").toJSONString());
-        return;
-      }
-
-      SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionIdResult.getValue());
-      if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
-        LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
-        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "the current session is invalid or it has expired").toJSONString());
-        return;
-      }
-
-// ***************************************************************
-// ** End the fun here if the provider send back an error
-// ***************************************************************
-
-      if (errorResult.getValue() != null) {
-        response.getWriter().write(HttpHelper.getErrorAsJson(errorResult.getValue(), errorDescriptionResult.getValue()).toJSONString());
-        return;
-      }
-
-// ***************************************************************
-// ** Check if we expected this call
-// ***************************************************************
-
-      if (!Constants.ACTION_CALLBACK.getKey().equals(sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()))) {
-        LOGGER.warning(
-            "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
-                + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "the request was not expected").toJSONString());
+      SessionContext sessionCtx = checkForSessionAndErrors(request, response);
+      if (sessionCtx == null) {
         return;
       }
 
@@ -101,6 +47,8 @@ public class Callback  extends HttpServlet {
 // ** If we did not get a valid code parameter we are done
 // ***************************************************************
 
+      ParameterValidatorResult codeResult = ParameterValidator
+              .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
       if (!codeResult.getResult().equals(RESULT.VALID)) {
         LOGGER.warning("Missing code parameter returned from provider!");
         response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "missing or invalid code parameter").toJSONString());
@@ -196,7 +144,7 @@ public class Callback  extends HttpServlet {
       }
 
 // ***************************************************************
-// ** Issue our own authorization_code and add details for the final client response
+// ** Return the details to the client
 // ***************************************************************
 
       response.setStatus(200);

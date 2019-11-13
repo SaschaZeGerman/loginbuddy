@@ -1,11 +1,11 @@
-package net.loginbuddy.selfissued.oidc;
+package net.loginbuddy.oidcdr.oidc;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
-import net.loginbuddy.selfissued.SelfIssuedMaster;
+import net.loginbuddy.oidcdr.OIDCDRMaster;
 import org.json.simple.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class Registration extends SelfIssuedMaster {
+public class Registration extends OIDCDRMaster {
 
   private static Logger LOGGER = Logger.getLogger(String.valueOf(Registration.class));
 
@@ -63,7 +63,13 @@ public class Registration extends SelfIssuedMaster {
       discoveryUrl = discoveryUrlResult.getValue();
     } else {
       LOGGER.info("Missing or invalid or multiple discovery_url parameters were given. Adding /.well-known/openid-configuration of the issuer to generate one");
-      discoveryUrl = issuerResult.getValue() + "/.well-known/openid-configuration";
+      if(Constants.ISSUER_SELFISSUED.getKey().equals(issuerResult.getValue())) {
+        // for self-issued we host the API ourselves to keep things simple, before and after provider registration
+        LOGGER.info("Simulating registration for self-issued provider");
+        discoveryUrl = String.format("https://loginbuddy-oidcdr:445/selfissued/openid-configuration?client_id=%s", HttpHelper.urlEncode(redirectUriResult.getValue()));
+      } else {
+        discoveryUrl = issuerResult.getValue() + "/.well-known/openid-configuration";
+      }
     }
 
 // ***************************************************************

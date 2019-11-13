@@ -11,8 +11,8 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - "SUPPORT_SELFISSUED=true"
+      - "SUPPORT_OIDCDR=true"
 
-  loginbuddy-selfissued:
-    image: saschazegerman/loginbuddy:latest-selfissued
+  loginbuddy-oidcdr:
+    image: saschazegerman/loginbuddy:latest-oidcdr
     restart: always

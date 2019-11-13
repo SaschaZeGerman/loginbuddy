@@ -13,13 +13,13 @@ script:
 - docker build --no-cache --tag saschazegerman/loginbuddy:latest .
 - docker build --no-cache --tag saschazegerman/loginbuddy:latest-demo -f Dockerfile_demosetup .
 - docker build --no-cache --tag saschazegerman/loginbuddy:latest-sidecar -f Dockerfile_sidecar .
-- docker build --no-cache --tag saschazegerman/loginbuddy:latest-selfissued -f Dockerfile_selfissued .
+- docker build --no-cache --tag saschazegerman/loginbuddy:latest-oidcdr -f Dockerfile_oidcdr .
 after_success:
 - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USER" --password-stdin
 - docker push saschazegerman/loginbuddy:latest
 - docker push saschazegerman/loginbuddy:latest-demo
 - docker push saschazegerman/loginbuddy:latest-sidecar
-- docker push saschazegerman/loginbuddy:latest-selfissued
+- docker push saschazegerman/loginbuddy:latest-oidcdr
 env:
   matrix:
     secure: lc1kIgFkXHDAdn7I+Fy5kVhENnnpILu7neNOgfdt8JsHHdhfBH6zxKBfw6ysF85zYGdyF9qQtTnWpqk98q3tEuYhJuRSkeIa5vK3hFfot35IXVeP4foFTrvVip4rlpRroRzbCS4lrhHyEpMf9f/dhgnSASouw8+FMA3vAjJWeUpwQUf7hCIZnD/14vPlEZ8aCCP/4Nkhg3g0fcVc96towDgxhURkB/NxKKK0oUOXMWau9Oobk0ALxb4kvXqa85vIkiAq3vwhPK6SuE5djJMFqzEXjvjIm37K0oTJ0ADA+VkMX0rEZCQa04BrItZ5DO6/4JPjENL3gnw1Lk0vjMhlvGnXzLEHYq0deCKB/V3xORNJOHYe9GK34UjjoqsRyYOShrhhh6RX+3j6Q/CtIq7+TZQNOVWgjuwlo4o3LM0Y8ltjMlCUhhL/KEltYz0WpMatHsoScLVHE0HWwJW0ya+XMXPggW2BkCG1K+m1hnsuXpNcYhCbE+iUmNDAVB3ZiKDLbkDeQi4ylYv7ALvlvSFFI1Y4/Iv/yr8dBSr2RmhVAka63Kc4LPX79D5msOzyEaI0csIwwGwdgnujGx1Xvh978gLTPGxgv3RwcZEAI3dxO+QgfzHJ8mAqqspo3MsGwXPTHI2sn5oezsKddrOvlXgCyYec3Ep6t0P4TPezxXWXQiQ=

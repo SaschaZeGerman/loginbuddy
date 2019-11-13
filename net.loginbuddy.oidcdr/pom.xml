@@ -11,7 +11,7 @@
     <version>1.0.0</version>
   </parent>
 
-  <artifactId>selfissued</artifactId>
+  <artifactId>oidcdr</artifactId>
   <version>1.0.0</version>
   <packaging>war</packaging>
 
