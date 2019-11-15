@@ -1,24 +1,16 @@
-/*
- * Copyright (c) 2018. . All rights reserved.
- *
- * This software may be modified and distributed under the terms of the Apache License 2.0 license.
- * See http://www.apache.org/licenses/LICENSE-2.0 for details.
- *
- */
-
 package net.loginbuddy.service.client;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.util.*;
-import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
+import net.loginbuddy.common.util.ExchangeBean;
+import net.loginbuddy.common.util.ParameterValidator;
+import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
 import net.loginbuddy.service.util.SessionContext;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,149 +18,132 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class Callback extends CallbackParent {
+public class Callback extends HttpServlet {
 
-  private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
-  @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected String getMessageForRedirect(String redirectUri, String urlSafeKey, String value) {
+        return redirectUri.concat(urlSafeKey).concat("=").concat(HttpHelper.urlEncode(value));
+    }
 
-    try {
+    protected SessionContext checkForSessionAndErrors(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-      SessionContext sessionCtx = checkForSessionAndErrors (request, response);
-      if(sessionCtx == null) {
-        return;
-      }
+        ParameterValidatorResult sessionIdResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.STATE.getKey()));
+        ParameterValidatorResult errorResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.ERROR.getKey()));
+        ParameterValidatorResult errorDescriptionResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.ERROR_DESCRIPTION.getKey()), "");
 
 // ***************************************************************
-// ** If we did not get a valid code parameter we are done
+// ** Check for the current session
 // ***************************************************************
 
-      ParameterValidatorResult codeResult = ParameterValidator
-              .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
-      if (!codeResult.getResult().equals(RESULT.VALID)) {
-        LOGGER.warning("Missing code parameter returned from provider!");
-        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "missing or invalid code parameter"));
-        return;
-      }
+        if (!sessionIdResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+            LOGGER.warning("Missing or invalid state parameter returned from provider!");
+            response.sendError(400, "Missing or invalid state parameter");
+            return null;
+        }
+
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionIdResult.getValue());
+        if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
+            LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
+            response.sendError(400, "The current session is invalid or it has expired!");
+            return null;
+        }
+
+// ***************************************************************
+// ** End the fun here if the provider send back an error
+// ***************************************************************
+
+        if (errorResult.getValue() != null) {
+            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(), errorDescriptionResult.getValue()));
+            return null;
+        }
+
+// ***************************************************************
+// ** Check if we expected this call
+// ***************************************************************
+
+        if (!Constants.ACTION_CALLBACK.getKey().equals(sessionCtx.getString(Constants.ACTION_EXPECTED.getKey()))) {
+            LOGGER.warning(
+                    "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
+                            + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
+            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "the request was not expected"));
+            return null;
+        }
+
+        return sessionCtx;
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        // either a invalid request ... or a implicit flow ...
+        if (request.getParameterMap().get("state") == null && request.getParameterMap().get("handled") == null ) {
+            // TODO: prevent endless back and forth (handled enough?)
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html><header><script>");
+            sb.append("if(window.location.search) { window.location = window.location.replace('#', '&handled=true&');\n" +
+                    "} else {window.location = window.location.replace('#', '?handled=true&');}");
+            sb.append("</script></header><body></body></html>");
+            response.setStatus(200);
+            response.setContentType("text/html");
+            response.getWriter().println(sb.toString());
+        } else {
+
+            try {
+
+                SessionContext sessionCtx = checkForSessionAndErrors(request, response);
+                if (sessionCtx == null) {
+                    return;
+                }
 
 // ***************************************************************
 // ** Find the chosen provider of this session and get a token. Also start preparing the response for the client
 // ***************************************************************
 
-      String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
+                String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
-      ExchangeBean eb = new ExchangeBean();
-      eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
-      eb.setIat(new Date().getTime() / 1000);
-      eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-      eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-      eb.setProvider(provider);
+                ExchangeBean eb = new ExchangeBean();
+                eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
+                eb.setIat(new Date().getTime() / 1000);
+                eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
+                eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                eb.setProvider(provider);
 
-      String access_token = null;
-      String id_token = null;
+                CallbackHandler handler = null;
+                if (Constants.CODE.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
+                    handler = new CallbackHandlerCode();
+                } else if (Constants.ID_TOKEN.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
+                    handler = new CallbackHandlerImplicit();
+                }
+                handler.handleCallback(request, response, sessionCtx, eb, provider);
 
-      ProviderConfig providerConfig = null;
-      if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-        providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
-      } else {
-        providerConfig = new ProviderConfig();
-        // dynamically registered providers are in a separate container and not available here. Get details out of the session
-        providerConfig.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
-        providerConfig.setClientSecret(sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
-        providerConfig.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
-        providerConfig.setIssuer(provider);
-      }
-
-// ***************************************************************
-// ** Exchange the code for a token response
-// ***************************************************************
-
-      MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), codeResult.getValue(),
-          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
-      JSONObject idTokenPayload = null;
-      if (tokenResponse != null) {
-        if (tokenResponse.getStatus() == 200) {
-          if (tokenResponse.getContentType().startsWith("application/json")) {
-            JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
-            LOGGER.fine(tokenResponseObject.toJSONString());
-            access_token = tokenResponseObject.get("access_token").toString();
-            eb.setTokenResponse(tokenResponseObject);
-            try {
-              id_token = tokenResponseObject.get("id_token").toString();
-              MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-              idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
-                  providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-              eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {
-              LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
+                LOGGER.warning(String.format("authorization request failed! %s", e.getMessage()));
+                e.printStackTrace();
+                response.sendError(400, "authorization request failed!");
             }
-          } else {
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
-                "invalid_response",
-                String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())));
-            return;
-          }
-        } else {
-          // need to handle error cases
-          if (tokenResponse.getContentType().startsWith("application/json")) {
-            JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String) err.get("error"), (String) err.get("error_description")));
-            return;
-          }
         }
-      } else {
-        response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "the code exchange failed. An access_token could not be retrieved"));
-        return;
-      }
+    }
 
-// ***************************************************************
-// ** Now, let's get the userinfo response
-// ***************************************************************
-
-      try {
-        MsgResponse userinfoResp = HttpHelper.getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
-        if (userinfoResp.getStatus() == 200) {
-          if (userinfoResp.getContentType().startsWith("application/json")) {
-            JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
-            eb.setUserinfo(userinfoRespObject);
-            eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject, access_token));
-          }
-        } // TODO : handle non 200 response
-      } catch (Exception e) {
-        LOGGER.warning("retrieving userinfo failed. Will use id_token_payload for 'details_normalized' if it exists!");
-        eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), idTokenPayload, access_token));
-      }
+    void returnAuthorizationCode(HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb) throws IOException {
 
 // ***************************************************************
 // ** Issue our own authorization_code and add details for the final client response
 // ***************************************************************
 
-      String authorizationCode = UUID.randomUUID().toString();
-      sessionCtx.put("eb", eb.toString());
-      sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-      LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
+        String authorizationCode = UUID.randomUUID().toString();
+        sessionCtx.put("eb", eb.toString());
+        sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
+        LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
 
-// ***************************************************************
-// ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
-// ***************************************************************
-
-      JSONObject jo = new JSONObject();
-      jo.put(Constants.USERINFO_ENDPOINT.getKey(), sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
-      jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
-      String[] hint = access_token.split(".");
-      if(hint.length == 3) {
-        LoginbuddyCache.getInstance().put(hint[2], jo, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
-      } else {
-        LoginbuddyCache.getInstance().put(access_token, jo, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
-      }
-
-      response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "code", authorizationCode));
-
-    } catch (Exception e) {
-      LOGGER.warning(String.format("authorization request failed! %s", e.getMessage()));
-      e.printStackTrace();
-      response.sendError(400, "authorization request failed!");
+        response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), Constants.CODE.getKey(), authorizationCode));
     }
-  }
 }

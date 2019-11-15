@@ -122,12 +122,12 @@
       {
         "provider": "self-issued",
         "issuer": "https://self-issued.me",
-        "client_id": "https://local.loginbuddy.net/callback/selfissued",
+        "client_id": "https://local.loginbuddy.net/callback",
         "client_secret": "",
         "authorization_endpoint": "openid://",
         "scope": "openid profile email address phone",
         "response_type": "id_token",
-        "redirect_uri": "https://local.loginbuddy.net/callback/selfissued"
+        "redirect_uri": "https://local.loginbuddy.net/callback"
       }
     ]
   }

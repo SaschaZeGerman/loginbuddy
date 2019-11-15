@@ -188,7 +188,7 @@ public class HeadOfInitialize {
 // ** Finalize and update the session details
 // ***************************************************************
 
-    sessionCtx.setSessionCallback();
+    sessionCtx.setSessionCallback(Constants.valueOf(providerConfig.getResponseType().toUpperCase()));
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
@@ -222,11 +222,7 @@ public class HeadOfInitialize {
     formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuer));
     formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrl));
     // TODO take loginbuddys redirect_uri for dynamic registrations from a config file
-    String redirectUri = LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri();
-    if(Constants.ISSUER_SELFISSUED.getKey().equalsIgnoreCase(issuer)) {
-      redirectUri = redirectUri + "/selfissued";
-    }
-    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),redirectUri));
+    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
 
     MsgResponse msg = HttpHelper
         .postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");

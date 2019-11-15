@@ -61,6 +61,7 @@ public enum Constants {
 
     // used with example provider
     ACTION_EXPECTED("action_expected"),
+    ACTION_USED_RESPONSE_TYPE("action_used_response_type"),
     ACTION_LOGIN("login"),
     ACTION_AUTHENTICATE("authenticate"),
     ACTION_GRANT("grant"),
