@@ -89,8 +89,11 @@ public class Callback extends HttpServlet {
             // TODO: prevent endless back and forth (handled enough?)
             StringBuilder sb = new StringBuilder();
             sb.append("<html><header><script>");
-            sb.append("if(window.location.search) { window.location = window.location.replace('#', '&handled=true&');\n" +
-                    "} else {window.location = window.location.replace('#', '?handled=true&');}");
+            sb.append("if (location.href.indexOf('#') >= 0) {\n" +
+                    "if (location.search) {window.location = location.href.replace('#', '&handled=true&');\n" +
+                    "} else {window.location = location.href.replace('#', '?handled=true&');}\n" +
+                    "} else {if (location.search) {window.location = location.href + '&handled=true';\n" +
+                    "} else {window.location = location.href + '?handled=true';}}");
             sb.append("</script></header><body></body></html>");
             response.setStatus(200);
             response.setContentType("text/html");

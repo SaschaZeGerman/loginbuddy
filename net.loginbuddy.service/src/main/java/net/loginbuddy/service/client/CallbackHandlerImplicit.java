@@ -2,10 +2,7 @@ package net.loginbuddy.service.client;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.util.ExchangeBean;
-import net.loginbuddy.common.util.Jwt;
-import net.loginbuddy.common.util.ParameterValidator;
-import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
@@ -35,11 +32,25 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             return;
         }
 
-        ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
+        ProviderConfig providerConfig = null;
+        if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
+            providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
+        } else {
+            providerConfig = new ProviderConfig();
+            // dynamically registered providers are in a separate container and not available here. Get details out of the session
+            providerConfig.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
+            providerConfig.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
+            providerConfig.setIssuer(provider);
+        }
 
         JSONObject idTokenPayload = null;
         try {
-            idTokenPayload = new Jwt().validateJwt(idTokenResult.getValue(), null, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+            // the only provider for which this may stay null is 'self-issued'. For that Jwt().validate ... handles an alternative JSON key that contains the JWK
+            String jwks = null;
+            if(sessionCtx.getString(Constants.JWKS_URI.getKey()) != null) {
+                jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey())).getMsg();
+            }
+            idTokenPayload = new Jwt().validateJwt(idTokenResult.getValue(), jwks, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             eb.setIdTokenPayload(idTokenPayload);
         } catch (Exception e) {
             LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
