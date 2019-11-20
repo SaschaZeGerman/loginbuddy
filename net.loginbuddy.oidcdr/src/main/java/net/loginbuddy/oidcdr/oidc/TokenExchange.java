@@ -1,18 +1,18 @@
-package net.loginbuddy.selfissued.oidc;
+package net.loginbuddy.oidcdr.oidc;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.selfissued.SelfIssuedMaster;
+import net.loginbuddy.oidcdr.OIDCDRMaster;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class TokenExchange extends SelfIssuedMaster {
+public class TokenExchange extends OIDCDRMaster {
 
   private static Logger LOGGER = Logger.getLogger(String.valueOf(TokenExchange.class));
 

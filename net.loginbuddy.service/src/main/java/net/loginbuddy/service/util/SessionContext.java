@@ -52,7 +52,12 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
   }
 
-  public void setSessionCallback() {
-    put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_CALLBACK.getKey());
+  /**
+   *
+   * @param responseType the responseType that was used. With that, we know what to expect at the callback
+   */
+  public void setSessionCallback(Constants responseType) {
+        put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_CALLBACK.getKey());
+        put(Constants.ACTION_USED_RESPONSE_TYPE.getKey(), responseType.getKey());
   }
 }

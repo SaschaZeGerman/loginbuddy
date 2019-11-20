@@ -36,8 +36,9 @@ public enum Constants {
     ID_TOKEN("id_token"),
     ID_TOKEN_HINT("id_token_hint"),
     ISSUER("issuer"),
+    ISSUER_SELFISSUED("https://self-issued.me"),
     ISSUER_HANDLER("issuer_handler"),
-    ISSUER_HANDLER_SELFISSUED("issuer_handler_selfissued"),
+    ISSUER_HANDLER_OIDCDR("issuer_handler_oidcdr"),
     ISSUER_HANDLER_LOGINBUDDY("issuer_handler_loginbuddy"),
     JWKS_URI("jwks_uri"),
     LOGIN_HINT("login_hint"),
@@ -60,6 +61,7 @@ public enum Constants {
 
     // used with example provider
     ACTION_EXPECTED("action_expected"),
+    ACTION_USED_RESPONSE_TYPE("action_used_response_type"),
     ACTION_LOGIN("login"),
     ACTION_AUTHENTICATE("authenticate"),
     ACTION_GRANT("grant"),

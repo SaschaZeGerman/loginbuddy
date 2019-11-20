@@ -117,7 +117,7 @@ public class Authorize extends HttpServlet {
     }
     if (Stream.of(cc.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
       LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
-      response.sendError(400, String.format("Invalid redirect_uri: %s", Sanetizer.sanetizeUrl(clientRedirectUri, 256)));
+      response.sendError(400, String.format("Invalid redirect_uri: %s", Sanetizer.checkForUrlPattern(clientRedirectUri, 256)));
       return;
     }
 

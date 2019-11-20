@@ -7,7 +7,7 @@
 //
 grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.net.SocketPermission "demoserver.loginbuddy.net", "connect,resolve";
-    permission java.net.SocketPermission "loginbuddy-selfissued", "connect,resolve";
+    permission java.net.SocketPermission "loginbuddy-oidcdr", "connect,resolve";
     // permission java.net.SocketPermission "accounts.google.com", "connect,resolve";
     // permission java.net.SocketPermission "oauth2.googleapis.com", "connect,resolve";
     // permission java.net.SocketPermission "openidconnect.googleapis.com", "connect,resolve";

@@ -7,7 +7,8 @@
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
         "providers": [
-          "server_loginbuddy"
+          "server_loginbuddy",
+          "self-issued"
         ],
         "accept_dynamic_provider": true
       },
@@ -51,6 +52,16 @@
         "response_type": "code",
         "redirect_uri": "https://not_for_public_client/callback",
         "response_mode": "form_post"
+      },
+      {
+        "provider": "self-issued",
+        "issuer": "https://self-issued.me",
+        "client_id": "https://local.loginbuddy.net/callback",
+        "client_secret": "",
+        "authorization_endpoint": "openid://",
+        "scope": "openid profile email address phone",
+        "response_type": "id_token",
+        "redirect_uri": "https://local.loginbuddy.net/callback"
       }
     ]
   }

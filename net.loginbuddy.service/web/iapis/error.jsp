@@ -48,21 +48,21 @@
         if (servletName == null) {
             servletName = "Unknown";
         }
-        String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri");
+        String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri"); // this is the URL path
         if (requestUri == null) {
             requestUri = "Unknown";
         }
         if (statusCode != 500) {
     %>
     <%="<h3>Error Details</h3>"%>
-    <%="<strong>Requested URI:</strong> " + Sanetizer.sanetizeUrl(requestUri, 256) + "<br>"%>
+    <%="<strong>Requested URI:</strong> " + Sanetizer.checkForUrlPathPattern(requestUri, 256) + "<br>"%>
     <%="<strong>Error Message:</strong> " + errorMsg + "<br>"%>
     <%
         } else {
             response.getWriter().write("<h3>Exception Details</h3>");
             response.getWriter().write("<ul><li>Servlet Name:" + servletName + "</li>");
             response.getWriter().write("<li>Exception Name:" + throwable.getClass().getName() + "</li>");
-            response.getWriter().write("<li>Requested URI:" + Sanetizer.sanetizeUrl(requestUri, 256) + "</li>");
+            response.getWriter().write("<li>Requested URI:" + Sanetizer.checkForUrlPattern(requestUri, 256) + "</li>");
             response.getWriter().write("<li>Exception Message:" + throwable.getMessage() + "</li>");
             response.getWriter().write("</ul>");
         }

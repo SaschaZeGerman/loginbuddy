@@ -28,7 +28,7 @@ public class HeadOfInitialize {
   public static String processInitializeRequest(SessionContext sessionCtx, ParameterValidatorResult providerResult, ParameterValidatorResult issuerResult,
       ParameterValidatorResult discoveryUrlResult) {
 
-    // ***************************************************************
+// ***************************************************************
 // ** Check if a provider was chosen
 // ***************************************************************
 
@@ -130,17 +130,17 @@ public class HeadOfInitialize {
     }
 
 // ***************************************************************
-// ** Prepare provider endpoints to be used via loginbuddy-selfissued if dynamic provider registration was used
+// ** Prepare provider endpoints to be used via loginbuddy-oidcdr if dynamic provider registration was used
 // ***************************************************************
 
-    // if this provider was dynamically registered we'll delegate other requests to loginbuddy-selfissued later also
+    // if this provider was dynamically registered we'll delegate other requests to loginbuddy-oidcdr later also
     boolean isHandlerLoginbuddy = sessionCtx.get(Constants.ISSUER_HANDLER.getKey()).equals(Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
     sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerTokenEndpoint : String
-        .format("https://loginbuddy-selfissued:445/selfissued/token?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerTokenEndpoint)));
+        .format("https://loginbuddy-oidcdr:445/oidcdr/token?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerTokenEndpoint)));
     sessionCtx.put(Constants.JWKS_URI.getKey(), isHandlerLoginbuddy ? providerJwksEndpoint : String
-        .format("https://loginbuddy-selfissued:445/selfissued/jwks?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerJwksEndpoint)));
+        .format("https://loginbuddy-oidcdr:445/oidcdr/jwks?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerJwksEndpoint)));
     sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerUserinfoEndpoint : String
-        .format("https://loginbuddy-selfissued:445/selfissued/userinfo?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerUserinfoEndpoint)));
+        .format("https://loginbuddy-oidcdr:445/oidcdr/userinfo?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerUserinfoEndpoint)));
 
 // ***************************************************************
 // ** use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
@@ -172,10 +172,10 @@ public class HeadOfInitialize {
     String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey());
     String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey());
 
-    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(providerConfig.getClientId()).
-        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(providerConfig.getResponseType())
+    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getClientId())).
+        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getResponseType()))
         .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getScope()))
-        .append("&").append(Constants.NONCE.getKey()).append("=").append(sessionCtx.get(Constants.CLIENT_NONCE.getKey()))
+        .append("&").append(Constants.NONCE.getKey()).append("=").append(HttpHelper.urlEncode((String)sessionCtx.get(Constants.CLIENT_NONCE.getKey())))
         .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getRedirectUri()))
         .append(pkce == null ? "" : pkce)
         .append(responseMode == null ? "" : responseMode)
@@ -188,7 +188,7 @@ public class HeadOfInitialize {
 // ** Finalize and update the session details
 // ***************************************************************
 
-    sessionCtx.setSessionCallback();
+    sessionCtx.setSessionCallback(Constants.valueOf(providerConfig.getResponseType().toUpperCase()));
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
@@ -221,14 +221,14 @@ public class HeadOfInitialize {
     List<NameValuePair> formParameters = new ArrayList<>();
     formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuer));
     formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrl));
-    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),
-        LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
+    // TODO take loginbuddys redirect_uri for dynamic registrations from a config file
+    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
 
     MsgResponse msg = HttpHelper
-        .postMessage(formParameters, "https://loginbuddy-selfissued:445/selfissued/register", "application/json");
+        .postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");
     if (msg.getStatus() == 200) {
       ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
-      sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_SELFISSUED.getKey());
+      sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_OIDCDR.getKey());
       sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providerConfig.getClientId()); // we have to store this in the session to make it available later
       sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providerConfig.getClientSecret()); // we have to store this in the session to make it available later
       sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providerConfig.getRedirectUri()); // we have to store this in the session to make it available later

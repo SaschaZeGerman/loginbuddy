@@ -87,11 +87,11 @@ public class ClientConfig {
 
     public boolean isAcceptDynamicProvider() {
         // TODO do not depend on the variable
-        return acceptDynamicProvider && Boolean.parseBoolean(System.getenv("SUPPORT_SELFISSUED"));
+        return acceptDynamicProvider && Boolean.parseBoolean(System.getenv("SUPPORT_OIDCDR"));
     }
 
     public void setAcceptDynamicProvider(boolean acceptDynamicProvider) {
         // TODO do not depend on the variable
-        this.acceptDynamicProvider = acceptDynamicProvider && Boolean.parseBoolean(System.getenv("SUPPORT_SELFISSUED"));
+        this.acceptDynamicProvider = acceptDynamicProvider && Boolean.parseBoolean(System.getenv("SUPPORT_OIDCDR"));
     }
 }

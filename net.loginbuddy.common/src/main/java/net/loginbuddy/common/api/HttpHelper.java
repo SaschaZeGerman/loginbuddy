@@ -164,6 +164,7 @@ public class HttpHelper {
               }
             } else {
               // TODO handle the non 200 case for registration responses
+              LOGGER.warning(registrationResponse.getMsg());
               return getErrorAsJson("invalid_request", "the registration failed");
             }
           }
@@ -250,6 +251,16 @@ public class HttpHelper {
     }
   }
 
+  /**
+   * This template matches what is configured in config.json. At least for fields that should be provided through an OpenID Connect Discovery endpoint and the Registration
+   *
+   * @param oidcConfig
+   * @param registration
+   * @param redirectUri
+   * @param updateProvider
+   * @param updateIssuer
+   * @return
+   */
   private static JSONObject providerTemplate(JSONObject oidcConfig, JSONObject registration, String redirectUri, boolean updateProvider, boolean updateIssuer) {
     JSONObject config = new JSONObject();
     config.put("client_id", registration.get(Constants.CLIENT_ID.getKey()));

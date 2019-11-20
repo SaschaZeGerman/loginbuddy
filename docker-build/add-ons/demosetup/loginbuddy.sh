@@ -94,7 +94,7 @@ sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 # check if self issued providers should be supported
 # this script is part of the default loginbuddy docker image
 #
-sh /opt/docker/loginbuddy_selfissued_import.sh
+sh /opt/docker/loginbuddy_oidcdr_import.sh
 
 # overwrite the variables since they are not needed anywhere anymore. For this demo we do not overwrite HOSTNAME_LOGINBUDDY!
 #

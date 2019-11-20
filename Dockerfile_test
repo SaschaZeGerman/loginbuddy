@@ -1,0 +1,17 @@
+FROM tomcat:alpine
+
+# We do not want to keep the default applications, remove them
+#
+RUN rm -rf /usr/local/tomcat/webapps/*
+
+# add our own application as the one and only
+#
+# Default loginbuddy test
+#
+COPY net.loginbuddy.test/target/test-1.0.0 /usr/local/tomcat/webapps/ROOT
+
+# create non-priviliged user (with its own group) to run tomcat
+#
+RUN addgroup tomcat
+RUN adduser -SG tomcat tomcat
+RUN chown -R tomcat:tomcat /usr/local/tomcat/

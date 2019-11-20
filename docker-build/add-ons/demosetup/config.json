@@ -118,6 +118,16 @@
         "provider": "dynamic",
         "issuer": "https://{your-server-that-supports-dynamic-registration}",
         "openid_configuration_uri": "https://{your-server-that-supports-dynamic-registration}/.well-known/openid-configuration"
+      },
+      {
+        "provider": "self-issued",
+        "issuer": "https://self-issued.me",
+        "client_id": "https://local.loginbuddy.net/callback",
+        "client_secret": "",
+        "authorization_endpoint": "openid://",
+        "scope": "openid profile email address phone",
+        "response_type": "id_token",
+        "redirect_uri": "https://local.loginbuddy.net/callback"
       }
     ]
   }
