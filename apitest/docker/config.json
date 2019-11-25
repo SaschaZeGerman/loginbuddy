@@ -61,7 +61,10 @@
         "authorization_endpoint": "openid://",
         "scope": "openid profile email address phone",
         "response_type": "id_token",
-        "redirect_uri": "https://local.loginbuddy.net/callback"
+        "redirect_uri": "https://local.loginbuddy.net/callback",
+        "mappings" : {
+          "sub": "$.details_provider.id_token_payload.sub"
+        }
       }
     ]
   }

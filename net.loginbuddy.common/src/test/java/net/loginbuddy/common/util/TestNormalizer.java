@@ -15,22 +15,46 @@ public class TestNormalizer {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(TestNormalizer.class));
 
-    private static JSONObject userinfo;
+    private static JSONObject userinfo, loginbuddy;
 
     @BeforeClass
     public static void setup() {
         try {
-            userinfo = (JSONObject) new JSONParser().parse("{\"sub\": \"248289761001\",\"name\": \"Jane Doe\",\"given_name\": \"Jane\",\"family_name\": \"Doe\",\"preferred_username\": \"j.doe\",\"email\": \"janedoe@example.com\",\"picture\": \"http://example.com/janedoe/me.jpg\"}");
+            loginbuddy = (JSONObject)new JSONParser().parse(getLoginbuddyResponse());
+            userinfo = (JSONObject) new JSONParser().parse("{\"details_provider\":{\"userinfo\":{\"sub\": \"248289761001\",\"name\": \"Jane Doe\",\"given_name\": \"Jane\",\"family_name\": \"Doe\",\"preferred_username\": \"j.doe\",\"email\": \"janedoe@example.com\",\"picture\": \"http://example.com/janedoe/me.jpg\"}}}");
         } catch (ParseException e) {
             e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void normalizeSimpleLoginbuddyResponse() {
+        try {
+            JSONObject mappings = (JSONObject) new JSONParser().parse(Normalizer.getDefaultMapping());
+            assertEquals(
+                    "{\"sub\":\"1018256\"," +
+                            "\"email_verified\":\"false\"," +
+                            "\"provider\":\"example\"," +
+                            "\"name\":\"John Doe\"," +
+                            "\"preferred_username\":\"John 'the man' Doe\"," +
+                            "\"given_name\":\"John\"," +
+                            "\"family_name\":\"Doe\"," +
+                            "\"picture\":\"https:\\/\\/example.com\\/\\/photo.jpg\"," +
+                            "\"email\":\"email@example.com\"}",
+                    Normalizer.normalizeDetails(mappings, loginbuddy, null).toJSONString());
+        } catch (ParseException e) {
+            fail();
         }
     }
 
     @Test
     public void testNormalizeGitHub() {
         try {
-            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"name\",\"given_name\": \"name[0]\",\"family_name\": \"name[1]\",\"picture\": \"\",\"email\": \"email\"}");
-            assertEquals("{\"name\":\"John Doe\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"$.details_provider.userinfo.name\",\"given_name\": \"$.details_provider.userinfo.name:[0]\",\"family_name\": \"$.details_provider.userinfo.name:[1]\",\"picture\": \"\",\"email\": \"$.details_provider.userinfo.email\"}");
+            assertEquals(
+                    "{\"name\":\"John Doe\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}",
+                    Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -39,8 +63,8 @@ public class TestNormalizer {
     @Test
     public void testNormalizeGitHubUnknownUserinfoClaim() {
         try {
-            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"unknown\",\"given_name\": \"name[0]\",\"family_name\": \"name[1]\",\"picture\": \"\",\"email\": \"email\"}");
-            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"unknown\",\"given_name\": \"$.details_provider.userinfo.name:[0]\",\"family_name\": \"$.details_provider.userinfo.name:[1]\",\"picture\": \"\",\"email\": \"$.details_provider.userinfo.email\"}");
+            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -49,8 +73,9 @@ public class TestNormalizer {
     @Test
     public void testNormalizeGitHubInvalidMappingIndex() {
         try {
-            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"name\",\"given_name\": \"name[0]\",\"family_name\": \"name[2]\",\"picture\": \"\",\"email\": \"email\"}");
-            assertEquals("{\"name\":\"John Doe\",\"given_name\":\"John\",\"family_name\":\"\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"$.details_provider.userinfo.name\",\"given_name\": \"$.details_provider.userinfo.name:[0]\",\"family_name\": \"$.details_provider.userinfo.name:[2]\",\"picture\": \"\",\"email\": \"$.details_provider.userinfo.email\"}");
+            assertEquals("{\"name\":\"John Doe\",\"given_name\":\"John\",\"family_name\":\"\",\"picture\":\"\",\"email\":\"\"}",
+                    Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -59,8 +84,8 @@ public class TestNormalizer {
     @Test
     public void testNormalizeGitHubNoMappingValue() {
         try {
-            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"name[0]\",\"family_name\": \"name[1]\",\"picture\": \"\",\"email\": \"email\"}");
-            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"$.details_provider.userinfo.name:[0]\",\"family_name\": \"$.details_provider.userinfo.name:[1]\",\"picture\": \"\",\"email\": \"email\"}");
+            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -71,8 +96,17 @@ public class TestNormalizer {
         // use default mapping
         try {
             JSONObject mappings = null;
-            assertEquals("{\"sub\":\"\",\"email_verified\":\"\",\"provider\":\"provider\",\"name\":\"John Doe\",\"preferred_username\":\"\",\"given_name\":\"\",\"family_name\":\"\",\"picture\":\"\",\"email\":\"\"}",
-                    Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            assertEquals(
+                    "{\"sub\":\"\"," +
+                            "\"email_verified\":\"\"," +
+                            "\"provider\":\"\"," +
+                            "\"name\":\"John Doe\"," +
+                            "\"preferred_username\":\"\"," +
+                            "\"given_name\":\"\"," +
+                            "\"family_name\":\"\"," +
+                            "\"picture\":\"\"," +
+                            "\"email\":\"\"}",
+                    Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -83,8 +117,17 @@ public class TestNormalizer {
         // use default
         try {
             JSONObject mappings = new JSONObject();
-            assertEquals("{\"sub\":\"\",\"email_verified\":\"\",\"provider\":\"provider\",\"name\":\"John Doe\",\"preferred_username\":\"\",\"given_name\":\"\",\"family_name\":\"\",\"picture\":\"\",\"email\":\"\"}",
-                    Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            assertEquals(
+                    "{\"sub\":\"\"," +
+                            "\"email_verified\":\"\"," +
+                            "\"provider\":\"\"," +
+                            "\"name\":\"John Doe\"," +
+                            "\"preferred_username\":\"\"," +
+                            "\"given_name\":\"\"," +
+                            "\"family_name\":\"\"," +
+                            "\"picture\":\"\"," +
+                            "\"email\":\"\"}",
+                    Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -94,7 +137,7 @@ public class TestNormalizer {
     public void testNormalizeUserinfoNull() {
         try {
             JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"name[0]\",\"family_name\": \"name[1]\",\"picture\": \"\",\"email\": \"email\"}");
-            assertEquals("{}", Normalizer.normalizeDetails("provider", mappings, null, "access_token").toJSONString());
+            assertEquals("{}", Normalizer.normalizeDetails(mappings, null, "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -103,8 +146,8 @@ public class TestNormalizer {
     @Test
     public void testNormalizeKeepAsIsValue() {
         try {
-            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"name[0]\",\"family_name\": \"name[1]\",\"picture\": \"asis:http://picture.example.com\",\"email\": \"email\"}");
-            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"http:\\/\\/picture.example.com\",\"email\":\"\"}", Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"$.details_provider.userinfo.name:[0]\",\"family_name\": \"$.details_provider.userinfo.name:[1]\",\"picture\": \"asis:http://picture.example.com\",\"email\": \"$.details_provider.userinfo.email\"}");
+            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"http:\\/\\/picture.example.com\",\"email\":\"\"}", Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
@@ -113,15 +156,15 @@ public class TestNormalizer {
     @Test
     public void testNormalizeKeepAsIsNoValue() {
         try {
-            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"name[0]\",\"family_name\": \"name[1]\",\"picture\": \"asis:\",\"email\": \"email\"}");
-            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails("provider", mappings, getUserinfoGitHub(), "access_token").toJSONString());
+            JSONObject mappings = (JSONObject) new JSONParser().parse("{\"name\": \"\",\"given_name\": \"$.details_provider.userinfo.name:[0]\",\"family_name\": \"$.details_provider.userinfo.name:[1]\",\"picture\": \"asis:\",\"email\": \"email\"}");
+            assertEquals("{\"name\":\"\",\"given_name\":\"John\",\"family_name\":\"Doe\",\"picture\":\"\",\"email\":\"\"}", Normalizer.normalizeDetails(mappings, getUserinfoGitHub(), "access_token").toJSONString());
         } catch (ParseException e) {
             fail();
         }
     }
 
     private JSONObject getUserinfoGitHub() throws ParseException {
-        return (JSONObject) new JSONParser().parse("{\n"
+        return (JSONObject) new JSONParser().parse("{\"details_provider\":{\"userinfo\":{\n"
                 + "      \"gists_url\": \"https:\\/\\/api.github.com\\/users\\/JohnDoe\\/gists{\\/gist_id}\",\n"
                 + "      \"repos_url\": \"https:\\/\\/api.github.com\\/users\\/JohnDoe\\/repos\",\n"
                 + "      \"two_factor_authentication\": false,\n"
@@ -165,24 +208,24 @@ public class TestNormalizer {
                 + "      \"name\": \"John Doe\",\n"
                 + "      \"location\": null,\n"
                 + "      \"node_id\": \"MDQ6V........wNDEx\"\n"
-                + "    }");
+                + "    }}}");
     }
 
     @Test
     public void testNormalizeResponseDefault() {
 
-        JSONObject actual = Normalizer.normalizeDetails("exampleProvider", null, userinfo, "access_token");
+        JSONObject actual = Normalizer.normalizeDetails(null, userinfo, "access_token");
 
         JSONObject nd = new JSONObject();
         nd.put("sub", "248289761001");
-        nd.put("provider", "exampleProvider");
         nd.put("email_verified", "");
         nd.put("name", "Jane Doe");
+        nd.put("provider", "");
+        nd.put("preferred_username", "j.doe");
         nd.put("given_name", "Jane");
         nd.put("family_name", "Doe");
         nd.put("picture", "http://example.com/janedoe/me.jpg");
         nd.put("email", "janedoe@example.com");
-        nd.put("preferred_username", "j.doe");
 
         assertEquals(nd.toJSONString(), actual.toJSONString());
     }
@@ -192,13 +235,13 @@ public class TestNormalizer {
 
         try {
 
-            JSONObject linkedinProfileMapping = (JSONObject) new JSONParser().parse("{\"sub\":\"$.id\", \"name\": \"\",\"given_name\": \"$.localizedFirstName\",\"family_name\": \"$.localizedLastName\",\"picture\": \"$.profilePicture.displayImage~.elements[0].identifiers[0].identifier\", \"email\": {\"resource\": \"\",\"mapping_rule\": \"$.elements[0].handle~.emailAddress\"}, \"email_verified\":\"asis:true\", \"provider\":\"asis:exampleProvider\", \"preferred_username\": \"$.preferred_username\"}");
+            JSONObject linkedinProfileMapping = (JSONObject) new JSONParser().parse("{\"sub\":\"$.details_provider.userinfo.id\", \"name\": \"\",\"given_name\": \"$.details_provider.userinfo.localizedFirstName\",\"family_name\": \"$.details_provider.userinfo.localizedLastName\",\"picture\": \"$.details_provider.userinfo.profilePicture.displayImage~.elements[0].identifiers[0].identifier\", \"email\": {\"resource\": \"\",\"mapping_rule\": \"$.elements[0].handle~.emailAddress\"}, \"email_verified\":\"asis:true\", \"provider\":\"$.details_provider.provider\", \"preferred_username\": \"$.details_provider.userinfo.preferred_username\"}");
             JSONObject profileResponse = (JSONObject) new JSONParser().parse(getLinkedInProfileResponse());
-            JSONObject actual = Normalizer.normalizeDetails("exampleProvider", linkedinProfileMapping, profileResponse, "access_token");
+            JSONObject actual = Normalizer.normalizeDetails(linkedinProfileMapping, profileResponse, "access_token");
 
             JSONObject nd = new JSONObject();
             nd.put("sub", "248289761001");
-            nd.put("provider", "exampleProvider");
+            nd.put("provider", "linkedin");
             nd.put("email_verified", "true");
             nd.put("name", "");
             nd.put("given_name", "Jane");
@@ -222,7 +265,7 @@ public class TestNormalizer {
 
             JSONObject linkedinEmailMapping = (JSONObject) new JSONParser().parse("{\"email\":\"$.elements[0].handle~.emailAddress\"}");
             JSONObject emailResponse = (JSONObject) new JSONParser().parse(getLinkedInEmailResponse());
-            JSONObject actual = Normalizer.normalizeDetails("exampleProvider", linkedinEmailMapping, emailResponse, "access_token");
+            JSONObject actual = Normalizer.normalizeDetails(linkedinEmailMapping, emailResponse, "access_token");
 
             JSONObject nd = new JSONObject();
             nd.put("email", "janedoe@example.com");
@@ -234,7 +277,7 @@ public class TestNormalizer {
     }
 
     private String getLinkedInProfileResponse() {
-        return "{\n" +
+        return "{\"details_provider\":{\"provider\":\"linkedin\",\"userinfo\":{\n" +
                 "  \"localizedLastName\": \"Doe\",\n" +
                 "  \"profilePicture\": {\n" +
                 "    \"displayImage\": \"urn:li:digitalmediaAsset:123456789\",\n" +
@@ -418,7 +461,7 @@ public class TestNormalizer {
                 "  },\n" +
                 "  \"id\": \"248289761001\",\n" +
                 "  \"localizedFirstName\": \"Jane\"\n" +
-                "}";
+                "}}}";
     }
 
     private String getLinkedInEmailResponse() {
@@ -434,4 +477,48 @@ public class TestNormalizer {
                 "}";
     }
 
+    private static String getLoginbuddyResponse() {
+        return "{\"access_token\": \"ya29.ImCyBxbbmYU5vCm8LyE5rhSIFBn4cGdZvYkC8yGe93UqmEHn0\",\n" +
+                "\t\"details_provider\": {\n" +
+                "\t\t\"id_token_payload\": {\n" +
+                "\t\t\t\"at_hash\": \"SZSvbjrY7b8cQ\",\n" +
+                "\t\t\t\"sub\": \"1018256\",\n" +
+                "\t\t\t\"email_verified\": true,\n" +
+                "\t\t\t\"iss\": \"https:\\/\\/example.com\",\n" +
+                "\t\t\t\"given_name\": \"John\",\n" +
+                "\t\t\t\"locale\": \"en-GB\",\n" +
+                "\t\t\t\"nonce\": \"3fddc3a345c8516c4\",\n" +
+                "\t\t\t\"picture\": \"https:\\/\\/example.com\\/\\/photo.jpg\",\n" +
+                "\t\t\t\"aud\": \"446042603example.com\",\n" +
+                "\t\t\t\"azp\": \"446042603example.com\",\n" +
+                "\t\t\t\"name\": \"John Doe\",\n" +
+                "\t\t\t\"exp\": 1574485037,\n" +
+                "\t\t\t\"family_name\": \"Doe\",\n" +
+                "\t\t\t\"iat\": 1574481437,\n" +
+                "\t\t\t\"email\": \"email@example.com\"\n" +
+                "\t\t},\n" +
+                "\t\t\"provider\": \"example\",\n" +
+                "\t\t\"userinfo\": {\"sub\": \"1018256\",\n" +
+                "\t\t\t\"name\": \"John Doe\",\n" +
+                "\t\t\t\"given_name\": \"John\",\n" +
+                "\t\t\t\"family_name\": \"Doe\",\n" +
+                "\t\t\t\"picture\": \"https:\\/\\/example.com\\/\\/photo.jpg\",\n" +
+                "\t\t\t\"email\": \"email@example.com\"\n" +
+                "\t\t\t\"email_verified\": false,\n" +
+                "\t\t\t\"preferred_username\": \"John 'the man' Doe\",\n" +
+                "\t\t\t\"locale\": \"en-GB\"\n" +
+                "\t\t}\n" +
+                "\t},\n" +
+                "\t\"scope\": \"openid profile email\",\n" +
+                "\t\"id_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\",\n" +
+                "\t\"token_type\": \"Bearer\",\n" +
+                "\t\"details_loginbuddy\": {\n" +
+                "\t\t\"aud\": \"clientIdForTestingPurposes\",\n" +
+                "\t\t\"iss\": \"https:\\/\\/local.loginbuddy.net\",\n" +
+                "\t\t\"nonce\": \"3fddc3a3-d63f-438a-813b-c2f45c8516c4\",\n" +
+                "\t\t\"iat\": 1574481437\n" +
+                "\t},\n" +
+                "\t\"expires_in\": 3600\n" +
+                "}";
+    }
 }

@@ -102,19 +102,21 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
 // ** Now, let's get the userinfo response
 // ***************************************************************
 
-        try {
-            MsgResponse userinfoResp = HttpHelper.getAPI(access_token, sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
-            if (userinfoResp.getStatus() == 200) {
-                if (userinfoResp.getContentType().startsWith("application/json")) {
-                    JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
-                    eb.setUserinfo(userinfoRespObject);
-                    eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), userinfoRespObject, access_token));
-                }
-            } // TODO : handle non 200 response
-        } catch (Exception e) {
-            LOGGER.warning("retrieving userinfo failed. Will use id_token_payload for 'details_normalized' if it exists!");
-            eb.setNormalized(Normalizer.normalizeDetails(provider, providerConfig.getMappingsAsJson(), idTokenPayload, access_token));
+        String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
+        if (userinfo != null) {
+            try {
+                MsgResponse userinfoResp = HttpHelper.getAPI(access_token, userinfo);
+                if (userinfoResp.getStatus() == 200) {
+                    if (userinfoResp.getContentType().startsWith("application/json")) {
+                        JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
+                        eb.setUserinfo(userinfoRespObject);
+                    }
+                } // TODO : handle non 200 response
+            } catch (Exception e) {
+                LOGGER.warning("Retrieving userinfo failed!");
+            }
         }
+        eb.setNormalized(Normalizer.normalizeDetails(providerConfig.getMappingsAsJson(), eb.getEbAsJson(), access_token));
 
 
 // ***************************************************************
