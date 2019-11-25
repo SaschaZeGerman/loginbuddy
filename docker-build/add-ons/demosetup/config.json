@@ -116,7 +116,7 @@
       },
       {
         "provider": "dynamic",
-        "issuer": "https://{your-server-that-supports-dynamic-registration}",
+        "issuer": "https://your-server-that-supports-dynamic-registration.com",
         "openid_configuration_uri": "https://{your-server-that-supports-dynamic-registration}/.well-known/openid-configuration"
       },
       {
