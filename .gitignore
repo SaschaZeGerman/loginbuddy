@@ -33,3 +33,5 @@ apitest/tempfiles/*
 # images - logos
 **.png
 !**/simple_overview_01.png
+!**/self-issued.png
+!**/server_loginbuddy.png
