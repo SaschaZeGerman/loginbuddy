@@ -27,6 +27,7 @@ public class ExchangeBean implements Serializable {
 
     public ExchangeBean() {
         userinfo = new JSONObject();
+        tokenResponse = new JSONObject();
     }
 
     public void setTokenResponse(JSONObject tokenResponse) {
@@ -63,9 +64,7 @@ public class ExchangeBean implements Serializable {
         this.iat = iat;
     }
 
-    @Override
-    public String toString() {
-
+    public JSONObject getEbAsJson() {
         JSONObject details_provider = new JSONObject();
         JSONObject details_loginbuddy = new JSONObject();
 
@@ -97,6 +96,11 @@ public class ExchangeBean implements Serializable {
         if(normalized != null)
             tokenResponse.put("details_normalized", normalized);
 
-        return tokenResponse.toJSONString();
+        return tokenResponse;
+    }
+
+    @Override
+    public String toString() {
+        return getEbAsJson().toJSONString();
     }
 }

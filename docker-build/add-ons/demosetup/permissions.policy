@@ -14,6 +14,9 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     // permission java.net.SocketPermission "www.googleapis.com", "connect,resolve";
     // permission java.net.SocketPermission "github.com", "connect,resolve";
     // permission java.net.SocketPermission "api.github.com", "connect,resolve";
+    // permission java.net.SocketPermission "www.linkedin.com", "connect,resolve";
+    // permission java.net.SocketPermission "api.linkedin.com", "connect,resolve";
+    // permission java.net.SocketPermission "appleid.apple.com", "connect,resolve";
 };
 // [Loginbuddy_DEMOCLIENT]: adding permissions for loginbuddy-democlient to connect to loginbuddy
 grant codeBase "file:${catalina.home}/webapps/democlient/-" {
