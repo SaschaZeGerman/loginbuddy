@@ -63,6 +63,7 @@
         "response_type": "id_token",
         "redirect_uri": "https://local.loginbuddy.net/callback",
         "mappings" : {
+          "provider": "$.details_provider.provider",
           "sub": "$.details_provider.id_token_payload.sub"
         }
       }

@@ -43,6 +43,26 @@
         "redirect_uri": "https://local.loginbuddy.net/callback"
       },
       {
+        "provider": "google_id_token",
+        "issuer": "https://accounts.google.com",
+        "openid_configuration_uri": "https://accounts.google.com/.well-known/openid-configuration",
+        "client_id": "",
+        "client_secret": "",
+        "response_type": "id_token",
+        "pkce": false,
+        "redirect_uri": "https://local.oauth.blog/callback",
+        "mappings": {
+          "name": "$.details_provider.id_token_payload.name",
+          "given_name": "$.details_provider.id_token_payload.given_name",
+          "family_name": "$.details_provider.id_token_payload.family_name",
+          "picture": "$.details_provider.id_token_payload.picture",
+          "email": "$.details_provider.id_token_payload.email",
+          "email_verified": "$.details_provider.id_token_payload.email_verified",
+          "provider": "$.details_provider.provider",
+          "sub": "$.details_provider.id_token_payload.sub"
+        }
+      },
+      {
         "provider": "github",
         "issuer": "https://github.com",
         "client_id": "",
@@ -54,14 +74,14 @@
         "scope": "read:user user:email",
         "redirect_uri": "https://local.loginbuddy.net/callback",
         "mappings": {
-          "name": "name",
-          "given_name": "name[0]",
-          "family_name": "name[1]",
+          "name": "$.details_provider.userinfo.name",
+          "given_name": "$.details_provider.userinfo.name:[0]",
+          "family_name": "$.details_provider.userinfo.name:[1]",
           "picture": "",
-          "email": "login",
+          "email": "$.details_provider.userinfo.login",
           "email_verified": "asis:true",
-          "provider": "asis:github",
-          "sub": "id"
+          "provider": "$.details_provider.provider",
+          "sub": "$.details_provider.userinfo.id"
         }
       },
       {
@@ -77,17 +97,17 @@
         "redirect_uri": "https://local.loginbuddy.net/callback",
         "pkce": false,
         "mappings": {
-          "sub": "$.id",
-          "given_name": "$.localizedFirstName",
-          "family_name": "$.localizedLastName",
-          "picture": "$.profilePicture.displayImage~.elements[0].identifiers[0].identifier",
+          "sub": "$.details_provider.userinfo.id",
+          "given_name": "$.details_provider.userinfo.localizedFirstName",
+          "family_name": "$.details_provider.userinfo.localizedLastName",
+          "picture": "$.details_provider.userinfo.profilePicture.displayImage~.elements[0].identifiers[0].identifier",
           "email": {
             "resource": "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
             "resource_type": "protected",
             "mapping_rule": "$.elements[0].handle~.emailAddress"
           },
           "email_verified": "asis:true",
-          "provider": "asis:linkedin"
+          "provider": "$.details_provider.provider"
         }
       },
       {
@@ -111,13 +131,8 @@
           "email": "asis:unknown",
           "email_verified": "asis:false",
           "provider": "asis:apple",
-          "sub": "$.sub"
+          "sub": "$.details_provider.id_token_payload.sub"
         }
-      },
-      {
-        "provider": "dynamic",
-        "issuer": "https://{your-server-that-supports-dynamic-registration}",
-        "openid_configuration_uri": "https://{your-server-that-supports-dynamic-registration}/.well-known/openid-configuration"
       },
       {
         "provider": "self-issued",
@@ -127,7 +142,17 @@
         "authorization_endpoint": "openid://",
         "scope": "openid profile email address phone",
         "response_type": "id_token",
-        "redirect_uri": "https://local.loginbuddy.net/callback"
+        "redirect_uri": "https://local.loginbuddy.net/callback",
+        "mappings": {
+          "name": "asis:unknown",
+          "given_name": "asis:unknown",
+          "family_name": "asis:unknown",
+          "picture": "",
+          "email": "asis:unknown",
+          "email_verified": "asis:false",
+          "provider": "$.details_provider.provider",
+          "sub": "$.details_provider.id_token_payload.sub"
+        }
       }
     ]
   }
