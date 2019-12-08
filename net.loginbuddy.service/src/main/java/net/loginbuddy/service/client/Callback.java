@@ -84,7 +84,7 @@ public class Callback extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        // either a invalid request ... or a implicit flow ...
+        // either a invalid request ... or an implicit flow ...
         if (request.getParameterMap().get("state") == null && request.getParameterMap().get("handled") == null ) {
             // TODO: prevent endless back and forth (handled enough?)
             StringBuilder sb = new StringBuilder();

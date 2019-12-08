@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class LoginbuddyProviderUserinfo extends HttpServlet {
+public class LoginbuddyProviderUserinfo extends LoginbuddyProviderCommon {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyProviderUserinfo.class));
 
@@ -93,16 +93,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
 
             String clientId = sessionValues.getString(Constants.CLIENT_ID.getKey());
             String email = sessionValues.getString("email");
-
-            // Create a fake PPID to be used with 'sub'
-            String ppidSub = "fakeProviderSalt".concat(clientId).concat(email);
-            MessageDigest md = null;
-            try {
-                md = MessageDigest.getInstance("SHA-1");
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-            String sub = new String(Base64.getUrlEncoder().encode(md.digest(ppidSub.getBytes()))).replace("=", "").replace("-", "");
+            String sub = getSub(clientId, email, false);
 
             fakeUserinfoResponse = new JSONObject();
             fakeUserinfoResponse.put("sub", sub);
@@ -118,6 +109,7 @@ public class LoginbuddyProviderUserinfo extends HttpServlet {
                 fakeUserinfoResponse.put("name", "Login Buddy");
                 fakeUserinfoResponse.put("given_name", "Login");
                 fakeUserinfoResponse.put("family_name", "Buddy");
+                fakeUserinfoResponse.put("preferred_username", email);
             }
         }
 

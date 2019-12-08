@@ -10,7 +10,9 @@ package net.loginbuddy.demoserver.provider;
 
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.Pkce;
+import org.jose4j.jws.JsonWebSignature;
 import org.json.simple.JSONObject;
 
 import javax.servlet.http.HttpServlet;
@@ -20,7 +22,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class LoginbuddyProviderToken extends HttpServlet {
+public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyProviderToken.class));
 
@@ -110,6 +112,17 @@ public class LoginbuddyProviderToken extends HttpServlet {
         String access_token = "FAKE_".concat(UUID.randomUUID().toString());
         String refresh_token = "FAKE_".concat(UUID.randomUUID().toString());
         String id_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJoZWxsbyI6ImxvZ2luYnVkZHkifQ.z9r5WoqNycrF7YLOZTZpMarwUeTopU1UZzRAU7beFTc"; // completely fake
+        try {
+            id_token = new Jwt().createSignedJwtRs256(
+                    "https://" + System.getenv("HOSTNAME_LOGINBUDDY_DEMOSERVER"),
+                    sessionValues.getString("client_id"),
+                    5,
+                    getSub(sessionValues.getString("client_id"), sessionValues.getString("email"), false),
+                    sessionValues.getString("nonce"),
+                    false).getCompactSerialization();
+        } catch (Exception e) {
+            LOGGER.warning(String.format("Could not create id_token: %s", e.getMessage()));
+        }
 
         // Add to the sessionValues
         long accessTokenLifetime = sessionValues.sessionToken(access_token, refresh_token, id_token);

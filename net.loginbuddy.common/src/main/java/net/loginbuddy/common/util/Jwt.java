@@ -8,6 +8,7 @@
 
 package net.loginbuddy.common.util;
 
+import net.loginbuddy.common.api.HttpHelper;
 import org.jose4j.jwk.*;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
@@ -28,7 +29,27 @@ public class Jwt {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(Jwt.class));
 
+    private static JsonWebKeySet JWKS;
+
     public Jwt() {
+    }
+
+    public static JsonWebKeySet getJwksForSigning() {
+        try {
+            if (JWKS == null) {
+                JWKS = new JsonWebKeySet();
+                // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
+                RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+                rsaJsonWebKey.setKeyId(UUID.randomUUID().toString());
+                rsaJsonWebKey.setUse("sig");
+                JWKS.addJsonWebKey(rsaJsonWebKey);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // TODO fix error  handling
+            LOGGER.warning(String.format("no JWKS could be created ... not sure what to do yet: %s", e.getMessage()));
+        }
+        return JWKS;
     }
 
     /**
@@ -63,8 +84,7 @@ public class Jwt {
     public JsonWebSignature createSignedJwtRs256(String issuer, String audience, int lifetimeInMinutes, String subject, String nonce, boolean includePublicKey) throws Exception {
 
         // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
-        RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
-        rsaJsonWebKey.setKeyId(UUID.randomUUID().toString());
+        RsaJsonWebKey rsaJsonWebKey = (RsaJsonWebKey) getJwksForSigning().getJsonWebKeys().get(0);
 
         // Create the Claims, which will be the content of the JWT
         JwtClaims claims = new JwtClaims();
@@ -76,7 +96,7 @@ public class Jwt {
         claims.setIssuedAtToNow();  // when the token was issued/created (now)
         claims.setGeneratedJwtId(); // a unique identifier for the token
         claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
-        if(includePublicKey) {
+        if (includePublicKey) {
             claims.setClaim("sub_jwk", new JSONParser().parse(rsaJsonWebKey.toJson()));
         }
         JsonWebSignature jws = new JsonWebSignature();
@@ -115,7 +135,7 @@ public class Jwt {
                         if ((new Date().getTime() / 1000) < Long.parseLong(String.valueOf(jo.get("exp")))) {
                             JsonWebKey jwk = null;
                             if (jo.get("sub_jwk") != null && jsonWebKeySetJson == null) {
-                                jwk = JsonWebKey.Factory.newJwk(((JSONObject)jo.get("sub_jwk")).toJSONString());
+                                jwk = JsonWebKey.Factory.newJwk(((JSONObject) jo.get("sub_jwk")).toJSONString());
                             } else {
                                 JsonWebKeySet jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetJson);
                                 VerificationJwkSelector jwkSelector = new VerificationJwkSelector();
