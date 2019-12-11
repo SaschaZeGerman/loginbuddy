@@ -4,6 +4,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ExchangeBean;
+import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
@@ -136,14 +137,18 @@ public class Callback extends HttpServlet {
         }
     }
 
-    void returnAuthorizationCode(HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb) throws IOException {
+    void returnAuthorizationCode(HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb) throws Exception {
 
 // ***************************************************************
 // ** Issue our own authorization_code and add details for the final client response
 // ***************************************************************
 
         String authorizationCode = UUID.randomUUID().toString();
-        sessionCtx.put("eb", eb.toString());
+        if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
+            sessionCtx.put("eb", new Jwt().createSignedJwt(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization());
+        } else {
+            sessionCtx.put("eb", eb.toString());
+        }
         sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
         LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
 

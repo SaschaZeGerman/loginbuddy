@@ -3,9 +3,11 @@ package net.loginbuddy.service.sidecar;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.util.SessionContext;
+import org.jose4j.lang.JoseException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -81,6 +83,10 @@ public class CallbackParent extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
+    }
+
+    protected String getSignedResponse(String payload, String alg) throws JoseException {
+        return new Jwt().createSignedJwt(payload, alg).getCompactSerialization();
     }
 
 }

@@ -27,10 +27,12 @@ public class SessionContext extends LoginbuddyContext {
    * @param idtokenHint
    * @param checkRedirectUri
    * @param redirectUriValid
+   * @param acceptDynamicProvider
+   * @param signedResponseAlg
    */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
-      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider) {
+      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider, String signedResponseAlg) {
 
     put(Constants.CLIENT_CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
@@ -45,6 +47,7 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_LOGIN_HINT.getKey(), loginHint == null ? "" : loginHint);
     put(Constants.CLIENT_ID_TOKEN_HINT.getKey(), idtokenHint == null ? "" : idtokenHint);
     put(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey(), acceptDynamicProvider);
+    put(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey(), signedResponseAlg);
     put(Constants.CHECK_REDIRECT_URI.getKey(), checkRedirectUri);
     put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_LOGINBUDDY.getKey()); // default: assuming a registered provider is used
 

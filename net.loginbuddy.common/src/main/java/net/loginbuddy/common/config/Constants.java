@@ -42,6 +42,7 @@ public enum Constants {
     ISSUER_HANDLER_LOGINBUDDY("issuer_handler_loginbuddy"),
     JWKS_URI("jwks_uri"),
     LOGIN_HINT("login_hint"),
+    SIGNED_RESPONSE_ALG("signed_response_alg"),
     NONCE("nonce"),
     OPENID_SCOPE("openid profile email"),
     PROVIDER("provider"),
@@ -84,6 +85,7 @@ public enum Constants {
     CLIENT_ID_TOKEN_HINT("clientIdtokenHint"),
     CLIENT_CLIENT_ID("clientClientId"),
     CLIENT_NONCE("clientNonce"),
+    CLIENT_SIGNED_RESPONSE_ALG("clientSignedResponseAlg"),
     MAPPING_OIDC("{\"sub\":\"sub\", \"name\": \"name\",\"given_name\": \"given_name\",\"family_name\": \"family_name\",\"picture\": \"picture\",\"email\":\"email\", \"email_verified\":\"email_verified\", \"provider\":\"asis:provider\"}"),
 
     // references for dynamically registered providers

@@ -109,6 +109,25 @@ public class Jwt {
     }
 
     /**
+     * Generate a JWT based on a private key. Nothing fancy, using the example implementation of jose4j
+     *
+     * @return JWT compact URL-safe serialization
+     * @see <a href="https://bitbucket.org/b_c/jose4j/wiki/JWT%20Examples#markdown-header-producing-and-consuming-a-signed-jwt"></a>
+     */
+    public JsonWebSignature createSignedJwt(String payload, String alg) {
+        // TODO algorithm is currenty ignore
+        // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
+        RsaJsonWebKey rsaJsonWebKey = (RsaJsonWebKey) getJwksForSigning().getJsonWebKeys().get(0);
+
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setPayload(payload);
+        jws.setKey(rsaJsonWebKey.getPrivateKey());
+        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
+        jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+        return jws;
+    }
+
+    /**
      * Validates the signature, aud, iss, exp and nonce of a given JWT. Other values have to be verified on demand
      *
      * @param jwt               The JWT to be validated
