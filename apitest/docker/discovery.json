@@ -11,5 +11,6 @@
   "subject_types_supported": ["public"],
   "scopes_supported": ["openid","email","profile"],
   "code_challenge_methods_supported": ["S256"],
-  "userinfo_endpoint": "https://local.loginbuddy.net/userinfo"
+  "userinfo_endpoint": "https://local.loginbuddy.net/userinfo",
+  "signing_alg_values_supported": ["RS256"]
 }

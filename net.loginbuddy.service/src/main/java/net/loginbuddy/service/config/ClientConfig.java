@@ -37,6 +37,9 @@ public class ClientConfig {
     @JsonProperty("accept_dynamic_provider")
     private boolean acceptDynamicProvider;
 
+    @JsonProperty("signed_response_alg")
+    private String signedResponseAlg;
+
     public ClientConfig() {
         acceptDynamicProvider = false;
     }
@@ -93,5 +96,13 @@ public class ClientConfig {
     public void setAcceptDynamicProvider(boolean acceptDynamicProvider) {
         // TODO do not depend on the variable
         this.acceptDynamicProvider = acceptDynamicProvider && Boolean.parseBoolean(System.getenv("SUPPORT_OIDCDR"));
+    }
+
+    public String getSignedResponseAlg() {
+        return signedResponseAlg;
+    }
+
+    public void setSignedResponseAlg(String signedResponseAlg) {
+        this.signedResponseAlg = signedResponseAlg;
     }
 }

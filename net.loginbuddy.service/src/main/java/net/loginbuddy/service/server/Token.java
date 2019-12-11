@@ -185,6 +185,10 @@ public class Token extends HttpServlet {
 // ***************************************************************
 
       response.setStatus(200);
+      String eb = sessionCtx.getString("eb");
+      if( !(eb == null || eb.startsWith("{")) ) {
+        response.setContentType("application/jwt");
+      }
       response.getWriter().write(sessionCtx.getString("eb"));
     }
   }

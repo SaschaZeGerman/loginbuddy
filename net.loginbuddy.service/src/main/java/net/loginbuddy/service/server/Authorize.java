@@ -228,6 +228,19 @@ public class Authorize extends HttpServlet {
     }
 
 // ***************************************************************
+// ** Check if the client should receive a signed response
+// ***************************************************************
+
+    String signResponseAlg = "";
+    if(cc.getSignedResponseAlg() != null) {
+      Set<String> signedResponseAlgs = new TreeSet<>(Arrays.asList((LoginbuddyConfig.getInstance().getDiscoveryUtil().getSigningAlgValuesSupportedAsString()).split("[,; ]")));
+      if(signedResponseAlgs.contains(cc.getSignedResponseAlg())) {
+        signResponseAlg = cc.getSignedResponseAlg();
+      }
+      // TODO: do we need logging for informational purposes?
+    }
+
+// ***************************************************************
 // ** Create the session so that it can be handled through out multiple requests
 // ***************************************************************
 
@@ -236,7 +249,7 @@ public class Authorize extends HttpServlet {
         clientCodeChallengeResult.getValue(), clientCodeChallendeMethodResult.getValue(),
         clientRedirectUri, clientNonceResult.getValue(), clientStateResult.getValue(), clientProviderResult.getValue(),
         clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
-        checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider());
+        checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider(), signResponseAlg);
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 

@@ -95,7 +95,12 @@ public class CallbackSelfissued extends CallbackParent {
 // ***************************************************************
 
             response.setStatus(200);
-            response.getWriter().write(eb.toString());
+            if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
+                response.setContentType("application/jwt");
+                response.getWriter().write(getSignedResponse(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())));
+            } else {
+                response.getWriter().write(eb.toString());
+            }
 
         } catch (Exception e) {
             LOGGER.warning("authorization request failed!");
