@@ -55,7 +55,11 @@
             result = String.format("{\"error\":\"%s\", \"error_description\":\"%s\"}", error, error_description);
         } else if (sessionValues != null) {
             MsgResponse msgResp = (MsgResponse) sessionValues.get("msgResponse");
-            result = ((JSONObject) new JSONParser().parse(msgResp.getMsg())).toJSONString();
+            if(msgResp.getContentType().startsWith("application/json")) {
+                result = ((JSONObject) new JSONParser().parse(msgResp.getMsg())).toJSONString();
+            } else {
+                result = msgResp.getMsg(); // jwt
+            }
         }
     %>
     <div>

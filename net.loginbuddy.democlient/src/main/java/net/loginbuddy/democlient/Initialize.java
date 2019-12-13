@@ -2,6 +2,7 @@ package net.loginbuddy.democlient;
 
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
 
@@ -27,14 +28,16 @@ public class Initialize extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    // No validation whatsoever. This is just for demo!
-
-    String providerAddition = request.getParameter(Constants.PROVIDER_ADDITION.getKey()); // optional
-    if (providerAddition.equals(ParameterValidatorResult.RESULT.VALID)) {
+    // just checking if this unused hidden field had a value which would be suspicious
+    ParameterValidatorResult providerAddition = ParameterValidator
+            .getSingleValue(request.getParameterValues(Constants.PROVIDER_ADDITION.getKey()));
+    if (providerAddition.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
       LOGGER.warning(String.format("Invalid request! Unused field had values: '%s'", providerAddition));
       response.sendError(400, "Invalid request, please try again!");
       return;
     }
+
+    // No validation whatsoever. This is just for demo!
 
     String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
     String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());

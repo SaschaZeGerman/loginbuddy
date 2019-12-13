@@ -34,6 +34,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
+    <script>
+        function selectClientId() {
+            var clientId = document.getElementById('client_id');
+            if(document.getElementById('idResponseAsJwt').checked) {
+                clientId.setAttribute('value', 'clientIdForTestingPurposesJwt');
+            } else {
+                clientId.setAttribute('value', 'clientIdForTestingPurposes');
+            }
+        }
+    </script>
 </head>
 <body>
 
@@ -43,14 +53,9 @@
     <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
         It is meant for demo purposes only! This client is not collecting data or remembers user interactions or tries to sell ads!</p>
     <hr/>
-    <h3>What do I see here?</h3>
-    <p>If you are developing an application and if you want to support social login, Loginbuddy can help achieving that. Your application would send an authorization request
-        to Loginbuddy using the shown parameters below. Loginbuddy will then either forward your user to a provider that was given on this page, or it will display a
-        provider selection page next. In either case, your application will get the final response after the authorization flow with a provider has finished.</p>
-    <p>If this would be your application, the lower form would not be shown, here it is meant for educational purposes:</p>
     <form action="initialize" method="post" enctype="application/x-www-form-urlencoded">
         <div class="form-group">
-            <label for="provider">Provider (leave it blank first, then try 'server_loginbuddy')</label>
+            <label for="provider">Provider (type 'server_loginbuddy' to skip the next screen. Leave it blank the first time you try)</label>
             <input type="text" id="provider" name="provider" class="form-control" size="80">
         </div>
         <input type="hidden" id="client_id" name="client_id" size="80" readonly class="form-control" value="clientIdForTestingPurposes">
@@ -61,7 +66,15 @@
         <input type="hidden" id="scope" name="scope" size="80" class="form-control" readonly value="openid email profile">
         <input type="hidden" name="provider_addition" value="">
         <button type="submit" class="btn btn-primary">Submit</button>
+        <input class="form-check-input" type="checkbox" value="" id="idResponseAsJwt" onclick="return selectClientId();">
+        <label class="form-check-label" for="idResponseAsJwt"> receive final response as signed JWT</label>
     </form>
+    <hr/>
+    <h3>What do I see here?</h3>
+    <p>If you are developing an application and if you want to support social login, Loginbuddy can help achieving that. Your application would send an authorization request
+        to Loginbuddy using the shown parameters below. Loginbuddy will then either forward your user to a provider that was given on this page (Provider), or it will display a
+        provider selection page next. In either case, your application will get the final response after the authorization flow with a provider has finished.</p>
+    <p>If this would be your application, the lower form would not be shown, here it is meant for demo purposes.</p>
     <hr/>
     <h3>Details for developers</h3>
     <p>This is the actual statement your application would have to send (plus 'provider' if given):</p>

@@ -8,7 +8,6 @@
 
 package net.loginbuddy.common.util;
 
-import net.loginbuddy.common.api.HttpHelper;
 import org.jose4j.jwk.*;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;

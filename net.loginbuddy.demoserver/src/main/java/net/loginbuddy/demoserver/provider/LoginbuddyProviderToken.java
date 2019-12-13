@@ -12,10 +12,8 @@ import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.Pkce;
-import org.jose4j.jws.JsonWebSignature;
 import org.json.simple.JSONObject;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
