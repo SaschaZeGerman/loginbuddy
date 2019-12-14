@@ -21,6 +21,7 @@ import org.json.simple.parser.JSONParser;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class CallbackHandlerCode extends Callback implements CallbackHandler {
@@ -69,6 +70,12 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                     JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
                     LOGGER.fine(tokenResponseObject.toJSONString());
                     access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
+                    if(sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
+                        tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), UUID.randomUUID().toString().substring(0,8));
+                        if(tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
+                            tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), UUID.randomUUID().toString().substring(0,8));
+                        }
+                    }
                     eb.setTokenResponse(tokenResponseObject);
                     try {
                         id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();

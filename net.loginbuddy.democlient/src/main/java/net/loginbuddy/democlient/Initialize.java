@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class Initialize extends HttpServlet {
@@ -29,6 +30,7 @@ public class Initialize extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
     // just checking if this unused hidden field had a value which would be suspicious
+
     ParameterValidatorResult providerAddition = ParameterValidator
             .getSingleValue(request.getParameterValues(Constants.PROVIDER_ADDITION.getKey()));
     if (providerAddition.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
@@ -37,28 +39,47 @@ public class Initialize extends HttpServlet {
       return;
     }
 
-    // No validation whatsoever. This is just for demo!
+    // Simple validation. This is just for demo!
 
-    String clientId = request.getParameter(Constants.CLIENT_ID.getKey());
-    String clientResponseType = request.getParameter(Constants.RESPONSE_TYPE.getKey());
-    String clientRedirectUri = Sanetizer.checkForUrlPattern(request.getParameter(Constants.REDIRECT_URI.getKey()), 256);
-    String clientNonce = request.getParameter(Constants.NONCE.getKey());
-    String clientState = request.getParameter(Constants.STATE.getKey());
-    String clientScope = request.getParameter(Constants.SCOPE.getKey());
-    String clientProvider = request.getParameter(Constants.PROVIDER.getKey()); // optional
+    ParameterValidatorResult clientIdResult = ParameterValidator
+            .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+    String clientId = Sanetizer.sanetize(clientIdResult.getValue(), 64);
+
+    ParameterValidatorResult clientProviderResult = ParameterValidator
+            .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
+    String clientProvider = Sanetizer.sanetize(clientProviderResult.getValue(), 64);
+
+    ParameterValidatorResult clientObfuscateTokenResult = ParameterValidator
+            .getSingleValue(request.getParameterValues(Constants.OBFUSCATE_TOKEN.getKey()));
+    boolean clientObfuscateToken = Boolean.parseBoolean(Sanetizer.sanetize(clientObfuscateTokenResult.getValue(), 5));
+
+    // Create a session
 
     Map<String, Object> sessionValues = new HashMap<>();
-    sessionValues.put(Constants.CLIENT_ID.getKey(), clientId);
+    sessionValues.put(Constants.CLIENT_ID.getKey(), clientIdResult.getValue());
+
+    String clientResponseType = "code";
     sessionValues.put(Constants.CLIENT_RESPONSE_TYPE.getKey(), clientResponseType);
+
+    String clientRedirectUri = String.format("https://%s/callback", System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT"));
     sessionValues.put(Constants.CLIENT_REDIRECT.getKey(), clientRedirectUri);
+
+    String clientNonce = UUID.randomUUID().toString();
     sessionValues.put(Constants.NONCE.getKey(), clientNonce);
+
+    String clientState = UUID.randomUUID().toString();
     sessionValues.put(Constants.CLIENT_STATE.getKey(), clientState);
+
+    String clientScope = "openid email profile";
     sessionValues.put(Constants.CLIENT_SCOPE.getKey(), clientScope);
+
     sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), clientProvider);
 
     LoginbuddyCache.getInstance().put(clientState, sessionValues);
 
-    response.sendRedirect(String.format("https://%s/authorize?client_id=%s&response_type=%s&redirect_uri=%s&nonce=%s&state=%s&scope=%s&provider=%s",
+    // Create authorization URL
+
+    response.sendRedirect(String.format("https://%s/authorize?client_id=%s&response_type=%s&redirect_uri=%s&nonce=%s&state=%s&scope=%s&provider=%s&obfuscate_token=%b",
         System.getenv("HOSTNAME_LOGINBUDDY"),
         URLEncoder.encode(clientId, "UTF-8"),
         URLEncoder.encode(clientResponseType, "UTF-8"),
@@ -66,6 +87,7 @@ public class Initialize extends HttpServlet {
         URLEncoder.encode(clientNonce, "UTF-8"),
         URLEncoder.encode(clientState, "UTF-8"),
         URLEncoder.encode(clientScope, "UTF-8"),
-        URLEncoder.encode(clientProvider == null ? "" : clientProvider, "UTF-8")));
+        URLEncoder.encode(clientProvider, "UTF-8"),
+        clientObfuscateToken));
   }
 }

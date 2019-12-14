@@ -76,6 +76,10 @@ public class Initialize extends HttpServlet {
         ParameterValidatorResult signedResponseAlg = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.SIGNED_RESPONSE_ALG.getKey()), "");
 
+        // if Loginbuddys response should not include 'real' access_token or refresh_token it will create fake ones. Useful for demo purposes that should not display the original values
+        ParameterValidatorResult obfuscateTokenResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.OBFUSCATE_TOKEN.getKey()), "false");
+
 // ***************************************************************
 // ** Create the session so that it can be handled through out multiple requests
 // ***************************************************************
@@ -97,7 +101,8 @@ public class Initialize extends HttpServlet {
                 false,
                 "",
                 Boolean.parseBoolean(clientAcceptDynamicProvider.getValue().equals("true") ? clientAcceptDynamicProvider.getValue() : "false"),
-                signedResponseAlg.getValue());
+                signedResponseAlg.getValue(),
+                obfuscateTokenResult.getBooleanValue());
 
         // this will be the authorization_url or an error_url
         String authorizationUrl = HeadOfInitialize.processInitializeRequest(sessionCtx, providerResult, issuerResult, discoveryUrlResult);

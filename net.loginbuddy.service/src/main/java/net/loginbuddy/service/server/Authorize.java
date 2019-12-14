@@ -70,6 +70,10 @@ public class Authorize extends HttpServlet {
     ParameterValidatorResult clientIdTokenHintResult = ParameterValidator
         .getSingleValue(request.getParameterValues(Constants.ID_TOKEN_HINT.getKey()), "");
 
+    // if Loginbuddys response should not include 'real' access_token or refresh_token it will create fake ones. Useful for demo purposes that should not display the original values
+    ParameterValidatorResult obfuscateTokenResult = ParameterValidator
+        .getSingleValue(request.getParameterValues(Constants.OBFUSCATE_TOKEN.getKey()), "false");
+
 // ***************************************************************
 // ** Let's start with checking for a valid client_id
 // ***************************************************************
@@ -249,7 +253,7 @@ public class Authorize extends HttpServlet {
         clientCodeChallengeResult.getValue(), clientCodeChallendeMethodResult.getValue(),
         clientRedirectUri, clientNonceResult.getValue(), clientStateResult.getValue(), clientProviderResult.getValue(),
         clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
-        checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider(), signResponseAlg);
+        checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider(), signResponseAlg, obfuscateTokenResult.getBooleanValue());
 
     LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 

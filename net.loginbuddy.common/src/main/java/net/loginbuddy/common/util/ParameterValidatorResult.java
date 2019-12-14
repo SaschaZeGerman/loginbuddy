@@ -19,4 +19,8 @@ public class ParameterValidatorResult {
   public String getValue() {
     return value;
   }
+
+  public boolean getBooleanValue() {
+    return Boolean.parseBoolean(value);
+  }
 }

@@ -29,10 +29,12 @@ public class SessionContext extends LoginbuddyContext {
    * @param redirectUriValid
    * @param acceptDynamicProvider
    * @param signedResponseAlg
+   * @param obfuscateToken
    */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
-      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider, String signedResponseAlg) {
+      String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider,
+                             String signedResponseAlg, boolean obfuscateToken) {
 
     put(Constants.CLIENT_CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
@@ -53,6 +55,8 @@ public class SessionContext extends LoginbuddyContext {
 
     put(Constants.CLIENT_NONCE.getKey(), nonce == null ? UUID.randomUUID().toString() : nonce);
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
+
+    put(Constants.OBFUSCATE_TOKEN.getKey(), obfuscateToken);
   }
 
   /**
