@@ -74,7 +74,7 @@
         <label class="form-check-label" for="idResponseAsJwt"> receive final response as signed JWT</label>
         <br/>
         <input class="form-check-input" type="checkbox" value="" id="idObfuscateToken" onclick="return obfuscateProviderToken();">
-        <label class="form-check-label" for="idObfuscateToken"> check this to obfuscate the access_token, refresh_token</label>
+        <label class="form-check-label" for="idObfuscateToken"> obfuscate identity providers access_token and refresh_token</label>
     </form>
 </div>
 </body>
