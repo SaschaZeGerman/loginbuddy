@@ -102,7 +102,8 @@ public class Initialize extends HttpServlet {
                 "",
                 Boolean.parseBoolean(clientAcceptDynamicProvider.getValue().equals("true") ? clientAcceptDynamicProvider.getValue() : "false"),
                 signedResponseAlg.getValue(),
-                obfuscateTokenResult.getBooleanValue());
+                obfuscateTokenResult.getBooleanValue(),
+                "");
 
         // this will be the authorization_url or an error_url
         String authorizationUrl = HeadOfInitialize.processInitializeRequest(sessionCtx, providerResult, issuerResult, discoveryUrlResult);

@@ -30,11 +30,12 @@ public class SessionContext extends LoginbuddyContext {
    * @param acceptDynamicProvider
    * @param signedResponseAlg
    * @param obfuscateToken
+   * @param requestUriPar
    */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
       String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider,
-                             String signedResponseAlg, boolean obfuscateToken) {
+                             String signedResponseAlg, boolean obfuscateToken, String requestUriPar) {
 
     put(Constants.CLIENT_CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
@@ -57,6 +58,7 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
 
     put(Constants.OBFUSCATE_TOKEN.getKey(), obfuscateToken);
+    put(Constants.PAR_REQUEST_URI.getKey(), requestUriPar);
   }
 
   /**
@@ -66,5 +68,11 @@ public class SessionContext extends LoginbuddyContext {
   public void setSessionCallback(Constants responseType) {
         put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_CALLBACK.getKey());
         put(Constants.ACTION_USED_RESPONSE_TYPE.getKey(), responseType.getKey());
+  }
+
+  public String useParRequestUri() {
+    String par = getString(Constants.PAR_REQUEST_URI.getKey());
+    remove(Constants.PAR_REQUEST_URI.getKey());
+    return par;
   }
 }

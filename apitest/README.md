@@ -23,7 +23,7 @@ To run tests follow these steps:
 
 - launch the Loginbuddy test setup
   - ```$ cd ./docker```
-  - ```$ docker-compose -f docker-compose-test.yml```
+  - ```$ docker-compose -f docker-compose-test.yml up```
 - Launch SOAPUI
 - Import the project files found at *./soapui/project*
 - Double-click each project, select *TestSuites* and hit the green arrow
