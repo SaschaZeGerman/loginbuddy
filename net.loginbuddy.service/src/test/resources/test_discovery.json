@@ -11,5 +11,6 @@
   "service_documentation": "https://github.com/SaschaZeGerman/loginbuddy",
   "subject_types_supported": ["public","pairwise"],
   "code_challenge_methods_supported": ["S256"],
-  "userinfo_endpoint": "https://{your-domain}/userinfo"
+  "userinfo_endpoint": "https://{your-domain}/userinfo",
+  "pushed_authorization_request_endpoint": "https://local.loginbuddy.net/pauthorize"
 }

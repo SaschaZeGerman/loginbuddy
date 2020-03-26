@@ -55,6 +55,9 @@ public class DiscoveryConfig {
     @JsonProperty("signing_alg_values_supported")
     private String[] signingAlgValuesSupported;
 
+    @JsonProperty("pushed_authorization_request_endpoint")
+    private String pushedAuthorizationRequestEndpoint;
+
     public String getIssuer() {
         return issuer;
     }
@@ -157,6 +160,14 @@ public class DiscoveryConfig {
 
     public void setUserinfoEndpoint(String userinfoEndpoint) {
         this.userinfoEndpoint = userinfoEndpoint;
+    }
+
+    public String getPushedAuthorizationRequestEndpoint() {
+        return pushedAuthorizationRequestEndpoint;
+    }
+
+    public void setPushedAuthorizationRequestEndpoint(String pushedAuthorizationRequestEndpoint) {
+        this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
     }
 
     void setJsonString(String jsonString) {

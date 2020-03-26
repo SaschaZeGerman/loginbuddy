@@ -117,6 +117,10 @@ public class DiscoveryUtil {
         return getConfig().getUserinfoEndpoint();
     }
 
+    public String getPushedAuthorizationRequestEndpoint() {
+        return getConfig().getPushedAuthorizationRequestEndpoint();
+    }
+
     public DiscoveryConfig getOpenIdConfiguration() {
         return getConfig();
     }

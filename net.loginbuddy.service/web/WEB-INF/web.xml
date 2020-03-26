@@ -99,6 +99,10 @@
         <servlet-class>net.loginbuddy.service.server.Authorize</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>AuthorizePar</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.AuthorizePar</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Token</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Token</servlet-class>
     </servlet>
@@ -151,6 +155,10 @@
     <servlet-mapping>
         <servlet-name>Authorize</servlet-name>
         <url-pattern>/authorize</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizePar</servlet-name>
+        <url-pattern>/pauthorize</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Token</servlet-name>

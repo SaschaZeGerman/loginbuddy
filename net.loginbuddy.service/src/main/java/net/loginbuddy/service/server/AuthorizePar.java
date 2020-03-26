@@ -42,7 +42,7 @@ public class AuthorizePar extends AuthorizationHandler {
         }
 
         request.setAttribute("par", true);
-        super.doPost(request, response);
+        super.doGet(request, response);
     }
 
     @Override

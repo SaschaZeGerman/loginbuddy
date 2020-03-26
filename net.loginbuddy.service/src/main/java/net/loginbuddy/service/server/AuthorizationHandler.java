@@ -39,20 +39,14 @@ public abstract class AuthorizationHandler extends HttpServlet {
             String[] parRequestUriParts = requestUriResult.getValue().split(":");
             if(parRequestUriParts.length == 3) {
                 SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(parRequestUriParts[2]);
-                if (sessionCtx == null || !requestUriResult.getValue().equals(sessionCtx.getId())) {
-                    LOGGER.warning("The current session is invalid or it has expired! Given: '" + requestUriResult.getValue() + "'");
+                if (sessionCtx == null || !parRequestUriParts[2].equals(sessionCtx.getId())) {
+                    LOGGER.warning("The current session is invalid or it has expired! Given: '" + parRequestUriParts[2] + "'");
                     handleError(400, "The current session is invalid or it has expired!", response);
                     return;
                 }
                 // need to verify that the given requestUri is the one that belongs to this session
                 if(requestUriResult.getValue() != null && requestUriResult.getValue().equals(sessionCtx.useParRequestUri())) {
-                    // TODO: refactor this from the end of this method
-                    if ("".equals(sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()))) {
-                        request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId())).forward(request, response);
-                    } else {
-                        String hostname = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer();
-                        response.sendRedirect(String.format("%s/initialize?session=%s", hostname, (sessionCtx.getId())));
-                    }
+                    handleAuthorizationResponse(request, response, sessionCtx, sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()));
                     return;
                 } else {
                     handleError(400, "invalid request_uri", response);
@@ -268,7 +262,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
 // ***************************************************************
 
         String parRequestUri = null;
-        boolean isPar = Boolean.parseBoolean((String)request.getAttribute("par") );
+        boolean isPar = Boolean.valueOf( request.getAttribute("par") == null ? false : (Boolean)request.getAttribute("par"));
         SessionContext sessionCtx = new SessionContext();
         if(isPar) {
             parRequestUri = String.format("urn:loginbuddy:%s", sessionCtx.getId());
@@ -293,13 +287,17 @@ public abstract class AuthorizationHandler extends HttpServlet {
             obj.put("expires_in", LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
             response.getWriter().write(obj.toJSONString());
         } else {
-            if ("".equals(clientProviderResult.getValue())) {
-                request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
-                        .forward(request, response);
-            } else {
-                String hostname = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer();
-                response.sendRedirect(String.format("%s/initialize?session=%s", hostname, (sessionCtx.getId())));
-            }
+            handleAuthorizationResponse(request, response, sessionCtx, clientProviderResult.getValue());
+        }
+    }
+
+    private void handleAuthorizationResponse(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, Object value) throws ServletException, IOException {
+        if ("".equals(value)) {
+            request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
+                    .forward(request, response);
+        } else {
+            String hostname = LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer();
+            response.sendRedirect(String.format("%s/initialize?session=%s", hostname, (sessionCtx.getId())));
         }
     }
 
