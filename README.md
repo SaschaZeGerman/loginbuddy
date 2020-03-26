@@ -6,6 +6,8 @@ The latest docker image is always available at [docker hub](https://hub.docker.c
 
 A running version of the latest Loginbuddy may be here: [https://client.loginbuddy.net](https://client.loginbuddy.net). (If the URL is not working, I am trying to figure out something new)
 
+To get a better idea how it works I have published a few videos about Loginbuddy on youtube: [Loginbuddy playlist](https://www.youtube.com/playlist?list=PLcX_9uDXp_CR5vXTT8lxI94x7Esl8O78E)
+
 # Loginbuddy - Your authenticator
 
 This project implements an OpenID Connect client that can be used as proxy between an application (your application) and 
