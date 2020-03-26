@@ -47,6 +47,6 @@ Please check the project page to find out what is planned for the future and wha
 
 # License
 
-Copyright (c) 2019. All rights reserved.
+Copyright (c) 2020. All rights reserved.
 
 This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](/LICENSE) file for details.
