@@ -35,3 +35,4 @@ apitest/tempfiles/*
 !**/simple_overview_01.png
 !**/self-issued.png
 !**/server_loginbuddy.png
+!doc/intellij-logo.png
