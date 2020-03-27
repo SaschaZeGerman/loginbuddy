@@ -75,6 +75,7 @@ public class ProviderConfig {
   public ProviderConfig() {
     this.pkce = true;
     this.scope = Constants.OPENID_SCOPE.getKey();
+    this.responseType = Constants.CODE.getKey();
   }
 
   /**
