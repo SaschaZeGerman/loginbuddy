@@ -35,17 +35,24 @@ made for Docker on a MacBook and may need to be adjusted for windows users.
 - Open a browser
   - go to **https://democlient.loginbuddy.net** and follow the prompts
 
-The demo simulates a client, a social login provider (called 'fake') and uses Loginbuddy!
+The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy!
 
 The last page displays the type of message Loginbuddy would return to your application. (the window is very small. Copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
 
 Since the demo uses self-signed certificates, confirm the SSL security screens in your browser.
 
-# Current state
+## Add your own OpenID Provider within minutes
 
-To find out more details on how to configure and build Loginbuddy, please visit the [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki) pages!
+Visit the [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki) and check the **Quick Start** guide. It takes you directly to that topic!
 
-Please check the project page to find out what is planned for the future and what has been done so far: [projects](https://github.com/SaschaZeGerman/loginbuddy/projects).
+# More information
+
+The [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki) pages, the online version and the youtube videos should get you started. If that is not good enough,
+ please create an issue.
+
+# Acknowledgements
+
+The development of Loginbuddy is greatly supported by Jetbrains [IntelliJ IDEA ![alt - IntelliJ IDEA](doc/intellij-logo.png)](https://www.jetbrains.com/?from=loginbuddy)
 
 # License
 
