@@ -10,30 +10,31 @@ The high level design looks like this:
 
 ![alt overview](doc/simple_overview_01.png)
 
-
-
 ## Benefits
+
 * **Simple to use** solution for social login letting you focus on your most important aspects of your app value 
 * Adding new OpenID Provider **within minutes** through configuration instead of error prone coding 
 * Provides a **normalized and stable interface** for your app through protocol and parameter mapping behind the scene
-* The web application **only needs to connect to Loginbuddy locally** and not to external servers
-*** Flexible deployment options** with Loginbuddy running as standalone OpenID Connect proxy server or as a sidecar container. 
-* Support of **OpenID Connect Dynamic Registration** to provide users with option to use the OpenID Configuration URL of their own provider.
-* **Enhanced security** as Loginbuddy validates a request as strict as possible in order to reduce the number of invalid requests being sent to OpenID Providers. 
-* **Enforces HTTPS** and runs with a security manager to leverage best practices security polices with minimal privilage. 
+* The web application **only needs to connect to Loginbuddy** and not to external servers
+* **Flexible deployment options** with Loginbuddy running as standalone OpenID Connect proxy server or as a sidecar container
+* Support of **OpenID Connect Dynamic Registration** to provide users with option to use the OpenID Configuration URL of their own provider
+* **Enhanced security** as Loginbuddy validates a request as strict as possible in order to reduce the number of invalid requests being sent to OpenID Providers
+* **Enforces HTTPS** and runs with a security manager to leverage best practices security polices with minimal privilage
 * **No stored private keys** by leveraging on-the fly key-generation with Let's Enrypt 
 
 # Getting started 
-Loginbuddy offers multiple ways of getting started depending on your objective. You can run online demos or take pre-canned demo for a spin on local machine. You can clone the repo and start setting up Loginbuddy for your application or you can start contributing to Loginbuddy with your own use cases. 
+
+Loginbuddy offers multiple ways of getting started depending on your objective. You can run online demos or take pre-canned demos for a spin on your local machine. You can clone the repo and start setting up Loginbuddy for your application or you can start contributing to Loginbuddy with your own use cases. 
 
 ## Run the online demo 
+
 There is an online demo of Loginbuddy here: [https://client.loginbuddy.net](https://client.loginbuddy.net). 
 The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy. 
 
-Note: It can be offline at times if something breaks or new updates are being pushed and the SLA is best-effort. 
-
+**Note**: It can be offline at times if something breaks or new updates are being pushed. 
 
 ## Run the pre-canned demo setup locally 
+
 The sample setup consists of three components:
 - Loginbuddy
 - Sample web application
@@ -56,18 +57,16 @@ The last page displays the type of message Loginbuddy would return to your appli
 
 Since the demo uses self-signed certificates, confirm the SSL security screens in your browser, three times, once per component. 
 
-
-
 ## Run your own development setup 
 
-To develop with LoginBuddy you will need a couple of tools: 
+To develop with Loginbuddy you will need a couple of tools: 
 
 * java jdk8
 * maven
 * docker
 * docker-compose
 
-With these tools installed the steps to build :
+With these tools installed the steps to build:
 
 * Preparation
 	* Clone the Loginbuddy repo:  `git clone https://github.com/SaschaZeGerman/loginbuddy.git` 
@@ -94,10 +93,7 @@ With these tools installed the steps to build :
 
 That's it! In a real life scenario the *FAKE* image would be replaced by images of real providers!
 
-Tip: if you build docker images often, run this command from time to time to remove dangling images: `docker rmi $(docker images -f "dangling=true" -q)`
-
-
-
+**Tip**: if you build docker images often, run this command from time to time to remove dangling images: `docker rmi $(docker images -f "dangling=true" -q)`
 
 ## Add your own OpenID Provider within minutes
 
@@ -110,12 +106,10 @@ redirect_uri: https://local.loginbuddy.net/callback
 		* client_id
 		* client_secret
 2. Clone this project:  `git clone https://github.com/SaschaZeGerman/loginbuddy.git` 
-3.  Configure the Loginbuddy with credeentials from OpenID Provider 
-4.  Build the Loginbuddy containers 
+3. Configure the Loginbuddy with credentials from OpenID Provider 
+4. Build the Loginbuddy containers 
 
-For more details see [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Quick-Start)
-
-
+For more details see [WIKI - Quick Start](https://github.com/SaschaZeGerman/loginbuddy/wiki/Quick-Start)
 
 ## Digging deeper 
 
@@ -128,13 +122,11 @@ Loginbuddy requires four items to be configured:
 - **Permissions**: Endpoints you want Loginbuddy to connect to (this would be endpoints of supported providers) have to be registered (exception: dynamically registered providers)
 - **OpenID Connect Discovery**: Loginbuddy itself provides a `/.well-known/openid-configuration` endpoint and needs it for its own configuration
 
-See more details on how to configure the LoginBuddy on [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Configuration)
-
+See more details on how to configure the LoginBuddy on [WIKI - Configuration](https://github.com/SaschaZeGerman/loginbuddy/wiki/Configuration)
 
 ### Deployments 
 
-The small footprint allows for flexible deployment options. See pro and cons of different options on [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Deployment)
-
+The small footprint allows for flexible deployment options. See pros and cons of different options on [WIKI - Deployment](https://github.com/SaschaZeGerman/loginbuddy/wiki/Deployment)
 
 ### API and Protocols 
 
@@ -146,9 +138,7 @@ Loginbuddy is built to support OpenID Connect and OAuth 2.0 specifications:
 * OpenID Connect Dynamic Registration
 * OAuth 2.0 Pushed Authorization Requests
 
-For more details on the APIs supported see [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Protocols-and-APIs)
-
-
+For more details on the APIs supported see [WIKI - Protocols and APIs](https://github.com/SaschaZeGerman/loginbuddy/wiki/Protocols-and-APIs)
 
 ### Other Resources
 
