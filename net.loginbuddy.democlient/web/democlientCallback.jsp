@@ -72,7 +72,7 @@
         <li><strong>details_normalized: </strong>a normalized version of the userinfo response. Your application could use that and would not have to worry about potential differences</li>
     </ol>
     <hr/>
-    <p><a href="democlientApp.jsp"><strong>Try it again!</strong></a></p>
+    <p>Try again! <a href="democlientApp.jsp"><strong>Web Application!</strong></a>, <a href="spa.html"><strong>SPA!</strong></a></p>
 
 </div>
 </body>

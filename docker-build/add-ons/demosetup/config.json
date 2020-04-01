@@ -5,7 +5,7 @@
         "client_id": "clientIdForTestingPurposes",
         "client_type": "public",
         "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback",
+        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://democlient.loginbuddy.net/spa.html",
         "providers": [
           "server_loginbuddy"
         ],

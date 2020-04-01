@@ -56,10 +56,11 @@
 <div class="container" id="content">
 
     <h1>Welcome to Loginbuddy-Democlient!</h1>
-    <p>This is a demo client of the opensource project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.
-        This client simulates an application that a developer would build.</p>
+    <p>This is a demo client of the open source project <a href="https://github.com/SaschaZeGerman/loginbuddy" target="_blank"><strong>Loginbuddy</strong></a>.</p>
+    <p>This client simulates a <strong>Web Application</strong> that a developer may build.</p>
     <hr/>
-    <p>Selecting <strong>Submit</strong> takes you to a page where you can select a social provider. In the end you will see, which information about you is available and how it looks like.</p>
+    <p>Selecting <strong>Submit</strong> initiates an OAuth 2.0 authorization code flow. It takes you to Loginbuddy where you can select a social provider.</p>
+    <p>In the end you will see which information about you is available and how it looks like.</p>
     <form action="initialize" method="post" enctype="application/x-www-form-urlencoded">
         <div class="form-group">
             <label for="provider">Provider (type 'server_loginbuddy' to skip the next screen. Leave it blank the first time you try)</label>
