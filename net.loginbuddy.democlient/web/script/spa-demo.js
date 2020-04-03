@@ -8,8 +8,6 @@
  *
  * I hope this helps understanding the basics of oauth flows (in this case, the authorization_code flow).
  *
- * NOTE: PKCE is not used yet, still have to figure out how to generate a valid SHA-256 value of 'code_verifier'
- *
  * Loginbuddy, April 2020
  */
 
@@ -24,11 +22,12 @@
  * The state object is a JSON object having this structure:
  *
  * key = null or a UUID
- * value = {"state":"...", "nonce":"...", "next":"..."}
+ * value = {"state":"...", "nonce":"...", "next":"...", "code_verifier": "..."}
  *
  * - state = empty string or a UUID
  * - nonce = empty string or a UUID, created with the authorization request
  * - next = empty string or /token, the next endpoint to call
+ * - code_verifier = empty string or PKCE code_verifier
  */
 
 // always write the top part of the UI
@@ -85,7 +84,7 @@ else {
  *
  * Initiate the authorization_code flow. This is called with a click of a button by the user
  */
-function authorize() {
+async function authorize() {
 
     let provider = document.getElementById('provider').value;
     if (provider !== null && provider.length <= 24) {
@@ -97,6 +96,9 @@ function authorize() {
     let state = generate_random_string(32);
     let nonce = generate_random_string(32);  // this will appear within the id_token, issued by the provider. And in Loginbuddys response
 
+    let code_verifier = generate_random_string(32);
+    let code_challenge = await pkceChallengeFromVerifier(code_verifier);
+
     let config = new ClientConfiguration();
     let authorizeUrl = config.getAuthServer() + '/authorize?'
         + 'client_id=' + encodeURI(config.getClientId())
@@ -104,10 +106,12 @@ function authorize() {
         + '&scope=' + encodeURI(config.getScope())
         + '&response_type=' + encodeURI(config.getResponseType())
         + '&nonce=' + encodeURI(nonce)
+        + '&code_challenge=' + encodeURI(code_challenge)
+        + '&code_challenge_method=S256'
         + provider
         + '&state=' + encodeURI(state);
 
-    setSpaState(state, '{"state":"' + state + '", "nonce":"' + nonce + '", "next":"/token"}');
+    setSpaState(state, '{"state":"' + state + '", "nonce":"' + nonce + '", "next":"/token", "code_verifier":"' + code_verifier + '"}');
 
     window.location = authorizeUrl;
 }
@@ -163,6 +167,7 @@ function exchangeCode(one, two) {
             let reqMsg = 'client_id=' + encodeURI(config.getClientId())
                 + '&redirect_uri=' + encodeURI(config.getRedirectUri())
                 + '&grant_type=' + encodeURI(config.getGrantType())
+                + '&code_verifier=' + encodeURI(stateInStorage['code_verifier'])
                 + '&code=' + encodeURI(code);
 
             postMsg(config.getAuthServer() + next, nonce, reqMsg);
@@ -279,6 +284,37 @@ function printFirstPage() {
 }
 
 /**
+ * PKCE methods are inspired by  https://github.com/aaronpk/pkce-vanilla-js/blob/master/index.html
+ */
+
+//////////////////////////////////////////////////////////////////////
+// PKCE HELPER FUNCTIONS
+
+// Calculate the SHA256 hash of the input text.
+// Returns a promise that resolves to an ArrayBuffer
+function sha256(plain) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(plain);
+    return window.crypto.subtle.digest('SHA-256', data);
+}
+
+// Base64-urlencodes the input string
+function base64urlencode(str) {
+    // Convert the ArrayBuffer to string using Uint8 array to conver to what btoa accepts.
+    // btoa accepts chars only within ascii 0-255 and base64 encodes them.
+    // Then convert the base64 encoded to base64url encoded
+    //   (replace + with -, replace / with _, trim trailing =)
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Return the base64-urlencoded sha256 hash for the PKCE challenge
+async function pkceChallengeFromVerifier(v) {
+    let hashed = await sha256(v);
+    return base64urlencode(hashed);
+}
+
+/**
  *
  * The random string method was copied from here:
  * https://codehandbook.org/generate-random-string-characters-in-javascript/
@@ -294,141 +330,4 @@ function generate_random_string(string_length) {
         random_string += String.fromCharCode(random_ascii)
     }
     return random_string
-}
-
-/**
- *
- *  Base64 encode / decode
- *  http://www.webtoolkit.info/
- *
- **/
-var Base64 = {
-
-// private property
-    _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-
-// public method for encoding
-    encode: function (input) {
-        var output = "";
-        var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-        var i = 0;
-
-        input = Base64._utf8_encode(input);
-
-        while (i < input.length) {
-
-            chr1 = input.charCodeAt(i++);
-            chr2 = input.charCodeAt(i++);
-            chr3 = input.charCodeAt(i++);
-
-            enc1 = chr1 >> 2;
-            enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-            enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-            enc4 = chr3 & 63;
-
-            if (isNaN(chr2)) {
-                enc3 = enc4 = 64;
-            } else if (isNaN(chr3)) {
-                enc4 = 64;
-            }
-
-            output = output +
-                this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
-                this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
-
-        }
-
-        return output;
-    },
-
-// public method for decoding
-    decode: function (input) {
-        var output = "";
-        var chr1, chr2, chr3;
-        var enc1, enc2, enc3, enc4;
-        var i = 0;
-
-        input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-
-        while (i < input.length) {
-
-            enc1 = this._keyStr.indexOf(input.charAt(i++));
-            enc2 = this._keyStr.indexOf(input.charAt(i++));
-            enc3 = this._keyStr.indexOf(input.charAt(i++));
-            enc4 = this._keyStr.indexOf(input.charAt(i++));
-
-            chr1 = (enc1 << 2) | (enc2 >> 4);
-            chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-            chr3 = ((enc3 & 3) << 6) | enc4;
-
-            output = output + String.fromCharCode(chr1);
-
-            if (enc3 != 64) {
-                output = output + String.fromCharCode(chr2);
-            }
-            if (enc4 != 64) {
-                output = output + String.fromCharCode(chr3);
-            }
-
-        }
-
-        output = Base64._utf8_decode(output);
-
-        return output;
-
-    },
-
-// private method for UTF-8 encoding
-    _utf8_encode: function (string) {
-        string = string.replace(/\r\n/g, "\n");
-        var utftext = "";
-
-        for (var n = 0; n < string.length; n++) {
-
-            var c = string.charCodeAt(n);
-
-            if (c < 128) {
-                utftext += String.fromCharCode(c);
-            } else if ((c > 127) && (c < 2048)) {
-                utftext += String.fromCharCode((c >> 6) | 192);
-                utftext += String.fromCharCode((c & 63) | 128);
-            } else {
-                utftext += String.fromCharCode((c >> 12) | 224);
-                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                utftext += String.fromCharCode((c & 63) | 128);
-            }
-
-        }
-
-        return utftext;
-    },
-
-// private method for UTF-8 decoding
-    _utf8_decode: function (utftext) {
-        var string = "";
-        var i = 0;
-        var c = c1 = c2 = 0;
-
-        while (i < utftext.length) {
-
-            c = utftext.charCodeAt(i);
-
-            if (c < 128) {
-                string += String.fromCharCode(c);
-                i++;
-            } else if ((c > 191) && (c < 224)) {
-                c2 = utftext.charCodeAt(i + 1);
-                string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-                i += 2;
-            } else {
-                c2 = utftext.charCodeAt(i + 1);
-                c3 = utftext.charCodeAt(i + 2);
-                string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-                i += 3;
-            }
-
-        }
-
-        return string;
-    }
 }
