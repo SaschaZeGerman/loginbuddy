@@ -21,7 +21,7 @@ cp dev/.env_template .env
 export $(cat .env | grep HOSTNAME_LOGINBUDDY)
 export $(cat .env | grep HOSTNAME_LOGINBUDDY_DEMOCLIENT)
 export $(cat .env | grep HOSTNAME_LOGINBUDDY_DEMOSERVER)
-echo "\rSSL_PWD=${secret}" >> .env
+echo "\nSSL_PWD=${secret}" >> .env
 
 # Create private key
 #
