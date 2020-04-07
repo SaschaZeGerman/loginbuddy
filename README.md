@@ -4,7 +4,7 @@ This project is simplifying the job for developers who need social login for the
 
 Most social login providers use OpenID Connect and OAuth 2.0 to establish their OpenID Provider. However, these technologies offer multiple flows and scenarios and implementations often use different parameters. This makes it hard for developers who need to integrate to multiple OpenID Providers and provide a consistent user experience across their apps. 
 
-The Loginbuddy is a container based solution that  implements an OpenID Connect client that can be used as proxy between an application (your application) and  an OpenID Provider. Your application only needs to communicate with Loginbuddy. After finishing the authentication and authorization with providers, Loginbuddy provides single response through a stable, normalized, interface to the application.
+Loginbuddy is a container based solution that implements an OpenID Connect client that can be used as proxy between an application (your application) and an OpenID Provider. Your application only needs to communicate with Loginbuddy. After finishing the authentication and authorization flow with providers, Loginbuddy generates a single response through a stable, normalized, interface to the application.
 
 The high level design looks like this:
 
@@ -19,12 +19,12 @@ The high level design looks like this:
 * **Flexible deployment options** with Loginbuddy running as standalone OpenID Connect proxy server or as a sidecar container
 * Support of **OpenID Connect Dynamic Registration** to provide users with option to use the OpenID Configuration URL of their own provider
 * **Enhanced security** as Loginbuddy validates a request as strict as possible in order to reduce the number of invalid requests being sent to OpenID Providers
-* **Enforces HTTPS** and runs with a security manager to leverage best practices security polices with minimal privilage
-* **No stored private keys** by leveraging on-the fly key-generation with Let's Enrypt 
+* **Enforces HTTPS** and runs with a security manager to leverage best practices security polices with minimal privileges
+* **No stored private keys** by leveraging on-the fly key-generation
 
 # Getting started 
 
-Loginbuddy offers multiple ways of getting started depending on your objective. You can run online demos or take pre-canned demos for a spin on your local machine. You can clone the repo and start setting up Loginbuddy for your application or you can start contributing to Loginbuddy with your own use cases. 
+Loginbuddy offers multiple ways for getting started depending on your objective. You can run the online demo or take pre-canned demos for a spin on your local machine. You can clone the repo and start setting up Loginbuddy for your application or you can start contributing to Loginbuddy with your own use cases. 
 
 ## Run the online demo 
 
@@ -40,20 +40,20 @@ The sample setup consists of three components:
 - Sample web application
 - Sample OpenID Provider
 
-The instructions are made for Docker on a MacBook and may need to be adjusted for windows users.
+The instructions are made for Docker on a MacBook and may need to be adjusted for Windows users.
 
 - Preparation
   - modify your hosts file, add **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
   - for MacBooks this would be done at ```sudo /etc/hosts```
 - Run ```docker run -p 80:80 -p 443:443 -d saschazegerman/loginbuddy:latest-demo```
   - this will pull the latest demo image from docker hub
-  - this will use ports 80 (http), 443 (https)
+  - this will use ports 80 (http) and 443 (https)
 - Open a browser
   - go to **https://democlient.loginbuddy.net** and follow the prompts
 
 The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy!
 
-The last page displays the type of message Loginbuddy would return to your application. (the window is very small. Copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
+The last page displays the type of message Loginbuddy would return to your application. (if you have used the web app dem,o client, copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
 
 Since the demo uses self-signed certificates, confirm the SSL security screens in your browser, three times, once per component. 
 
@@ -65,6 +65,7 @@ To develop with Loginbuddy you will need a couple of tools:
 * maven
 * docker
 * docker-compose
+* make // this is for you convenience. If not available its commands can be run manually
 
 With these tools installed the steps to build:
 
@@ -72,18 +73,17 @@ With these tools installed the steps to build:
 	* Clone the Loginbuddy repo:  `git clone https://github.com/SaschaZeGerman/loginbuddy.git` 
 	* Modify your hosts file, add **127.0.0.1 democlient.loginbuddy.net demoserver.loginbuddy.net local.loginbuddy.net**
 	* For MacBooks this would be done at `sudo /etc/hosts`
-* Run `mvn clean install`
-	* This will compile all sources
-* Run `docker-compose -f docker-compose-demosetup-dev.yml build --no-cache`
-	* This will simply build the docker image (without a tag)
-* Run `docker-compose -f docker-compose-demosetup-dev.yml up`
-	* This will launch a container, configured for remote debugging and JMX support
-	* This will also create a private key within the container, on the fly, used for testing and development purposes. See 'docker-build/add-ons/demosetup/loginbuddy.sh' for details
-	* This will use ports 80 (http), 443 (https), 8000 (remote debugging), 9010 (jmx)
+* Run `make initialize_dev`
+    * This will create a private key for development purposes
+* Run `make build_all`
+	* This will compile all sources and build new versions of Loginbuddy images
+* Run `docker-compose -f docker-compose-demosetup.yml up`
+	* This will launch the demo setup including Loginbuddy, the demo client and demo openID Provider
+	* This will use ports 80 (http), 443 (https)
 * Open a browser
-	* Go to https://democlient.loginbuddy.net
-	* The screen displays some info, click *Demo Client* (**NOTE: you will have to confirm SSL violations 3 times since 3 systems are simulated!**)
-	* The next screen displays parameters that client would usually send. Simply click *Submit*
+	* Go to `https://democlient.loginbuddy.net`
+	* The screen displays some info, select one of the *Demo Client* options (**NOTE: through out the flow you will have to confirm SSL violations 3 times since 3 systems are simulated!**)
+	* The next screen displays a *Submit* button which initializes the authorization flow
 	* The following screen will display an image saying *FAKE* which is the demo provider. Just click it ...
 		* The demo takes you through the (simulated) typical authentication/ authorization flow
 	* On the *EMail* address screen type an email address
@@ -100,14 +100,13 @@ That's it! In a real life scenario the *FAKE* image would be replaced by images 
 It's really simple to add a new OpenID Provider to Loginbuddy. 
 
 1. Sign up to the OpenID Provider you want to add (For example Google).
-	* Register an OAuth application using these details:
-redirect_uri: https://local.loginbuddy.net/callback
+	* Register an OAuth application using these details: `redirect_uri = https://local.loginbuddy.net/callback`
 	* Note these values that (google) generates:
 		* client_id
 		* client_secret
 2. Clone this project:  `git clone https://github.com/SaschaZeGerman/loginbuddy.git` 
-3. Configure the Loginbuddy with credentials from OpenID Provider 
-4. Build the Loginbuddy containers 
+3. Configure Loginbuddy with client_id and client_secret of your OpenID Provider, grant Loginbuddy permissions to access the provider  
+4. Build the Loginbuddy containers - DONE!
 
 For more details see [WIKI - Quick Start](https://github.com/SaschaZeGerman/loginbuddy/wiki/Quick-Start)
 
@@ -120,9 +119,9 @@ Loginbuddy requires four items to be configured:
 - **OpenID Providers**: Providers that you want Loginbuddy to support
 - **Clients**: Clients of Loginbuddy (that would be your web application or single-page app (SPA))
 - **Permissions**: Endpoints you want Loginbuddy to connect to (this would be endpoints of supported providers) have to be registered (exception: dynamically registered providers)
-- **OpenID Connect Discovery**: Loginbuddy itself provides a `/.well-known/openid-configuration` endpoint and needs it for its own configuration
+- **OpenID Connect Discovery**: Loginbuddy itself provides a `/.well-known/openid-configuration` endpoint and needs it for its own configuration (note: to get started no modifications are required)
 
-See more details on how to configure the LoginBuddy on [WIKI - Configuration](https://github.com/SaschaZeGerman/loginbuddy/wiki/Configuration)
+See more details on how to configure Loginbuddy on [WIKI - Configuration](https://github.com/SaschaZeGerman/loginbuddy/wiki/Configuration)
 
 ### Deployments 
 
@@ -155,4 +154,3 @@ The development of Loginbuddy is greatly supported by Jetbrains [IntelliJ IDEA !
 Copyright (c) 2020. All rights reserved.
 
 This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](/LICENSE) file for details.
-

@@ -60,19 +60,19 @@ then
   # Create private key
   #
   keytool -genkey -alias loginbuddy -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storetype PKCS12 -keyalg RSA -storepass ${UUID} -keypass ${UUID} -validity 1 -keysize 2048 -dname "CN=${HOSTNAME_LOGINBUDDY}" -ext san=dns:${HOSTNAME_LOGINBUDDY},dns:${HOSTNAME_LOGINBUDDY_DEMOSERVER},dns:${HOSTNAME_LOGINBUDDY_DEMOCLIENT}
-
-  # Export the public certificates
-  #
-  keytool -export -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storepass ${UUID}
-
-  # Import the certs as trusted certificates
-  #
-  keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
 else
   printf "===============\n"
   printf "== Loginbuddy: Assuming a TLS keystore exists, none created! Do not forget to map your key as a volume to: '/usr/local/tomcat/ssl/loginbuddy.p12'!\n"
   printf "===============\n"
 fi
+
+# Export the public certificates
+#
+keytool -export -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -keystore /usr/local/tomcat/ssl/loginbuddy.p12 -storepass ${UUID}
+
+# Import the certs as trusted certificates
+#
+keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
 
 # Find the policy file that contains socket permissions and add them to the default catalina.policy file
 # default is located here: /usr/local/tomcat/conf/catalina.policy

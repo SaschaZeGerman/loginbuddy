@@ -11,3 +11,6 @@ docker_run_demo:
 
 docker_stop_demo:
 	docker-compose -f docker-compose-demosetup.yml down
+
+initialize_dev:
+	sh initialize-dev-environment.sh

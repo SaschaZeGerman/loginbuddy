@@ -30,6 +30,10 @@ apitest/soapui/testresults/*
 # temporary test files
 apitest/tempfiles/*
 
+# files for local development
+.env
+dev/loginbuddy.p12
+
 # images - logos
 **.png
 !**/simple_overview_01.png

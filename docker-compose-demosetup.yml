@@ -10,8 +10,13 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8000:8000"
     environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
       - "SUPPORT_OIDCDR=true"
+      - "SSL_PWD=${SSL_PWD}"
+    volumes:
+      - ./dev/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
 
   loginbuddy-oidcdr:
     image: saschazegerman/loginbuddy:latest-oidcdr

@@ -37,7 +37,7 @@ Both SOAPUI projects are using properties instead of hard coded values. These ca
 
 ```$ ./properties/template.properties```
 
-If you want to use your own properties, simply copy that file and load them info SOAPUI for each project. 
+If you want to use your own properties, simply copy that file and load them into SOAPUI for each project. 
 
 ## Known issues
 
