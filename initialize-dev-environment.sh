@@ -5,14 +5,14 @@
 
 # clean up a previously script execution
 #
-rm .env
-rm dev/loginbuddy.p12
+rm -f .env
+rm -f dev/loginbuddy.p12
 
 # create the private keys secret
 #
-secret=$(openssl rand -base64 32)
+secret=$(openssl rand -base64 32 | tr -d '=' | tr -d '/' | tr -d '+')
 
-# Copy .env_template to .env
+# Copy dev/.env_template to .env
 #
 cp dev/.env_template .env
 
