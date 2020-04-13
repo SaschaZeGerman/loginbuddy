@@ -8,21 +8,23 @@
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect,https://democlient.loginbuddy.net/spa.html",
         "providers": [
           "server_loginbuddy",
-          "self-issued"
+          "self-issued",
+          "server_dynamic"
         ],
         "accept_dynamic_provider": true
-      },{
+      }, {
         "client_id": "clientIdForTestingPurposesJwt",
         "client_type": "public",
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
         "providers": [
           "server_loginbuddy",
-          "self-issued"
+          "self-issued",
+          "server_dynamic"
         ],
         "accept_dynamic_provider": true,
         "signed_response_alg": "RS256"
-      },{
+      }, {
         "client_id": "clientIdForTestingPurposesConfidential",
         "client_secret": "myFancyAndSecureClientSecret",
         "client_type": "confidential",
@@ -30,11 +32,17 @@
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
         "providers": [
           "server_loginbuddy",
-          "not_for_public_client"
+          "not_for_public_client",
+          "server_dynamic"
         ]
       }
     ],
     "providers": [
+      {
+        "provider": "server_dynamic",
+        "issuer": "https://demoserver.loginbuddy.net",
+        "openid_configuration_uri": "https://demoserver.loginbuddy.net/.well-known/openid-configuration"
+      },
       {
         "provider": "server_loginbuddy",
         "issuer": "https://demoserver.loginbuddy.net",
@@ -71,7 +79,7 @@
         "scope": "openid profile email address phone",
         "response_type": "id_token",
         "redirect_uri": "https://local.loginbuddy.net/callback",
-        "mappings" : {
+        "mappings": {
           "provider": "$.details_provider.provider",
           "sub": "$.details_provider.id_token_payload.sub"
         }

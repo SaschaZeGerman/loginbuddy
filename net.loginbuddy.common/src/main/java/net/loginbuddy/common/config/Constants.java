@@ -20,6 +20,7 @@ public enum Constants {
     BEARER("Bearer "),
     CHECK_REDIRECT_URI("checkRedirectUri"),
     CLIENT_ID("client_id"),
+    CLIENT_SECRET_EXPIRES_AT("client_secret_expires_at"),
     CLIENT_SECRET("client_secret"),
     CLIENT_SECRET_BASIC("client_secret_basic"),
     CLIENT_SECRET_POST("client_secret_post"),
@@ -33,8 +34,10 @@ public enum Constants {
     ERROR("error"),
     ERROR_DESCRIPTION("error_description"),
     GRANT_TYPE("grant_type"),
+    GRANT_TYPES_SUPPORTED("grant_types_supported"),
     ID_TOKEN("id_token"),
     ID_TOKEN_HINT("id_token_hint"),
+    ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED("id_token_signing_alg_values_supported"),
     ISSUER("issuer"),
     ISSUER_SELFISSUED("https://self-issued.me"),
     ISSUER_HANDLER("issuer_handler"),
@@ -52,16 +55,20 @@ public enum Constants {
     PROMPT("prompt"),
     PKCE("pkce"),
     REDIRECT_URI("redirect_uri"),
+    REGISTRATION_ENDPOINT("registration_endpoint"),
     REQUEST_URI("request_uri"),
     REFRESH_TOKEN("refresh_token"),
     RESPONSE_TYPE("response_type"),
+    RESPONSE_TYPES_SUPPORTED("response_types_supported"),
     RESPONSE_MODE_QUERY("query"),
     RESPONSE_MODE_FORM_POST("form_post"),
     SESSION("session"),
     SCOPE("scope"),
     SCOPES_SUPPORTED("scopes_supported"),
     STATE("state"),
+    SUBJECT_TYPES_SUPPORTED("subject_types_supported"),
     TOKEN_ENDPOINT("token_endpoint"),
+    TOKEN_ENDPOINT_AUTH_METHOD("token_endpoint_auth_method"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
 
     // used with example provider
@@ -106,5 +113,10 @@ public enum Constants {
 
     public String getKey() {
         return this.key;
+    }
+
+    @Override
+    public String toString() {
+        return getKey();
     }
 }

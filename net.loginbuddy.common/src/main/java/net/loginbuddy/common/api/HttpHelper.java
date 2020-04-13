@@ -19,6 +19,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -145,7 +146,7 @@ public class HttpHelper {
         if (oidcConfig.getContentType().startsWith("application/json")) {
           JSONObject doc = (JSONObject) new JSONParser().parse(oidcConfig.getMsg());
           // TODO check for 'code' and 'authorization_code' as supported
-          String registerUrl = (String) doc.get("registration_endpoint");
+          String registerUrl = (String) doc.get(Constants.REGISTRATION_ENDPOINT.getKey());
           if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
             throw new IllegalArgumentException("The registration_url is invalid or not provided");
           } else {
@@ -153,7 +154,7 @@ public class HttpHelper {
             JSONArray redirectUrisArray = new JSONArray();
             redirectUrisArray.add(redirectUri);
             registrationMSg.put("redirect_uris", redirectUrisArray);
-            registrationMSg.put("token_endpoint_auth_method", "client_secret_post");
+            registrationMSg.put(Constants.TOKEN_ENDPOINT_AUTH_METHOD.getKey(), "client_secret_post");
             MsgResponse registrationResponse = postMessage(registrationMSg, registerUrl, "application/json");
             if (registrationResponse.getStatus() == 200) {
               if (registrationResponse.getContentType().startsWith("application/json")) {
@@ -279,5 +280,17 @@ public class HttpHelper {
     }
     config.put("response_type", "code");
     return config;
+  }
+
+  /**
+   * Read message body from POST or PUT request
+   */
+  public static String readMessageBody(BufferedReader reader) throws IOException {
+    StringBuilder sb = new StringBuilder();
+    String nextLine = "";
+    while((nextLine = reader.readLine()) != null) {
+      sb.append(nextLine);
+    }
+    return sb.toString();
   }
 }

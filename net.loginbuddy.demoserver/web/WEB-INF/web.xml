@@ -51,6 +51,14 @@
         <servlet-name>LoginbuddyJwks</servlet-name>
         <servlet-class>net.loginbuddy.demoserver.provider.LoginbuddyProviderJwks</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>LoginbuddyConfiguration</servlet-name>
+        <servlet-class>net.loginbuddy.demoserver.provider.LoginbuddyProviderConfiguration</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginbuddyRegistration</servlet-name>
+        <servlet-class>net.loginbuddy.demoserver.provider.LoginbuddyProviderRegister</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>LoginbuddyProviderAuthorize</servlet-name>
@@ -79,6 +87,14 @@
     <servlet-mapping>
         <servlet-name>LoginbuddyJwks</servlet-name>
         <url-pattern>/jwks</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginbuddyConfiguration</servlet-name>
+        <url-pattern>/.well-known/openid-configuration</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginbuddyRegistration</servlet-name>
+        <url-pattern>/register</url-pattern>
     </servlet-mapping>
 
     <resource-env-ref>

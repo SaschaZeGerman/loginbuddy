@@ -7,7 +7,8 @@
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback,https://democlient.loginbuddy.net/spa.html",
         "providers": [
-          "server_loginbuddy"
+          "server_loginbuddy",
+          "server_dynamic"
         ],
         "accept_dynamic_provider": true
       },{
@@ -16,13 +17,19 @@
         "client_uri": "https://democlient.loginbuddy.net",
         "redirect_uri": "https://democlient.loginbuddy.net/callback",
         "providers": [
-          "server_loginbuddy"
+          "server_loginbuddy",
+          "server_dynamic"
         ],
         "accept_dynamic_provider": true,
         "signed_response_alg": "RS256"
       }
     ],
     "providers": [
+      {
+        "provider": "server_dynamic",
+        "issuer": "https://demoserver.loginbuddy.net",
+        "openid_configuration_uri": "https://demoserver.loginbuddy.net/.well-known/openid-configuration"
+      },
       {
         "provider": "server_loginbuddy",
         "issuer": "https://demoserver.loginbuddy.net",

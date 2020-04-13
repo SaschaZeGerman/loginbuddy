@@ -54,9 +54,7 @@
             providers.append("<input type=\"hidden\" name=\"provider\" value=\"").append(nextProvider.getProvider()).append("\">");
             providers.append("<input type=\"hidden\" name=\"provider_addition\" value=\"\"/>");
             providers.append("<button type=\"submit\">");
-            providers.append("<img alt=\"").append(nextProvider.getProvider()).append("\" margin=\"0\" src=\"images/");
-            providers.append(nextProvider.getProvider());
-            providers.append(".png\"/></button></form></td>");
+            providers.append(String.format("<img alt=\"%s\" title=\"%s\" margin=\"0\" src=\"images/%s.png\"/></button></form></td>", nextProvider.getProvider(), nextProvider.getProvider(), nextProvider.getProvider()));
             if (count % 3 == 2) {
                 providers.append("</tr>");
                 count = 0;
@@ -126,9 +124,9 @@
     <p>In a real world scenario your application would host this page, making it look nicer. If not, Loginbuddy will generate this page, displaying all social providers that have been configured.</p>
     <p><strong>Note: </strong>This page only appears if no pre-selection of a provider has been made (via parameter 'provider').</p>
     <h3>Choose your provider</h3>
-    <p>The images below represent configured and supported providers one can choose from. <strong>fake</strong> is a
-        place holder and does not do anything else
-        than simulating a 'real' provider. Clicking it will result in an example response how it would look.</p>
+    <p>The images below represent configured and supported providers one can choose from.</p>
+    <p><strong>FAKE</strong> is simulating a 'real' provider. Clicking it will result in an example response how it would look.</p>
+    <p><strong>FAKE, DynamicRegistrationDemo</strong> is the same as FAKE but Loginbuddy registered itself at the provider using <strong>OpenID Dynamic Registration</strong>.</p>
 
     <%=
     createProvidersTable(request)
