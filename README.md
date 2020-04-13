@@ -93,7 +93,8 @@ With these tools installed the steps to build:
 
 That's it! In a real life scenario the *FAKE* image would be replaced by images of real providers!
 
-**Tip**: if you build docker images often, run this command from time to time to remove dangling images: `docker rmi $(docker images -f "dangling=true" -q)`
+**Tip**: if you build docker images often, run this command from time to time to remove dangling images:
+- `docker rmi $(docker images -f "dangling=true" -q)`
 
 ## Add your own OpenID Provider within minutes
 
