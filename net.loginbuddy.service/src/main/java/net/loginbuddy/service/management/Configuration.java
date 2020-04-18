@@ -24,38 +24,44 @@ public class Configuration extends HttpServlet {
         ParameterValidatorResult configType = ParameterValidator
                 .getSingleValue(request.getParameterValues("type"));
 
-        if(configType.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
-            if("client".equalsIgnoreCase(configType.getValue())) {
+        if (configType.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+            if ("client".equalsIgnoreCase(configType.getValue())) {
                 ParameterValidatorResult clientId = ParameterValidator
                         .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
-                if(clientId.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+                if (clientId.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
                     response.setStatus(200);
                     ClientConfig clientConfig = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId.getValue());
                     response.getWriter().println(clientConfig == null ? "{}" : new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(clientConfig));
                 } else {
-                    String error = HttpHelper.getErrorAsJson("invalid_request", String.format("required client_id was not given or was provided multiple times")).toJSONString();
+                    String error = HttpHelper.getErrorAsJson("invalid_request", "required client_id was not given or was provided multiple times").toJSONString();
                     response.setStatus(400);
                     response.getWriter().println(error);
                 }
             } else if ("provider".equalsIgnoreCase(configType.getValue())) {
                 ParameterValidatorResult provider = ParameterValidator
                         .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
-                if(provider.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+                if (provider.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
                     response.setStatus(200);
                     ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider.getValue());
                     response.getWriter().println(providerConfig == null ? "{}" : new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(providerConfig));
                 } else {
-                    String error = HttpHelper.getErrorAsJson("invalid_request", String.format("required provider was not given or was provided multiple times")).toJSONString();
+                    String error = HttpHelper.getErrorAsJson("invalid_request", "required provider was not given or was provided multiple times").toJSONString();
                     response.setStatus(400);
                     response.getWriter().println(error);
                 }
+            } else if ("properties".equalsIgnoreCase(configType.getValue())) {
+                response.setStatus(200);
+                response.getWriter().println(LoginbuddyConfig.getInstance().getPropertiesUtil().getPropertiesAsJsonString());
+            } else if ("discovery".equalsIgnoreCase(configType.getValue())) {
+                response.setStatus(200);
+                response.getWriter().println(LoginbuddyConfig.getInstance().getDiscoveryUtil().getOpenIdConfigurationAsJsonString());
             } else {
                 String error = HttpHelper.getErrorAsJson("invalid_request", String.format("the given configuration type is not supported. Given: '%s'", configType.getValue())).toJSONString();
                 response.setStatus(400);
                 response.getWriter().println(error);
             }
         } else {
-            String error = HttpHelper.getErrorAsJson("invalid_request", String.format("configuration type was not given or was provided multiple times")).toJSONString();
+            String error = HttpHelper.getErrorAsJson("invalid_request", "configuration type was not given or was provided multiple times").toJSONString();
             response.setStatus(400);
             response.getWriter().println(error);
         }

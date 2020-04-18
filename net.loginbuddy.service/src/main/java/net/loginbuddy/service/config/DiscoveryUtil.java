@@ -125,7 +125,7 @@ public class DiscoveryUtil {
         return getConfig();
     }
 
-    public String getOpenIdConfigurationAsString() {
+    public String getOpenIdConfigurationAsJsonString() {
         return getConfig().toString();
     }
 
