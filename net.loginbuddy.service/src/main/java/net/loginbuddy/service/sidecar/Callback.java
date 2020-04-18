@@ -143,7 +143,7 @@ public class Callback  extends CallbackParent {
           LOGGER.warning("Retrieving userinfo failed!");
         }
       }
-      eb.setNormalized(Normalizer.normalizeDetails(providerConfig.getMappingsAsJson(), eb.getEbAsJson(), access_token));
+      eb.setNormalized(Normalizer.normalizeDetails(providerConfig.mappingsAsJson(), eb.getEbAsJson(), access_token));
 // ***************************************************************
 // ** Return the details to the client
 // ***************************************************************

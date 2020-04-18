@@ -216,7 +216,7 @@ public class ProviderConfig {
     this.responseMode = responseMode;
   }
 
-  public JSONObject getMappingsAsJson() {
+  public JSONObject mappingsAsJson() {
     try {
       return (JSONObject) new JSONParser().parse(getMappings());
     } catch (ParseException e) {

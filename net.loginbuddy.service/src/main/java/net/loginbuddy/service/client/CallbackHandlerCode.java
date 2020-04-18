@@ -123,7 +123,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                 LOGGER.warning("Retrieving userinfo failed!");
             }
         }
-        eb.setNormalized(Normalizer.normalizeDetails(providerConfig.getMappingsAsJson(), eb.getEbAsJson(), access_token));
+        eb.setNormalized(Normalizer.normalizeDetails(providerConfig.mappingsAsJson(), eb.getEbAsJson(), access_token));
 
 
 // ***************************************************************

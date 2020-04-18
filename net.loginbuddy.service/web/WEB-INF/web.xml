@@ -146,6 +146,13 @@
         <servlet-name>Userinfo</servlet-name>
         <servlet-class>net.loginbuddy.service.resources.Userinfo</servlet-class>
     </servlet>
+
+    <!-- Loginbuddy configuration management -->
+    <servlet>
+        <servlet-name>Configuration</servlet-name>
+        <servlet-class>net.loginbuddy.service.management.Configuration</servlet-class>
+    </servlet>
+
     <!-- sidecar resources -->
     <servlet>
         <servlet-name>SidecarInitialize</servlet-name>
@@ -207,6 +214,12 @@
     <servlet-mapping>
         <servlet-name>Userinfo</servlet-name>
         <url-pattern>/userinfo</url-pattern>
+    </servlet-mapping>
+
+    <!-- Loginbuddy configuration management -->
+    <servlet-mapping>
+        <servlet-name>Configuration</servlet-name>
+        <url-pattern>/management/configuration</url-pattern>
     </servlet-mapping>
 
     <!-- sidecar resources -->
