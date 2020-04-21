@@ -5,7 +5,7 @@ import org.json.simple.JSONObject;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-public class PropertiesUtil {
+public class PropertiesUtil implements Bootstrap {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(PropertiesUtil.class));
 
@@ -15,6 +15,7 @@ public class PropertiesUtil {
         this.props = props;
     }
 
+    @Override
     public boolean isConfigured() {
         return props != null;
     }

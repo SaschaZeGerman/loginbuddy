@@ -16,7 +16,7 @@ import net.loginbuddy.common.cache.LoginbuddyCache;
 import java.io.File;
 import java.util.logging.Logger;
 
-public class DiscoveryUtil {
+public class DiscoveryUtil implements Bootstrap {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryUtil.class));
 
@@ -137,6 +137,7 @@ public class DiscoveryUtil {
         return HttpHelper.stringArrayToString(getScopesSupported());
     }
 
+    @Override
     public boolean isConfigured() {
         return getConfig() != null;
     }

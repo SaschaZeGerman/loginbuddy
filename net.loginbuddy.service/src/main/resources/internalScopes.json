@@ -1,0 +1,34 @@
+{
+  "management": {
+    "configuration": {
+      "read": {
+        "clients": {
+          "description": "Read client configurations"
+        },
+        "providers": {
+          "description": "Read OpenID Provider configurations"
+        },
+        "discovery": {
+          "description": "Read the OpenID Discovery configuration"
+        },
+        "properties": {
+          "description": "Read system properties"
+        }
+      },
+      "write": {
+        "clients": {
+          "description": "Write client configurations"
+        },
+        "providers": {
+          "description": "Write OpenID Provider configurations"
+        },
+        "discovery": {
+          "description": "Write the OpenID Discovery configuration"
+        },
+        "properties": {
+          "description": "Write system properties"
+        }
+      }
+    }
+  }
+}

@@ -219,7 +219,7 @@
     <!-- Loginbuddy configuration management -->
     <servlet-mapping>
         <servlet-name>Configuration</servlet-name>
-        <url-pattern>/management/configuration</url-pattern>
+        <url-pattern>/management/configuration/*</url-pattern>
     </servlet-mapping>
 
     <!-- sidecar resources -->

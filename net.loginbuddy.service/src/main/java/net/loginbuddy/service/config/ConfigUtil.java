@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class ConfigUtil extends Overlord {
+public class ConfigUtil extends Overlord implements Bootstrap {
 
   private Logger LOGGER = Logger.getLogger(String.valueOf(ConfigUtil.class));
 
@@ -142,6 +142,7 @@ public class ConfigUtil extends Overlord {
     }
   }
 
+  @Override
   public boolean isConfigured() {
     return getConfig() != null;
   }

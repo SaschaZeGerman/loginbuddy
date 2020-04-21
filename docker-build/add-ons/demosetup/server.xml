@@ -80,6 +80,10 @@
             type="net.loginbuddy.service.config.DiscoveryUtil"
             factory="org.apache.naming.factory.BeanFactory"
             path="webapps/ROOT/WEB-INF/classes/discovery.json"/>
+          <Resource name="bean/InternalScopeUtilFactory" auth="Container"
+            type="net.loginbuddy.service.config.InternalScopeUtil"
+            factory="org.apache.naming.factory.BeanFactory"
+            path="webapps/ROOT/WEB-INF/classes/internalScopes.json"/>
           <Resource name="bean/CacheFactory" auth="Container"
             type="net.loginbuddy.common.cache.DefaultCache"
             factory="org.apache.naming.factory.BeanFactory"/>
