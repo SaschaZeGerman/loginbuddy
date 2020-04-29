@@ -147,6 +147,13 @@
         <servlet-class>net.loginbuddy.service.resources.Userinfo</servlet-class>
     </servlet>
 
+    <!-- Loginbuddy token management -->
+    <servlet>
+        <servlet-name>TokenManagement</servlet-name>
+        <servlet-class>net.loginbuddy.service.management.Token</servlet-class>
+    </servlet>
+
+
     <!-- Loginbuddy configuration management -->
     <servlet>
         <servlet-name>Configuration</servlet-name>
@@ -214,6 +221,12 @@
     <servlet-mapping>
         <servlet-name>Userinfo</servlet-name>
         <url-pattern>/userinfo</url-pattern>
+    </servlet-mapping>
+
+    <!-- Loginbuddy token management -->
+    <servlet-mapping>
+        <servlet-name>TokenManagement</servlet-name>
+        <url-pattern>/management/token</url-pattern>
     </servlet-mapping>
 
     <!-- Loginbuddy configuration management -->

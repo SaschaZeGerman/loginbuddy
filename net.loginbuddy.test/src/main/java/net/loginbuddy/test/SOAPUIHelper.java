@@ -39,6 +39,6 @@ public class SOAPUIHelper extends HttpServlet {
     }
 
     private String getJwt(String issuer, String audience, String subject, String nonce) throws Exception {
-        return new Jwt().createSignedJwtRs256(issuer, audience, 1, subject, nonce, true).getCompactSerialization();
+        return Jwt.DEFAULT.createSignedJwtRs256(issuer, audience, 1, subject, nonce, true).getCompactSerialization();
     }
 }

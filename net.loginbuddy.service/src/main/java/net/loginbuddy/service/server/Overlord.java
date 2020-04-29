@@ -17,7 +17,7 @@ public class Overlord extends HttpServlet {
   public void init() throws ServletException {
     super.init();
     // initialize the configuration. If this fails, there is no reason to continue
-    if (LoginbuddyConfig.getInstance().isConfigured()) {
+    if (LoginbuddyConfig.CONFIGS.isConfigured()) {
       LOGGER.info("Loginbuddy successfully started!");
     } else {
       LOGGER.severe("Stopping loginbuddy since its configuration could not be loaded! Fix that first!");

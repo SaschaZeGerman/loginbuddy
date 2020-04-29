@@ -71,7 +71,7 @@ public class ConfigUtil extends Overlord implements Bootstrap {
           for (ProviderConfig next : providers) {
             if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
               next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
-                      LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()).toJSONString(),
+                      LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getRedirectUri()).toJSONString(),
                       ProviderConfig.class));
             }
           }

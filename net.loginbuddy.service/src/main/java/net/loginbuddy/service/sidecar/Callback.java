@@ -62,7 +62,7 @@ public class Callback  extends CallbackParent {
       String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
       ExchangeBean eb = new ExchangeBean();
-      eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
+      eb.setIss(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer());
       eb.setIat(new Date().getTime() / 1000);
       eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
       eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
@@ -73,7 +73,7 @@ public class Callback  extends CallbackParent {
 
       ProviderConfig providerConfig = null;
       if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-        providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
+        providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(provider);
       } else {
         providerConfig = new ProviderConfig();
         // dynamically registered providers are in a separate container and not available here. Get details out of the session
@@ -100,7 +100,7 @@ public class Callback  extends CallbackParent {
             try {
               id_token = tokenResponseObject.get("id_token").toString();
               MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-              idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
+              idTokenPayload = Jwt.DEFAULT.validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
                   providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
               eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {

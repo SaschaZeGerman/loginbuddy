@@ -30,7 +30,7 @@ public class Authorize extends AuthorizationHandler {
 
     @Override
     protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader) {
-        ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientIdResult.getValue());
+        ClientConfig cc = LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId(clientIdResult.getValue());
         if (cc == null) {
             return new ClientAuthenticator.ClientCredentialsResult("An invalid client_id was provided!", false, null);
         }

@@ -30,7 +30,7 @@
         SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(sessionId);
         List<ProviderConfig> providerConfigs = null;
         try {
-            providerConfigs = LoginbuddyConfig.getInstance().getConfigUtil()
+            providerConfigs = LoginbuddyConfig.CONFIGS.getConfigUtil()
                     .getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
         } catch (Exception e) {
           e.printStackTrace();

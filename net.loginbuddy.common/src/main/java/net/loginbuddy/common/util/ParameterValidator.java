@@ -28,7 +28,7 @@ public class ParameterValidator {
   }
 
   public static ParameterValidatorResult getSingleValue(String[] input, String defaultValue) {
-    if(input == null) {
+    if(input == null || input.length == 0) {
       return new ParameterValidatorResult(RESULT.NONE, defaultValue);
     } else if(input.length != 1) {
       return new ParameterValidatorResult(RESULT.MULTIPLE, defaultValue);

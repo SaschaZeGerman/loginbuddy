@@ -33,6 +33,7 @@ public enum Constants {
     DISCOVERY_URL("discovery_url"),
     ERROR("error"),
     ERROR_DESCRIPTION("error_description"),
+    EXPIRES_IN("expires_in"),
     GRANT_TYPE("grant_type"),
     GRANT_TYPES_SUPPORTED("grant_types_supported"),
     ID_TOKEN("id_token"),
@@ -69,6 +70,7 @@ public enum Constants {
     SUBJECT_TYPES_SUPPORTED("subject_types_supported"),
     TOKEN_ENDPOINT("token_endpoint"),
     TOKEN_ENDPOINT_AUTH_METHOD("token_endpoint_auth_method"),
+    TOKEN_TYPE("token_type"),
     USERINFO_ENDPOINT("userinfo_endpoint"),
 
     // used with example provider

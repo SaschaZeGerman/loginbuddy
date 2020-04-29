@@ -12,43 +12,46 @@ import org.jose4j.jwk.*;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
+import org.jose4j.lang.JoseException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
  * Implementation details taken from {@link "https://bitbucket.org/b_c/jose4j/wiki/Home"}
  */
-public class Jwt {
+public enum Jwt {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Jwt.class));
+    DEFAULT;
 
-    private static JsonWebKeySet JWKS;
+    private final Logger LOGGER = Logger.getLogger(String.valueOf(Jwt.class));
 
-    public Jwt() {
+    JsonWebKeySet jwks;
+
+    Jwt() {
+        jwks = new JsonWebKeySet();
+        // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
+        RsaJsonWebKey rsaJsonWebKey = null;
+        try {
+            rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
+        } catch (JoseException e) {
+            // should never happen
+            System.out.println(e.getMessage());
+        }
+        rsaJsonWebKey.setKeyId(UUID.randomUUID().toString());
+        rsaJsonWebKey.setUse("sig");
+        jwks.addJsonWebKey(rsaJsonWebKey);
     }
 
-    public static JsonWebKeySet getJwksForSigning() {
-        try {
-            if (JWKS == null) {
-                JWKS = new JsonWebKeySet();
-                // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
-                RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
-                rsaJsonWebKey.setKeyId(UUID.randomUUID().toString());
-                rsaJsonWebKey.setUse("sig");
-                JWKS.addJsonWebKey(rsaJsonWebKey);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            // TODO fix error  handling
-            LOGGER.warning(String.format("no JWKS could be created ... not sure what to do yet: %s", e.getMessage()));
-        }
-        return JWKS;
+    public JsonWebKeySet getJwksForSigning() {
+        return jwks;
     }
 
     /**
@@ -81,22 +84,30 @@ public class Jwt {
      * @see <a href="https://bitbucket.org/b_c/jose4j/wiki/JWT%20Examples#markdown-header-producing-and-consuming-a-signed-jwt"></a>
      */
     public JsonWebSignature createSignedJwtRs256(String issuer, String audience, int lifetimeInMinutes, String subject, String nonce, boolean includePublicKey) throws Exception {
+        Map<String, String> claims = new HashMap<>();
+        claims.put("nonce", nonce);
+        return createSignedJwtRs256(issuer, audience, lifetimeInMinutes, subject, includePublicKey, claims);
+    }
+
+    public JsonWebSignature createSignedJwtRs256(String issuer, String audience, int lifetimeInMinutes, String subject, boolean includePublicKey, Map<String, String> additionalClaims) throws Exception {
 
         // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
-        RsaJsonWebKey rsaJsonWebKey = (RsaJsonWebKey) getJwksForSigning().getJsonWebKeys().get(0);
+        RsaJsonWebKey rsaJsonWebKey = (RsaJsonWebKey) DEFAULT.getJwksForSigning().getJsonWebKeys().get(0);
 
         // Create the Claims, which will be the content of the JWT
         JwtClaims claims = new JwtClaims();
         claims.setIssuer(issuer);  // who creates the token and signs it
         claims.setSubject(subject); // the subject/principal is whom the token is about
         claims.setAudience(audience); // to whom the token is intended to be sent
-        claims.setClaim("nonce", nonce);
         claims.setExpirationTimeMinutesInTheFuture(lifetimeInMinutes); // time when the token will expire (10 minutes from now)
         claims.setIssuedAtToNow();  // when the token was issued/created (now)
         claims.setGeneratedJwtId(); // a unique identifier for the token
         claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
         if (includePublicKey) {
             claims.setClaim("sub_jwk", new JSONParser().parse(rsaJsonWebKey.toJson()));
+        }
+        for (String claim : additionalClaims.keySet()) {
+            claims.setClaim(claim, additionalClaims.get(claim));
         }
         JsonWebSignature jws = new JsonWebSignature();
         jws.setPayload(claims.toJson());
@@ -114,9 +125,9 @@ public class Jwt {
      * @see <a href="https://bitbucket.org/b_c/jose4j/wiki/JWT%20Examples#markdown-header-producing-and-consuming-a-signed-jwt"></a>
      */
     public JsonWebSignature createSignedJwt(String payload, String alg) {
-        // TODO algorithm is currenty ignore
+        // TODO algorithm is currently ignored
         // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
-        RsaJsonWebKey rsaJsonWebKey = (RsaJsonWebKey) getJwksForSigning().getJsonWebKeys().get(0);
+        RsaJsonWebKey rsaJsonWebKey = (RsaJsonWebKey) DEFAULT.getJwksForSigning().getJsonWebKeys().get(0);
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setPayload(payload);

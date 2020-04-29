@@ -73,7 +73,7 @@ public class Token extends HttpServlet {
         if (!grantTypeResult.getResult().equals(RESULT.VALID)) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
             return;
-        } else if (Stream.of((LoginbuddyConfig.getInstance().getDiscoveryUtil().getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
+        } else if (Stream.of((LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
             return;
         }

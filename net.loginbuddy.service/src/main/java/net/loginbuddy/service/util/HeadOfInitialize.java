@@ -59,7 +59,7 @@ public class HeadOfInitialize {
           selectedProvider = providerConfig.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
         }
       } else {
-        providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(selectedProvider);
+        providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(selectedProvider);
       }
 
       if (providerConfig == null) {
@@ -190,7 +190,7 @@ public class HeadOfInitialize {
 
     sessionCtx.setSessionCallback(Constants.valueOf(providerConfig.getResponseType().toUpperCase()));
 
-    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.provider.flow"));
+    LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
     return authorizeUrl.toString();
   }
@@ -222,12 +222,12 @@ public class HeadOfInitialize {
     formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuer));
     formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrl));
     // TODO take loginbuddys redirect_uri for dynamic registrations from a config file
-    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),LoginbuddyConfig.getInstance().getDiscoveryUtil().getRedirectUri()));
+    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(),LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getRedirectUri()));
 
     MsgResponse msg = HttpHelper
         .postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");
     if (msg.getStatus() == 200) {
-      ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
+      ProviderConfig providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
       sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_OIDCDR.getKey());
       sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providerConfig.getClientId()); // we have to store this in the session to make it available later
       sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providerConfig.getClientSecret()); // we have to store this in the session to make it available later

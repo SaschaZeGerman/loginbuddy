@@ -65,17 +65,17 @@ public class CallbackSelfissued extends CallbackParent {
             String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
             ExchangeBean eb = new ExchangeBean();
-            eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
+            eb.setIss(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer());
             eb.setIat(new Date().getTime() / 1000);
             eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
             eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             eb.setProvider(provider);
 
-            ProviderConfig providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
+            ProviderConfig providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(provider);
 
             JSONObject idTokenPayload = null;
             try {
-                idTokenPayload = new Jwt().validateJwt(idTokenResult.getValue(), null, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                idTokenPayload = Jwt.DEFAULT.validateJwt(idTokenResult.getValue(), null, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                 eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {
                 LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
@@ -87,7 +87,7 @@ public class CallbackSelfissued extends CallbackParent {
 // ***************************************************************
 
             JSONObject tokenResponseObject = new JSONObject();
-            tokenResponseObject.put("id_token", idTokenResult.getValue());
+            tokenResponseObject.put(Constants.ID_TOKEN.getKey(), idTokenResult.getValue());
             eb.setTokenResponse(tokenResponseObject);
 
 // ***************************************************************

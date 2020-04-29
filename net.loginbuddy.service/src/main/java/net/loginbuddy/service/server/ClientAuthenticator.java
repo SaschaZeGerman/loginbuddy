@@ -37,10 +37,10 @@ public class ClientAuthenticator {
 // ** Lookup the client registration details to verify given credentials
 // ***************************************************************
 
-        ClientConfig cc = LoginbuddyConfig.getInstance().getConfigUtil().getClientConfigByClientId(clientId);
+        ClientConfig cc = LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId(clientId);
         if (cc != null) {
             // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
-            String supportedMethods = LoginbuddyConfig.getInstance().getDiscoveryUtil().getTokenEndpointAuthMethodsSupportedAsString();
+            String supportedMethods = LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getTokenEndpointAuthMethodsSupportedAsString();
             if (supportedMethods == null) {
                 supportedMethods = usedAuthMethod;
             }
@@ -102,7 +102,7 @@ public class ClientAuthenticator {
         return new ClientRedirecUriResult(null, checkRedirectUri, clientRedirectUriValid, clientRedirectUri);
     }
 
-    static class ClientCredentialsResult {
+    public static class ClientCredentialsResult {
 
         private String errorMsg;
         private boolean isValid;
@@ -131,7 +131,7 @@ public class ClientAuthenticator {
         }
     }
 
-    static class ClientRedirecUriResult {
+    public static class ClientRedirecUriResult {
 
         private String givenRedirectUri;
         private String validatedRedirectUri;

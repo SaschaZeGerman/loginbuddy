@@ -115,7 +115,7 @@ public class Callback extends HttpServlet {
                 String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
                 ExchangeBean eb = new ExchangeBean();
-                eb.setIss(LoginbuddyConfig.getInstance().getDiscoveryUtil().getIssuer());
+                eb.setIss(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer());
                 eb.setIat(new Date().getTime() / 1000);
                 eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
                 eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
@@ -145,12 +145,12 @@ public class Callback extends HttpServlet {
 
         String authorizationCode = UUID.randomUUID().toString();
         if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
-            sessionCtx.put("eb", new Jwt().createSignedJwt(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization());
+            sessionCtx.put("eb", Jwt.DEFAULT.createSignedJwt(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization());
         } else {
             sessionCtx.put("eb", eb.toString());
         }
         sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-        LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
+        LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
 
         response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), Constants.CODE.getKey(), authorizationCode));
     }

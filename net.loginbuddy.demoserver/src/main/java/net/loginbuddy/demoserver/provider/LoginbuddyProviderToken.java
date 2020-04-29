@@ -111,7 +111,7 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         String refresh_token = "FAKE_".concat(UUID.randomUUID().toString());
         String id_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJoZWxsbyI6ImxvZ2luYnVkZHkifQ.z9r5WoqNycrF7YLOZTZpMarwUeTopU1UZzRAU7beFTc"; // completely fake
         try {
-            id_token = new Jwt().createSignedJwtRs256(
+            id_token = Jwt.DEFAULT.createSignedJwtRs256(
                     "https://" + System.getenv("HOSTNAME_LOGINBUDDY_DEMOSERVER"),
                     sessionValues.getString("client_id"),
                     5,

@@ -35,14 +35,14 @@ public class TestJwt {
      * }
      * <p>
      * JWT-Payload: {
-     * 	"sub": "1234567890",
-     * 	"name": "John Doe",
-     * 	"admin": true,
-     * 	"iat": 1516239022,
-     * 	"exp": 1516239022,
-     * 	"iss": "https://example.com/server",
-     * 	"aud": "example_audience",
-     * 	"nonce": "nonceInIdToken"
+     * "sub": "1234567890",
+     * "name": "John Doe",
+     * "admin": true,
+     * "iat": 1516239022,
+     * "exp": 1516239022,
+     * "iss": "https://example.com/server",
+     * "aud": "example_audience",
+     * "nonce": "nonceInIdToken"
      * }
      */
     private String expiredJwt = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImtpZDAxIn0.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNTE2MjM5MDIyLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3NlcnZlciIsImF1ZCI6ImV4YW1wbGVfYXVkaWVuY2UiLCJub25jZSI6Im5vbmNlSW5JZFRva2VuIn0.lJyGNhII9hun0bxlCJs7jrK7-9rENKHFSf-O9uV59UPlngY-DMiIx0IrFMySrZaSnUFSN5MijjzYjRsNm5wag_Rrk2ygscl9CYlbGVJUZMgteQBtElN2G0nNw69leyHTUSInsyXv8jpqPxwrZRTv3iPHsafDVThDJQJve3qnTeg";
@@ -63,31 +63,31 @@ public class TestJwt {
     @Test
     public void testNull() {
         try {
-            new Jwt().validateJwt(null, null, null, null, null);
+            Jwt.DEFAULT.validateJwt(null, null, null, null, null);
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("All parameters are required!", e.getMessage());
         }
         try {
-            new Jwt().validateJwt("", null, "", "", "");
+            Jwt.DEFAULT.validateJwt("", null, "", "", "");
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("The given JWT could not be parsed or decoded!", e.getMessage());
         }
         try {
-            new Jwt().validateJwt("", "", null, "", "");
+            Jwt.DEFAULT.validateJwt("", "", null, "", "");
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("All parameters are required!", e.getMessage());
         }
         try {
-            new Jwt().validateJwt("", "", "", null, "");
+            Jwt.DEFAULT.validateJwt("", "", "", null, "");
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("All parameters are required!", e.getMessage());
         }
         try {
-            new Jwt().validateJwt("", "", "", "", null);
+            Jwt.DEFAULT.validateJwt("", "", "", "", null);
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("All parameters are required!", e.getMessage());
@@ -97,7 +97,7 @@ public class TestJwt {
     @Test
     public void testIss() {
         try {
-            new Jwt().validateJwt(expiredJwt, "", "unknown_iss", aud, nonce);
+            Jwt.DEFAULT.validateJwt(expiredJwt, "", "unknown_iss", aud, nonce);
         } catch (Exception e) {
             assertEquals("The given JWT could not be parsed or decoded!", e.getMessage());
         }
@@ -108,7 +108,7 @@ public class TestJwt {
     @Test
     public void testWrongAud() {
         try {
-            new Jwt().validateJwt(expiredJwt, "", iss, "unknown_aud", nonce);
+            Jwt.DEFAULT.validateJwt(expiredJwt, "", iss, "unknown_aud", nonce);
         } catch (Exception e) {
             assertEquals("The given JWT could not be parsed or decoded!", e.getMessage());
         }
@@ -118,7 +118,7 @@ public class TestJwt {
     @Test
     public void testExpired() {
         try {
-            new Jwt().validateJwt(expiredJwt, "", iss, aud, nonce);
+            Jwt.DEFAULT.validateJwt(expiredJwt, "", iss, aud, nonce);
         } catch (Exception e) {
             assertEquals("The given JWT could not be parsed or decoded!", e.getMessage());
         }
@@ -128,7 +128,7 @@ public class TestJwt {
     @Test
     public void testNonce() {
         try {
-            new Jwt().validateJwt(expiredJwt, "", iss, aud, "expectedNonce");
+            Jwt.DEFAULT.validateJwt(expiredJwt, "", iss, aud, "expectedNonce");
         } catch (Exception e) {
             assertEquals("The given JWT could not be parsed or decoded!", e.getMessage());
         }
@@ -139,7 +139,7 @@ public class TestJwt {
     public void testCreateJwtHS256() {
         String content = "{\"iss\":\"https://example.com/server\",\"aud\":\"example_audience\",\"exp\":1916239022}";
 
-        JsonWebSignature jws = new Jwt().createSignedJwtHs256("passwordwithmorethanjustafewcharacters".getBytes(), content);
+        JsonWebSignature jws = Jwt.DEFAULT.createSignedJwtHs256("passwordwithmorethanjustafewcharacters".getBytes(), content);
         try {
             assertEquals("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3NlcnZlciIsImF1ZCI6ImV4YW1wbGVfYXVkaWVuY2UiLCJleHAiOjE5MTYyMzkwMjJ9.4pXNojVorXiNSlfw9qm1q5q0M2uJJiiTGeeYcky7FWU",
                     jws.getCompactSerialization()
@@ -152,9 +152,9 @@ public class TestJwt {
     @Test
     public void testCreateJwtRs256() {
         try {
-            JsonWebSignature jws = new Jwt().createSignedJwtRs256("https://self-issued.me", "https://local.loginbuddy.net/callback", 5, "01234567890", "randomnonce", true);
+            JsonWebSignature jws = Jwt.DEFAULT.createSignedJwtRs256("https://self-issued.me", "https://local.loginbuddy.net/callback", 5, "01234567890", "randomnonce", true);
             assertEquals("RS256", jws.getAlgorithm().getAlgorithmIdentifier());
-            assertNotNull( ((JSONObject)new JSONParser().parse( jws.getUnverifiedPayload())).get("sub_jwk") );
+            assertNotNull(((JSONObject) new JSONParser().parse(jws.getUnverifiedPayload())).get("sub_jwk"));
         } catch (Exception e) {
             e.printStackTrace();
         }

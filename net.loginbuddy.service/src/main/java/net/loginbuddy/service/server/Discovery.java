@@ -14,7 +14,7 @@ public class Discovery extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setStatus(200);
     response.setContentType("application/json");
-    response.getWriter().write(LoginbuddyConfig.getInstance().getDiscoveryUtil().getOpenIdConfigurationAsJsonString());
+    response.getWriter().write(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getOpenIdConfigurationAsJsonString());
   }
 
   @Override

@@ -35,6 +35,13 @@
           "not_for_public_client",
           "server_dynamic"
         ]
+      }, {
+        "client_id": "clientIdForTestingLoginbuddyManagement",
+        "client_secret": "myFancyAndSecureClientSecret",
+        "client_type": "confidential",
+        "client_uri": "https://local.loginbuddy.net",
+        "redirect_uri": "https://local.loginbuddy.net/management/callback,https://local.soapui.com/redirect",
+        "providers": ["loginbuddy"]
       }
     ],
     "providers": [

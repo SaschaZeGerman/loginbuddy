@@ -28,10 +28,10 @@ public abstract class ConfigurationMaster extends HttpServlet {
         Matcher matcher = pEntities.matcher(request.getPathInfo() == null ? "unknown" : request.getPathInfo());
         if (matcher.find()) {
             try {
-                doGet(request, response, ConfigurationTypes.valueOf(matcher.group(1).toUpperCase()), matcher.group(2));
+                doGetProtected(request, response, ConfigurationTypes.valueOf(matcher.group(1).toUpperCase()), matcher.group(2), new AccessToken(request, AccessToken.TokenLocation.HEADER));
             } catch (IllegalArgumentException e) {
                 response.setStatus(400);
-                response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "the configuration type is not supported").toJSONString());
+                response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", e.getMessage()).toJSONString());
             }
         } else {
             response.setStatus(400);
@@ -39,5 +39,5 @@ public abstract class ConfigurationMaster extends HttpServlet {
         }
     }
 
-    protected abstract void doGet(HttpServletRequest request, HttpServletResponse response, ConfigurationTypes configType, String selector) throws ServletException, IOException;
+    protected abstract void doGetProtected(HttpServletRequest request, HttpServletResponse response, ConfigurationTypes configType, String selector, AccessToken token) throws ServletException, IOException;
 }

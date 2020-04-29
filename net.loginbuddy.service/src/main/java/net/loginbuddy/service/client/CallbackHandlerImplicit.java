@@ -34,7 +34,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
 
         ProviderConfig providerConfig = null;
         if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-            providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
+            providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(provider);
         } else {
             providerConfig = new ProviderConfig();
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
@@ -50,7 +50,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             if(sessionCtx.getString(Constants.JWKS_URI.getKey()) != null) {
                 jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey())).getMsg();
             }
-            idTokenPayload = new Jwt().validateJwt(idTokenResult.getValue(), jwks, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+            idTokenPayload = Jwt.DEFAULT.validateJwt(idTokenResult.getValue(), jwks, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             eb.setIdTokenPayload(idTokenPayload);
         } catch (Exception e) {
             LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));

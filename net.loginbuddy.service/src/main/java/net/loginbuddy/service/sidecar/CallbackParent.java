@@ -86,7 +86,7 @@ public class CallbackParent extends HttpServlet {
     }
 
     protected String getSignedResponse(String payload, String alg) throws JoseException {
-        return new Jwt().createSignedJwt(payload, alg).getCompactSerialization();
+        return Jwt.DEFAULT.createSignedJwt(payload, alg).getCompactSerialization();
     }
 
 }

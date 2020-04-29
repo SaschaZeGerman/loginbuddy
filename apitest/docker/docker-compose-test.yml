@@ -51,4 +51,7 @@ services:
     image: saschazegerman/loginbuddy:latest-test
     restart: always
     ports:
+      - "8003:8003"
       - "8999:8080"
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8003,suspend=n,server=y -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9011 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"

@@ -15,7 +15,7 @@ public class Jwks extends Overlord {
         resp.setContentType("application/json");
         try {
             resp.setStatus(200);
-            resp.getWriter().println(Jwt.getJwksForSigning().toJson());
+            resp.getWriter().println(Jwt.DEFAULT.getJwksForSigning().toJson());
         } catch (Exception e) {
             resp.setStatus(500);
             resp.getWriter().print(HttpHelper.getErrorAsJson("server_error", "jwks could not be created"));

@@ -16,31 +16,22 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-public class LoginbuddyConfig implements Bootstrap {
+public enum LoginbuddyConfig implements Bootstrap {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyConfig.class));
+    CONFIGS;
+
+    private final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyConfig.class));
 
     private ConfigUtil configUtil;
     private DiscoveryUtil discoveryUtil;
     private PropertiesUtil propertiesUtil;
-    private InternalScopeUtil internalScopeUtil;
 
-    private static LoginbuddyConfig ourInstance;
-
-    public static LoginbuddyConfig getInstance() {
-        if (ourInstance == null) {
-            ourInstance = new LoginbuddyConfig();
-        }
-        return ourInstance;
-    }
-
-    private LoginbuddyConfig() {
+    LoginbuddyConfig() {
         try {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             configUtil = (ConfigUtil) envCtx.lookup("bean/ConfigUtilFactory");
             discoveryUtil = (DiscoveryUtil) envCtx.lookup("bean/DiscoveryUtilFactory");
-            internalScopeUtil = (InternalScopeUtil) envCtx.lookup("bean/InternalScopeUtilFactory");
 
             Properties props = new Properties();
             props.load(new FileReader(new File(Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("loginbuddy.properties")).toURI())));
@@ -58,7 +49,7 @@ public class LoginbuddyConfig implements Bootstrap {
      */
     @Override
     public boolean isConfigured() {
-        return configUtil != null && discoveryUtil != null && ((Bootstrap)configUtil).isConfigured() && ((Bootstrap)discoveryUtil).isConfigured() && ((Bootstrap)propertiesUtil).isConfigured() && ((Bootstrap)internalScopeUtil).isConfigured();
+        return configUtil != null && discoveryUtil != null && ((Bootstrap)configUtil).isConfigured() && ((Bootstrap)discoveryUtil).isConfigured() && ((Bootstrap)propertiesUtil).isConfigured();
     }
 
     public ConfigUtil getConfigUtil() {
@@ -71,9 +62,5 @@ public class LoginbuddyConfig implements Bootstrap {
 
     public PropertiesUtil getPropertiesUtil() {
         return propertiesUtil;
-    }
-
-    public InternalScopeUtil getInternalScopeUtil() {
-        return internalScopeUtil;
     }
 }

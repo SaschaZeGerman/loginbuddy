@@ -44,7 +44,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
 
         ProviderConfig providerConfig = null;
         if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-            providerConfig = LoginbuddyConfig.getInstance().getConfigUtil().getProviderConfigByProvider(provider);
+            providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(provider);
         } else {
             providerConfig = new ProviderConfig();
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
@@ -80,7 +80,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                     try {
                         id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
                         MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-                        idTokenPayload = new Jwt().validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
+                        idTokenPayload = Jwt.DEFAULT.validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
                                 providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                         eb.setIdTokenPayload(idTokenPayload);
                     } catch (Exception e) {
@@ -135,9 +135,9 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
         jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
         String[] hint = access_token.split(".");
         if (hint.length == 3) {
-            LoginbuddyCache.getInstance().put(hint[2], jo, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.getInstance().put(hint[2], jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
         } else {
-            LoginbuddyCache.getInstance().put(access_token, jo, LoginbuddyConfig.getInstance().getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.getInstance().put(access_token, jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
         }
 
         returnAuthorizationCode(response, sessionCtx, eb);
