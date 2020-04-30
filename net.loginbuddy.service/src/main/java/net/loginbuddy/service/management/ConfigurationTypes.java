@@ -2,15 +2,21 @@ package net.loginbuddy.service.management;
 
 public enum ConfigurationTypes {
 
-    CLIENTS("clients"),
-    PROVIDERS("providers"),
-    DISCOVERY("discovery"),
-    PROPERTIES("properties");
+    CLIENTS("clients", LoginbuddyScope.ReadClients, LoginbuddyScope.WriteClients),
+    PROVIDERS("providers", LoginbuddyScope.ReadProviders, LoginbuddyScope.WriteProviders),
+    DISCOVERY("discovery", LoginbuddyScope.ReadDiscovery),
+    PROPERTIES("properties", LoginbuddyScope.ReadProperties);
 
     private String type;
+    private LoginbuddyScope[] scope;
 
-    ConfigurationTypes(String type) {
+    ConfigurationTypes(String type, LoginbuddyScope... scope) {
         this.type = type;
+        this.scope = scope;
+    }
+
+    public LoginbuddyScope[] getScope() {
+        return scope;
     }
 
     @Override

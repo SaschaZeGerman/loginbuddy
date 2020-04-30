@@ -3,6 +3,10 @@ package net.loginbuddy.service.management;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.util.Sanetizer;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
 public enum LoginbuddyScope {
 
     Management("management", "access to any management APIs"),
@@ -34,6 +38,27 @@ public enum LoginbuddyScope {
             }
         }
         return false;
+    }
+
+    public Set<String> grantScope(String requestedScope) {
+        if(requestedScope == null || requestedScope.trim().length() == 0) {
+            return new HashSet<>();
+        }
+        Set<String> scopes = new TreeSet<>();
+        for(String next : requestedScope.split("[;, ]")){
+            if(next.startsWith(scope)) {
+                scopes.add(next);
+            }
+        }
+        return scopes;
+    }
+
+    public String grantScopeAsString(String requestedScope) {
+        StringBuilder sb = new StringBuilder();
+        for(String scope : grantScope(requestedScope)) {
+            sb.append(scope).append(" ");
+        }
+        return sb.toString().trim();
     }
 
     public String getScope() {

@@ -62,7 +62,7 @@ public class HttpHelper {
   public static MsgResponse getAPI(String accessToken, String targetApi) throws IOException {
     HttpGet req = new HttpGet(targetApi);
     HttpClient httpClient = HttpClientBuilder.create().build();
-    req.setHeader(Constants.AUTHORIZATION.getKey(), Constants.BEARER.getKey() + accessToken);
+    req.setHeader(Constants.AUTHORIZATION.getKey(), String.format("%s %s", Constants.BEARER.getKey(), accessToken));
 
     HttpResponse response = httpClient.execute(req);
     return new MsgResponse(getHeader(response, "content-type", "application/json"),

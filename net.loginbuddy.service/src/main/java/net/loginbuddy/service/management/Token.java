@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Token extends HttpServlet {
 
@@ -34,11 +35,11 @@ public class Token extends HttpServlet {
         ParameterValidatorResult grantTypeResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.GRANT_TYPE.getKey()));
         ParameterValidatorResult resourceResult = ParameterValidator
-                .getSingleValue(request.getParameterValues("resource"));
+                .getSingleValue(request.getParameterValues(Constants.RESOURCE.getKey()));
         ParameterValidatorResult nonceResult = ParameterValidator
-                .getSingleValue(request.getParameterValues("nonce"));
+                .getSingleValue(request.getParameterValues(Constants.NONCE.getKey()));
         ParameterValidatorResult scopeResult = ParameterValidator
-                .getSingleValue(request.getParameterValues("scope"));
+                .getSingleValue(request.getParameterValues(Constants.SCOPE.getKey()));
 
         ClientAuthenticator.ClientCredentialsResult clientCredentialsResult = ClientAuthenticator.validateClientCredentials(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()));
         if(clientCredentialsResult.getErrorMsg() != null) {
@@ -48,14 +49,22 @@ public class Token extends HttpServlet {
 
         if(clientCredentialsResult.getClientConfig().getClientProviders().length == 1 &&
                 clientCredentialsResult.getClientConfig().getClientProviders()[0].equalsIgnoreCase("loginbuddy") &&
-                clientCredentialsResult.getClientConfig().getClientType().equalsIgnoreCase("confidential") &&
-                "client_credentials".equalsIgnoreCase(grantTypeResult.getValue())) {
+                clientCredentialsResult.getClientConfig().getClientType().equalsIgnoreCase(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey()) &&
+                Constants.GRANT_TYPE_CLIENT_CREDENTIALS.getKey().equalsIgnoreCase(grantTypeResult.getValue())) {
 
             Map<String, String> claims = new HashMap<>();
-            claims.put("nonce", nonceResult.getValue());
-            // TODO validate scope and resource
-            claims.put("resource", resourceResult.getValue());
-            claims.put("scope", scopeResult.getValue());
+            claims.put(Constants.NONCE.getKey(), nonceResult.getValue());
+
+            // TODO validate resource
+            claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
+
+            // grant any or all 'configuration' scopes
+            String grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
+            if(grantedScopes.length() == 0) {
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "no requested scope was not granted").toJSONString());
+            }
+            claims.put(Constants.SCOPE.getKey(), scopeResult.getValue());
+
             try {
                 String token = Jwt.DEFAULT.createSignedJwtRs256(
                         LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer(),

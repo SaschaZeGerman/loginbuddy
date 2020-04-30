@@ -1,5 +1,6 @@
 package net.loginbuddy.service.management;
 
+import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
@@ -27,10 +28,10 @@ public class AccessToken {
 
     public AccessToken(HttpServletRequest requestWithtoken, TokenLocation location) {
         if (TokenLocation.HEADER.equals(location)) {
-            ParameterValidatorResult tokenResult = ParameterValidator.getSingleValue(requestWithtoken.getHeaders("Authorization"));
+            ParameterValidatorResult tokenResult = ParameterValidator.getSingleValue(requestWithtoken.getHeaders(Constants.AUTHORIZATION.getKey()));
             if (tokenResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
                 String[] headerValue = tokenResult.getValue().split(" ");
-                if (headerValue.length == 2 && headerValue[0].equalsIgnoreCase("bearer")) {
+                if (headerValue.length == 2 && headerValue[0].equalsIgnoreCase(Constants.BEARER.getKey())) {
                     try {
                         claims = validateAccessToken(
                                 headerValue[1],
@@ -53,11 +54,11 @@ public class AccessToken {
     }
 
     public String getScope() {
-        return claims.getClaimValueAsString("scope");
+        return claims.getClaimValueAsString(Constants.SCOPE.getKey());
     }
 
     public String getResource() {
-        return claims.getClaimValueAsString("resource");
+        return claims.getClaimValueAsString(Constants.RESOURCE.getKey());
     }
 
     private JwtClaims validateAccessToken(String jwtAccessToken, String audience, String issuer, JsonWebKeySet jwks) throws InvalidJwtException {
