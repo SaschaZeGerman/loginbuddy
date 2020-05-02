@@ -39,5 +39,16 @@ public abstract class ConfigurationMaster extends HttpServlet {
         }
     }
 
+    /**
+     * This method retrieves requested configuration.
+     *
+     * @param request the request
+     * @param response the response
+     * @param configType the requested configuration type. Values must match a valid of ConfigurationTypes
+     * @param selector depending on the type this value must identify a specific configuration. For example, client configurations this would require a valid client_id
+     * @param token the access_token for this request/ It must have been granted for required scope and resource
+     * @throws ServletException
+     * @throws IOException
+     */
     protected abstract void doGetProtected(HttpServletRequest request, HttpServletResponse response, ConfigurationTypes configType, String selector, AccessToken token) throws ServletException, IOException;
 }

@@ -53,15 +53,17 @@ public class Token extends HttpServlet {
                 Constants.GRANT_TYPE_CLIENT_CREDENTIALS.getKey().equalsIgnoreCase(grantTypeResult.getValue())) {
 
             Map<String, String> claims = new HashMap<>();
-            claims.put(Constants.NONCE.getKey(), nonceResult.getValue());
+            if(nonceResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+                claims.put(Constants.NONCE.getKey(), nonceResult.getValue());
+            }
 
             // TODO validate resource
             claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
 
-            // grant any or all 'configuration' scopes
+            // grant any or even all 'configuration' scopes
             String grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
             if(grantedScopes.length() == 0) {
-                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "no requested scope was not granted").toJSONString());
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "no requested scope was granted").toJSONString());
             }
             claims.put(Constants.SCOPE.getKey(), scopeResult.getValue());
 
