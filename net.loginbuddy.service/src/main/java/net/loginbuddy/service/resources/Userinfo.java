@@ -19,8 +19,8 @@ public class Userinfo extends Overlord {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-    ParameterValidatorResult accessToken = ParameterValidator.getSingleValue(request.getParameterValues("access_token"));
-    String authorizationHeader = request.getHeader("Authorization");
+    ParameterValidatorResult accessToken = ParameterValidator.getSingleValue(request.getParameterValues(Constants.ACCESS_TOKEN.getKey()));
+    String authorizationHeader = request.getHeader(Constants.AUTHORIZATION.getKey());
 
     String hint;
     String[] token = HttpHelper.extractAccessToken(accessToken, authorizationHeader).split(".");
@@ -31,7 +31,7 @@ public class Userinfo extends Overlord {
     }
 
     MsgResponse msg;
-    JSONObject apis = (JSONObject)LoginbuddyCache.getInstance().get(hint);
+    JSONObject apis = (JSONObject)LoginbuddyCache.CACHE.get(hint);
     if(apis == null) {
       msg = new MsgResponse();
       msg.setStatus(400);

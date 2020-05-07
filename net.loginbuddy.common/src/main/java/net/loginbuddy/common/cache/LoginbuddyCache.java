@@ -14,35 +14,25 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-public class LoginbuddyCache {
+public enum LoginbuddyCache {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyCache.class));
+    CACHE;
+
+    private final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyCache.class));
 
     private Cache cache;
 
-    private static LoginbuddyCache instance;
-    private static Map<Long, String> listOfExpirations;
+    private Map<Long, String> listOfExpirations;
 
-
-    public static LoginbuddyCache getInstance() {
-        if(listOfExpirations == null) {
-            listOfExpirations = new ConcurrentHashMap<>();
-        }
-        if(instance == null) {
-            instance = new LoginbuddyCache();
-        }
-        return instance;
-    }
-
-    private LoginbuddyCache() {
+    LoginbuddyCache() {
         try {
+            listOfExpirations = new ConcurrentHashMap<>();
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             cache = (DefaultCache) envCtx.lookup("bean/CacheFactory");
             removeExpiredEntries();
         } catch (Exception e) {
-            LOGGER.severe("LoginbuddyCache could not be loaded!");
-            e.printStackTrace();
+            LOGGER.severe(String.format("LoginbuddyCache could not be loaded! Error: '%s'", e.getMessage()));
         }
     }
 

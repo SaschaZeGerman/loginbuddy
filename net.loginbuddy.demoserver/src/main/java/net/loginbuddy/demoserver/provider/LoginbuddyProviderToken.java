@@ -53,7 +53,7 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         String code = request.getParameter(Constants.CODE.getKey());
 
         // find the session and fail if it is unknown
-        SessionContext sessionValues = (SessionContext)LoginbuddyCache.getInstance().remove(code);
+        SessionContext sessionValues = (SessionContext)LoginbuddyCache.CACHE.remove(code);
         if (sessionValues == null) {
             LOGGER.warning("The given authorization_code is invalid or has expired or none was given");
             resp.put("error_description", "The given authorization_code is invalid or has expired or none was given");
@@ -126,8 +126,8 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         long accessTokenLifetime = sessionValues.sessionToken(access_token, refresh_token, id_token);
 
         // associate with access_token. We'll ignore the refresh_token for now. Remember, this is all 'fake'
-        LoginbuddyCache.getInstance().put(access_token, sessionValues, accessTokenLifetime);
-        LoginbuddyCache.getInstance().put(refresh_token, sessionValues, sessionValues.get("refresh_token_expiration", Long.class));
+        LoginbuddyCache.CACHE.put(access_token, sessionValues, accessTokenLifetime);
+        LoginbuddyCache.CACHE.put(refresh_token, sessionValues, sessionValues.get("refresh_token_expiration", Long.class));
 
         // create the response message that includes the issued token
         JSONObject fakeProviderResponse = new JSONObject();

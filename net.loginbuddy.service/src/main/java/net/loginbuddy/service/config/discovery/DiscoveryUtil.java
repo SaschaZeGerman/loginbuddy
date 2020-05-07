@@ -6,17 +6,20 @@
  *
  */
 
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.discovery;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
+import net.loginbuddy.service.config.Bootstrap;
 
 import java.io.File;
 import java.util.logging.Logger;
 
-public class DiscoveryUtil implements Bootstrap {
+public enum DiscoveryUtil implements Bootstrap {
+
+    CONFIG;
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryUtil.class));
 
@@ -24,7 +27,14 @@ public class DiscoveryUtil implements Bootstrap {
 
     private String path;
 
-    public DiscoveryUtil() {
+    private DiscoveryConfig config;
+
+    DiscoveryUtil() {
+        try {
+            config = MAPPER.readValue(new File(this.path).getAbsoluteFile(), DiscoveryConfig.class);
+        } catch (Exception e) {
+            LOGGER.severe("discovery.json file could not be loaded or it is invalid JSON! Existing!");
+        }
     }
 
     public String getPath() {
@@ -37,12 +47,10 @@ public class DiscoveryUtil implements Bootstrap {
 
     private DiscoveryConfig getConfig() {
         try {
-            DiscoveryConfig config = (DiscoveryConfig) LoginbuddyCache.getInstance().get("DiscoveryConfig");
+            config = (DiscoveryConfig) LoginbuddyCache.CACHE.get("DiscoveryConfig");
             if (config == null) {
-                JsonNode node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
-                config = MAPPER.readValue(node.toString(), DiscoveryConfig.class);
-                config.setJsonString(node.toString());
-                LoginbuddyCache.getInstance().put("DiscoveryConfig", config);
+                config = MAPPER.readValue(new File(this.path).getAbsoluteFile(), DiscoveryConfig.class);
+                LoginbuddyCache.CACHE.put("DiscoveryConfig", config);
             }
             return config;
         } catch (Exception e) {
@@ -70,7 +78,7 @@ public class DiscoveryUtil implements Bootstrap {
     }
 
     public String[] getResponseTypesSupported() {
-        return getConfig().getResponseTypeSupported();
+        return getConfig().getResponseTypesSupported();
     }
 
     public String[] getGrantTypesSupported() {
@@ -126,7 +134,12 @@ public class DiscoveryUtil implements Bootstrap {
     }
 
     public String getOpenIdConfigurationAsJsonString() {
-        return getConfig().toString();
+        try {
+            return MAPPER.writeValueAsString(config);
+        } catch (JsonProcessingException e) {
+            LOGGER.warning("Discovery document could not be produced as string");
+        }
+        return "{\"error\":\"invalid_confiuration\", \"error_description\":\"the servcer configuration is faulty. Please contact teh administrator!\"}";
     }
 
     public String getTokenEndpointAuthMethodsSupportedAsString() {

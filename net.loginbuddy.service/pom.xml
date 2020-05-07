@@ -22,6 +22,12 @@
       <artifactId>common</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.github.h-thurow</groupId>
+      <artifactId>tomcat8jndi</artifactId>
+      <version>1.0.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

@@ -75,7 +75,7 @@ public class Initialize extends HttpServlet {
 
     sessionValues.put(Constants.CLIENT_PROVIDER.getKey(), clientProvider);
 
-    LoginbuddyCache.getInstance().put(clientState, sessionValues);
+    LoginbuddyCache.CACHE.put(clientState, sessionValues);
 
     // Create authorization URL
 

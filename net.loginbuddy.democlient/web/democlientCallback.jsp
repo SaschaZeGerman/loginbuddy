@@ -45,7 +45,7 @@
     <%
         String result = "{\"error\":\"session_expired\"}";
 
-        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.getInstance()
+        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.CACHE
                 .remove(request.getParameter("state"));
 
         String error = request.getParameter(Constants.ERROR.getKey());

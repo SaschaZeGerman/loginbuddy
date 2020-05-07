@@ -19,7 +19,7 @@ public class DefaultCache implements Cache {
     private Map<String, Object> cache;
 
     /**
-     * Do not change this constructor to private of package view. It gets instantiated via the containers bean factory which will fail!
+     * Do not change this constructor to private or package view. It gets instantiated via the containers bean factory which will fail!
      */
     public DefaultCache() {
         cache = new HashMap<>();

@@ -135,9 +135,9 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
         jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
         String[] hint = access_token.split(".");
         if (hint.length == 3) {
-            LoginbuddyCache.getInstance().put(hint[2], jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.CACHE.put(hint[2], jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
         } else {
-            LoginbuddyCache.getInstance().put(access_token, jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.CACHE.put(access_token, jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
         }
 
         returnAuthorizationCode(response, sessionCtx, eb);

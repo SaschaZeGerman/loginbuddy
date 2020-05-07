@@ -1,47 +1,66 @@
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.discovery;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.loginbuddy.common.api.HttpHelper;
+import net.loginbuddy.service.config.Bootstrap;
 
-public class DiscoveryConfig {
+import java.util.logging.Logger;
 
-    private String jsonString;
+/**
+ * Values to access the discovery document.
+ * More details in the document here: https://openid.net/specs/openid-connect-discovery-1_0.html
+ */
+public enum DiscoveryConfig implements Bootstrap {
 
-    @JsonProperty("issuer")
+    CONFIG;
+
+    private Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryConfig.class));
+
+    private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
+
     @JsonIgnore(false)
     private String issuer;
-
-    @JsonProperty("response_types_supported")
-    @JsonIgnore(false)
-    private String[] responseTypeSupported;
 
     @JsonProperty("authorization_endpoint")
     @JsonIgnore(false)
     private String authorizationEndpoint;
 
+    @JsonProperty("token_endpoint")
+    @JsonIgnore(false)
+    private String tokenEndpoint;
+
+    @JsonProperty("userinfo_endpoint")
+    private String userinfoEndpoint;
+
     @JsonProperty("jwks_uri")
     @JsonIgnore(false)
     private String jwksUri;
 
-    @JsonProperty("id_token_signing_alg_values_supported")
+    @JsonProperty("scopes_supported")
+    private String[] scopesSupported;
+
+    @JsonProperty("response_types_supported")
     @JsonIgnore(false)
-    private String[] idTokenSigningAlgValuesSupported;
+    private String[] responseTypesSupported;
+
+    @JsonProperty("grant_types_supported")
+    @JsonIgnore(false)
+    private String[] grantTypesSupported;  // required because the default would include 'implicit' which is not supported
 
     @JsonProperty("subject_types_supported")
     @JsonIgnore(false)
     private String[] subjectTypesSupported;
 
-    @JsonProperty("grant_types_supported")
-    private String[] grantTypesSupported;
+    @JsonProperty("id_token_signing_alg_values_supported")
+    @JsonIgnore(false)
+    private String[] idTokenSigningAlgValuesSupported;
 
     @JsonProperty("token_endpoint_auth_methods_supported")
     private String[] tokenEndpointAuthMethodsSupported;
-
-    @JsonProperty("scopes_supported")
-    private String[] scopesSupported;
-
-    @JsonProperty("token_endpoint")
-    private String tokenEndpoint;
 
     @JsonProperty("service_documentation")
     private String serviceDocumentation;
@@ -49,14 +68,15 @@ public class DiscoveryConfig {
     @JsonProperty("code_challenge_methods_supported")
     private String[] codeChallengeMethodsSupported;
 
-    @JsonProperty("userinfo_endpoint")
-    private String userinfoEndpoint;
-
     @JsonProperty("signing_alg_values_supported")
     private String[] signingAlgValuesSupported;
 
     @JsonProperty("pushed_authorization_request_endpoint")
     private String pushedAuthorizationRequestEndpoint;
+
+    // *** values specific to Loginbuddy *** //
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Management management;
 
     public String getIssuer() {
         return issuer;
@@ -66,12 +86,12 @@ public class DiscoveryConfig {
         this.issuer = issuer;
     }
 
-    public String[] getResponseTypeSupported() {
-        return responseTypeSupported;
+    public String[] getResponseTypesSupported() {
+        return responseTypesSupported;
     }
 
-    public void setResponseTypeSupported(String[] responseTypeSupported) {
-        this.responseTypeSupported = responseTypeSupported;
+    public void setResponseTypesSupported(String[] responseTypesSupported) {
+        this.responseTypesSupported = responseTypesSupported;
     }
 
     public String[] getGrantTypesSupported() {
@@ -170,15 +190,6 @@ public class DiscoveryConfig {
         this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
     }
 
-    void setJsonString(String jsonString) {
-        this.jsonString = jsonString;
-    }
-
-    @Override
-    public String toString() {
-        return jsonString;
-    }
-
     public String[] getSigningAlgValuesSupported() {
         return signingAlgValuesSupported;
     }
@@ -189,5 +200,47 @@ public class DiscoveryConfig {
         } else {
             this.signingAlgValuesSupported = signingAlgValuesSupported;
         }
+    }
+
+    public Management getManagement() {
+        return management;
+    }
+
+    public void setManagement(Management management) {
+        this.management = management;
+    }
+
+    public String getRedirectUri() {
+        return getRedirectUri("/callback");
+    }
+
+    public String getRedirectUri(String path) {
+        return getIssuer() + path;
+    }
+
+    public String getOpenIdConfigurationAsJsonString() {
+        try {
+            return MAPPER.writeValueAsString(CONFIG);
+        } catch (JsonProcessingException e) {
+            LOGGER.warning("Discovery document could not be produced as string");
+        }
+        return "{\"error\":\"invalid_confiuration\", \"error_description\":\"the servcer configuration is faulty. Please contact teh administrator!\"}";
+    }
+
+    public String getScopesSupportedAsString() {
+        return HttpHelper.stringArrayToString(getScopesSupported());
+    }
+
+    public String getSigningAlgValuesSupportedAsString() {
+        return HttpHelper.stringArrayToString(getSigningAlgValuesSupported());
+    }
+
+    public String getTokenEndpointAuthMethodsSupportedAsString() {
+        return HttpHelper.stringArrayToString(getTokenEndpointAuthMethodsSupported());
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return issuer != null;
     }
 }

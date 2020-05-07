@@ -37,7 +37,7 @@ public class Callback extends HttpServlet {
 
     if (code != null) {
 
-      Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.getInstance().remove(clientState);
+      Map<String, Object> sessionValues = (Map<String, Object>)LoginbuddyCache.CACHE.remove(clientState);
 
       List<NameValuePair> formParameters = new ArrayList<NameValuePair>();
       formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), code));
@@ -57,7 +57,7 @@ public class Callback extends HttpServlet {
 
         sessionValues.put("msgResponse", msgResp);
 
-        LoginbuddyCache.getInstance().put(clientState, sessionValues);
+        LoginbuddyCache.CACHE.put(clientState, sessionValues);
 
         response.sendRedirect(String.format("democlientCallback.jsp?state=%s", clientState));
 

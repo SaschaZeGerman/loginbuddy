@@ -5,6 +5,7 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -35,8 +36,8 @@ public class AccessToken {
                     try {
                         claims = validateAccessToken(
                                 headerValue[1],
-                                LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer(),
-                                LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer(),
+                                DiscoveryConfig.CONFIG.getIssuer(),
+                                DiscoveryConfig.CONFIG.getIssuer(),
                                 Jwt.DEFAULT.getJwksForSigning());
                     } catch (InvalidJwtException e) {
                         LOGGER.severe(e.getMessage());

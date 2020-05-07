@@ -27,7 +27,7 @@
         }
         String sessionId = request.getParameter("session");
 
-        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(sessionId);
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(sessionId);
         List<ProviderConfig> providerConfigs = null;
         try {
             providerConfigs = LoginbuddyConfig.CONFIGS.getConfigUtil()

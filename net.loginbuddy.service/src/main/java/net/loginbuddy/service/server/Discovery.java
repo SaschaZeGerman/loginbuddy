@@ -1,6 +1,7 @@
 package net.loginbuddy.service.server;
 
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +15,7 @@ public class Discovery extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     response.setStatus(200);
     response.setContentType("application/json");
-    response.getWriter().write(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getOpenIdConfigurationAsJsonString());
+    response.getWriter().write(DiscoveryConfig.CONFIG.getOpenIdConfigurationAsJsonString());
   }
 
   @Override

@@ -12,5 +12,8 @@
   "subject_types_supported": ["public","pairwise"],
   "code_challenge_methods_supported": ["S256"],
   "userinfo_endpoint": "https://{your-domain}/userinfo",
-  "pushed_authorization_request_endpoint": "https://local.loginbuddy.net/pauthorize"
+  "pushed_authorization_request_endpoint": "https://local.loginbuddy.net/pauthorize",
+  "management": {
+    "configuration_endpoint": "https://{your-domain}/management/configuration"
+  }
 }

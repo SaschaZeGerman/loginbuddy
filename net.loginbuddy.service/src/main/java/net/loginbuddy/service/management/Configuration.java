@@ -5,6 +5,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -87,7 +88,7 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadDiscovery)
     private String doGetDiscovery(@ActualScope String givenScope) {
         if(LoginbuddyScope.ReadDiscovery.isScopeValid(givenScope)) {
-            return LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getOpenIdConfigurationAsJsonString();
+            return DiscoveryConfig.CONFIG.getOpenIdConfigurationAsJsonString();
         } else {
             return LoginbuddyScope.getInvalidScopeError(givenScope);
         }

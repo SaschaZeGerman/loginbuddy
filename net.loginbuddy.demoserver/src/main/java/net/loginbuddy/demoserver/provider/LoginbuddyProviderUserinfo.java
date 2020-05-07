@@ -52,7 +52,7 @@ public class LoginbuddyProviderUserinfo extends LoginbuddyProviderCommon {
         SessionContext sessionValues = null;
         if (!error) {
             // Let's see if we know this access_token
-            sessionValues = (SessionContext) LoginbuddyCache.getInstance().get(access_token);
+            sessionValues = (SessionContext) LoginbuddyCache.CACHE.get(access_token);
             if (sessionValues == null || !access_token.equals(sessionValues.get(Constants.ACCESS_TOKEN.getKey()))) {
                 LOGGER.warning("the access_token is invalid");
                 fakeUserinfoResponse.put("error", "invalid_request");

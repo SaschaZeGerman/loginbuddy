@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import net.loginbuddy.service.server.Overlord;
 
 import java.io.File;
@@ -34,10 +35,10 @@ public class ConfigUtil extends Overlord implements Bootstrap {
 
   private JsonNode getConfig() {
     try {
-      JsonNode node = (JsonNode) LoginbuddyCache.getInstance().get("ConfigUtilGetConfig");
+      JsonNode node = (JsonNode) LoginbuddyCache.CACHE.get("ConfigUtilGetConfig");
       if (node == null) {
         node = MAPPER.readValue(new File(this.path).getAbsoluteFile(), JsonNode.class);
-        LoginbuddyCache.getInstance().put("ConfigUtilGetConfig", node);
+        LoginbuddyCache.CACHE.put("ConfigUtilGetConfig", node);
       }
       return node.get("loginbuddy");
     } catch (IOException e) {
@@ -65,17 +66,17 @@ public class ConfigUtil extends Overlord implements Bootstrap {
     if (providerNode != null && providerNode.isArray()) {
       try {
         // need it from cache for provider configurations that used dynamic registrations. Otherwise we register again and again
-        List<ProviderConfig> providers = (List<ProviderConfig>) LoginbuddyCache.getInstance().get("providers");
+        List<ProviderConfig> providers = (List<ProviderConfig>) LoginbuddyCache.CACHE.get("providers");
         if (providers == null) {
           providers = Arrays.asList(MAPPER.readValue(providerNode.toString(), ProviderConfig[].class));
           for (ProviderConfig next : providers) {
             if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
               next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
-                      LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getRedirectUri()).toJSONString(),
+                      DiscoveryConfig.CONFIG.getRedirectUri()).toJSONString(),
                       ProviderConfig.class));
             }
           }
-          LoginbuddyCache.getInstance().put("providers", providers);
+          LoginbuddyCache.CACHE.put("providers", providers);
         }
         return providers;
       } catch (Exception e) {

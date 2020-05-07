@@ -15,6 +15,7 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import net.loginbuddy.service.util.SessionContext;
 
 import javax.servlet.ServletException;
@@ -73,7 +74,7 @@ public class Token extends HttpServlet {
         if (!grantTypeResult.getResult().equals(RESULT.VALID)) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
             return;
-        } else if (Stream.of((LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
+        } else if (Stream.of((DiscoveryConfig.CONFIG.getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
             return;
         }
@@ -92,7 +93,7 @@ public class Token extends HttpServlet {
 // ** Check for the current session and remove it. An authorization code can be used only once!
 // ***************************************************************
 
-        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(codeResult.getValue());
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.remove(codeResult.getValue());
         if (sessionCtx == null) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given code is invalid or has expired"));
         } else {

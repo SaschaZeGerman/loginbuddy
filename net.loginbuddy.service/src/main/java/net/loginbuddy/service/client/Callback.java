@@ -8,6 +8,7 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import net.loginbuddy.service.util.SessionContext;
 
 import javax.servlet.ServletException;
@@ -46,7 +47,7 @@ public class Callback extends HttpServlet {
             return null;
         }
 
-        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionIdResult.getValue());
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.remove(sessionIdResult.getValue());
         if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
             LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
             response.sendError(400, "The current session is invalid or it has expired!");
@@ -115,7 +116,7 @@ public class Callback extends HttpServlet {
                 String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
                 ExchangeBean eb = new ExchangeBean();
-                eb.setIss(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer());
+                eb.setIss(DiscoveryConfig.CONFIG.getIssuer());
                 eb.setIat(new Date().getTime() / 1000);
                 eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
                 eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
@@ -150,7 +151,7 @@ public class Callback extends HttpServlet {
             sessionCtx.put("eb", eb.toString());
         }
         sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-        LoginbuddyCache.getInstance().put(authorizationCode, sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
+        LoginbuddyCache.CACHE.put(authorizationCode, sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
 
         response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), Constants.CODE.getKey(), authorizationCode));
     }

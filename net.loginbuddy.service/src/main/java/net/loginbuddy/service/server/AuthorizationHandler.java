@@ -9,6 +9,7 @@ import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
@@ -38,7 +39,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         if(requestUriResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
             String[] parRequestUriParts = requestUriResult.getValue().split(":");
             if(parRequestUriParts.length == 3) {
-                SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(parRequestUriParts[2]);
+                SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(parRequestUriParts[2]);
                 if (sessionCtx == null || !parRequestUriParts[2].equals(sessionCtx.getId())) {
                     LOGGER.warning("The current session is invalid or it has expired! Given: '" + parRequestUriParts[2] + "'");
                     handleError(400, "The current session is invalid or it has expired!", response);
@@ -176,7 +177,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request",
                     "invalid or unsupported response_type parameter or value"), response);
             return;
-        } else if (Stream.of((LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getResponseTypesSupported()))
+        } else if (Stream.of((DiscoveryConfig.CONFIG.getResponseTypesSupported()))
                 .noneMatch(clientResponseTypeResult.getValue()::equals)) {
             LOGGER.warning(
                     String.format("The given response_type is not supported: %s", clientResponseTypeResult.getValue()));
@@ -227,7 +228,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         String clientScope = scopeResult.getValue();
         if (clientScope == null) {
             if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(cc.getClientType())) {
-                clientScope = LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getScopesSupportedAsString();
+                clientScope = DiscoveryConfig.CONFIG.getScopesSupportedAsString();
             } else {
                 LOGGER.warning("Invalid or unsupported scope parameter!");
                 handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope parameter"), response);
@@ -236,7 +237,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         }
 
         Set<String> scopes = new TreeSet<>(
-                Arrays.asList((LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getScopesSupportedAsString()).split("[,; ]")));
+                Arrays.asList((DiscoveryConfig.CONFIG.getScopesSupportedAsString()).split("[,; ]")));
         scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
         if (scopes.size() == 0) {
             LOGGER.warning("Invalid or unsupported scope!");
@@ -250,7 +251,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
         String signResponseAlg = "";
         if (cc.getSignedResponseAlg() != null) {
-            Set<String> signedResponseAlgs = new TreeSet<>(Arrays.asList((LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getSigningAlgValuesSupportedAsString()).split("[,; ]")));
+            Set<String> signedResponseAlgs = new TreeSet<>(Arrays.asList((DiscoveryConfig.CONFIG.getSigningAlgValuesSupportedAsString()).split("[,; ]")));
             if (signedResponseAlgs.contains(cc.getSignedResponseAlg())) {
                 signResponseAlg = cc.getSignedResponseAlg();
             }
@@ -273,7 +274,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
                 checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider(), signResponseAlg, obfuscateTokenResult.getBooleanValue(), parRequestUri);
 
-        LoginbuddyCache.getInstance().put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
+        LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 
 // ***************************************************************
 // ** Present the provider selection page if non was given in this request. Otherwise, fast forward
@@ -296,7 +297,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
                     .forward(request, response);
         } else {
-            String hostname = LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer();
+            String hostname = DiscoveryConfig.CONFIG.getIssuer();
             response.sendRedirect(String.format("%s/initialize?session=%s", hostname, (sessionCtx.getId())));
         }
     }

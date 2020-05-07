@@ -5,6 +5,7 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 
 import java.util.Base64;
 import java.util.stream.Stream;
@@ -40,7 +41,7 @@ public class ClientAuthenticator {
         ClientConfig cc = LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId(clientId);
         if (cc != null) {
             // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
-            String supportedMethods = LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getTokenEndpointAuthMethodsSupportedAsString();
+            String supportedMethods = DiscoveryConfig.CONFIG.getTokenEndpointAuthMethodsSupportedAsString();
             if (supportedMethods == null) {
                 supportedMethods = usedAuthMethod;
             }

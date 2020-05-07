@@ -49,7 +49,7 @@ public class CallbackParent extends HttpServlet {
             return null;
         }
 
-        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().remove(sessionIdResult.getValue());
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.remove(sessionIdResult.getValue());
         if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
             LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
             response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "the current session is invalid or it has expired").toJSONString());

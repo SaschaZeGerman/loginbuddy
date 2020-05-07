@@ -8,6 +8,7 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
@@ -65,7 +66,7 @@ public class CallbackSelfissued extends CallbackParent {
             String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
             ExchangeBean eb = new ExchangeBean();
-            eb.setIss(LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer());
+            eb.setIss(DiscoveryConfig.CONFIG.getIssuer());
             eb.setIat(new Date().getTime() / 1000);
             eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
             eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));

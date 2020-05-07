@@ -60,13 +60,13 @@ public class Initialize extends HttpServlet {
       return;
     }
 
-    if (providerAddition.equals(RESULT.VALID)) {
+    if (providerAddition.getResult().equals(RESULT.VALID)) {
       LOGGER.warning(String.format("Invalid request! Unused field had values: '%s'", providerAddition));
       response.sendError(400, "Invalid request, please try again!");
       return;
     }
 
-    SessionContext sessionCtx = (SessionContext) LoginbuddyCache.getInstance().get(sessionIdResult.getValue());
+    SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(sessionIdResult.getValue());
     if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
       LOGGER.warning("The current session is invalid or it has expired!");
       response.sendError(400, "The current session is invalid or it has expired!");

@@ -6,6 +6,7 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryConfig;
 import net.loginbuddy.service.server.ClientAuthenticator;
 import org.json.simple.JSONObject;
 
@@ -69,8 +70,8 @@ public class Token extends HttpServlet {
 
             try {
                 String token = Jwt.DEFAULT.createSignedJwtRs256(
-                        LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer(),
-                        LoginbuddyConfig.CONFIGS.getDiscoveryUtil().getIssuer(),
+                        DiscoveryConfig.CONFIG.getIssuer(),
+                        DiscoveryConfig.CONFIG.getIssuer(),
                         5,
                         clientCredentialsResult.getClientConfig().getClientId(),
                         false,
