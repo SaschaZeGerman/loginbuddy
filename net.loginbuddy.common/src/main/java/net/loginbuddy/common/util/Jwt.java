@@ -8,20 +8,23 @@
 
 package net.loginbuddy.common.util;
 
+import net.loginbuddy.common.config.Constants;
+import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.*;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.resolvers.JwksVerificationKeyResolver;
+import org.jose4j.keys.resolvers.VerificationKeyResolver;
 import org.jose4j.lang.JoseException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -36,20 +39,23 @@ public enum Jwt {
     JsonWebKeySet jwks;
 
     Jwt() {
+        // Generate an RSA key pair, which will be used for signing and verification of Loginbuddy JWTs, wrapped in a JWK
         jwks = new JsonWebKeySet();
-        // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
         RsaJsonWebKey rsaJsonWebKey = null;
         try {
             rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
         } catch (JoseException e) {
-            // should never happen
-            System.out.println(e.getMessage());
+            LOGGER.warning(String.format("Should never happen! Error: '%s'", e.getMessage()));
         }
         rsaJsonWebKey.setKeyId(UUID.randomUUID().toString());
         rsaJsonWebKey.setUse("sig");
         jwks.addJsonWebKey(rsaJsonWebKey);
     }
 
+    /**
+     * Loginbuddys keys
+     * @return
+     */
     public JsonWebKeySet getJwksForSigning() {
         return jwks;
     }
@@ -78,7 +84,7 @@ public enum Jwt {
     }
 
     /**
-     * Generate a JWT based on a private key. Nothing fancy, using the example implementation of jose4j
+     * Generate a JWT based on a private key.
      *
      * @return JWT compact URL-safe serialization
      * @see <a href="https://bitbucket.org/b_c/jose4j/wiki/JWT%20Examples#markdown-header-producing-and-consuming-a-signed-jwt"></a>
@@ -99,7 +105,7 @@ public enum Jwt {
         claims.setIssuer(issuer);  // who creates the token and signs it
         claims.setSubject(subject); // the subject/principal is whom the token is about
         claims.setAudience(audience); // to whom the token is intended to be sent
-        claims.setExpirationTimeMinutesInTheFuture(lifetimeInMinutes); // time when the token will expire (10 minutes from now)
+        claims.setExpirationTimeMinutesInTheFuture(lifetimeInMinutes); // time when the token will expire
         claims.setIssuedAtToNow();  // when the token was issued/created (now)
         claims.setGeneratedJwtId(); // a unique identifier for the token
         claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
@@ -138,6 +144,73 @@ public enum Jwt {
     }
 
     /**
+     * Validates an id_token with standard claims and optional others
+     * @param jwt the compactsecrialized jwt (aaaa.bbbb.ccccc)
+     * @param jsonWebKeySetJson the jwks that includes the key to be used for signature validation
+     * @param expectedIss expected issuer
+     * @param expectedAud expected audience
+     * @param expectedNonce expected nonce
+     * @return the json payload
+     */
+    public JSONObject validateIdToken(String jwt, String jsonWebKeySetJson, String expectedIss, String expectedAud, String expectedNonce) {
+
+        if (jwt == null || expectedIss == null || expectedAud == null || expectedNonce == null) {
+            LOGGER.warning("All parameters are required! Verify that neither empty nor null values have been used!");
+            throw new IllegalArgumentException("All parameters are required!");
+        }
+
+        try {
+
+            JsonWebSignature jws = new JsonWebSignature();
+            jws.setCompactSerialization(jwt);
+            JSONObject payload = (JSONObject) new org.json.simple.parser.JSONParser().parse(jws.getUnverifiedPayload());
+
+            // 'sub_jwk' in Loginbuddy is only used if issuer == self-issued
+            // more details see: https://openid.net/specs/openid-connect-core-1_0.html#SelfIssuedResponse
+
+            VerificationKeyResolver resolver;
+            if (payload.get("sub_jwk") != null && Constants.ISSUER_SELFISSUED.getKey().equalsIgnoreCase(expectedIss)) {
+                List<JsonWebKey> keys = new ArrayList<>();
+                keys.add(JsonWebKey.Factory.newJwk(((JSONObject) payload.get("sub_jwk")).toJSONString()));
+                resolver = new JwksVerificationKeyResolver(keys);
+            } else {
+                if (jsonWebKeySetJson != null) {
+                    resolver = new JwksVerificationKeyResolver(new JsonWebKeySet(jsonWebKeySetJson).getJsonWebKeys());
+                } else {
+                    LOGGER.warning("id_token validation failed due to missing jwk(s)!");
+                    throw new IllegalArgumentException("Missing JWKS!");
+                }
+            }
+            JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+                    .setRequireExpirationTime()
+                    .setAllowedClockSkewInSeconds(0)
+                    .setRequireSubject()
+                    .setExpectedAudience(expectedAud)
+                    .setExpectedIssuer(expectedIss)
+                    .setVerificationKeyResolver(resolver)
+                    .setJwsAlgorithmConstraints(
+                            AlgorithmConstraints.ConstraintType.WHITELIST,
+                            AlgorithmIdentifiers.RSA_USING_SHA256
+                    )
+                    .build();
+            payload = (JSONObject) new JSONParser().parse(jwtConsumer.processToClaims(jwt).toJson());
+
+            // do additional validations
+
+            if (expectedNonce.equals(payload.get("nonce"))) {
+                return payload;
+            } else {
+                LOGGER.warning("Unexpected nonce. Expected: '" + expectedNonce + "', actual: '" + payload.get("nonce") + "'");
+            }
+        } catch (JoseException e) {
+            LOGGER.warning(e.getMessage());
+        } catch (Exception e) {
+            LOGGER.warning(String.format("The given id_token could not be validated! Error: '%s'", e.getMessage()));
+        }
+        throw new IllegalArgumentException("The given id_token could not be validated!");
+    }
+
+    /**
      * Validates the signature, aud, iss, exp and nonce of a given JWT. Other values have to be verified on demand
      *
      * @param jwt               The JWT to be validated
@@ -146,6 +219,7 @@ public enum Jwt {
      * @param expectedAud       Expected audience
      * @param expectedNonce     Expected nonce
      */
+    @Deprecated
     public JSONObject validateJwt(String jwt, String jsonWebKeySetJson, String expectedIss, String expectedAud, String expectedNonce) {
         if (jwt == null || expectedIss == null || expectedAud == null || expectedNonce == null) {
             LOGGER.warning("All parameters are required! Verify that neither empty nor null values have been used!");
@@ -201,6 +275,7 @@ public enum Jwt {
         throw new IllegalArgumentException("The given JWT could not be parsed or decoded!");
     }
 
+    @Deprecated
     private boolean validateAud(String expectedAud, Object actualAud) {
         if (expectedAud == null || actualAud == null) {
             return false;

@@ -50,7 +50,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             if(sessionCtx.getString(Constants.JWKS_URI.getKey()) != null) {
                 jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey())).getMsg();
             }
-            idTokenPayload = Jwt.DEFAULT.validateJwt(idTokenResult.getValue(), jwks, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+            idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), jwks, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             eb.setIdTokenPayload(idTokenPayload);
         } catch (Exception e) {
             LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));

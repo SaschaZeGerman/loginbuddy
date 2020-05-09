@@ -80,7 +80,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                     try {
                         id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
                         MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-                        idTokenPayload = Jwt.DEFAULT.validateJwt(id_token, jwks.getMsg(), providerConfig.getIssuer(),
+                        idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providerConfig.getIssuer(),
                                 providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                         eb.setIdTokenPayload(idTokenPayload);
                     } catch (Exception e) {
