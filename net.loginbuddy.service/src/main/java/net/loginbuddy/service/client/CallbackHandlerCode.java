@@ -15,6 +15,7 @@ import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -135,9 +136,9 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
         jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
         String[] hint = access_token.split(".");
         if (hint.length == 3) {
-            LoginbuddyCache.CACHE.put(hint[2], jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.CACHE.put(hint[2], jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
         } else {
-            LoginbuddyCache.CACHE.put(access_token, jo, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.CACHE.put(access_token, jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
         }
 
         returnAuthorizationCode(response, sessionCtx, eb);

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.server.Overlord;
 
 import java.io.File;
@@ -72,7 +72,7 @@ public class ConfigUtil extends Overlord implements Bootstrap {
           for (ProviderConfig next : providers) {
             if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
               next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
-                      DiscoveryConfig.CONFIG.getRedirectUri()).toJSONString(),
+                      DiscoveryUtil.UTIL.getRedirectUri()).toJSONString(),
                       ProviderConfig.class));
             }
           }

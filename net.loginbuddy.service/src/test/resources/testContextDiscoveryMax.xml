@@ -6,7 +6,7 @@
     <Resource name="bean/DiscoveryUtilFactory" auth="Container"
               type="net.loginbuddy.service.config.discovery.DiscoveryConfig"
               factory="net.loginbuddy.service.config.discovery.Factory"
-              path="src/test/resources/testDiscoveryMin.json"/>
+              path="src/test/resources/testDiscoveryMax.json"/>
     <Resource name="bean/CacheFactory" auth="Container"
               type="net.loginbuddy.common.cache.DefaultCache"
               factory="org.apache.naming.factory.BeanFactory"/>

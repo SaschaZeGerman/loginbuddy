@@ -8,18 +8,14 @@
 
 package net.loginbuddy.service.config;
 
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
-
-public enum LoginbuddyConfig {
+public enum LoginbuddyConfig implements Bootstrap {
 
     CONFIGS;
 
     private LoginbuddyConfigLoader configLoader;
 
     LoginbuddyConfig() {
-        configLoader = new DefaultConfigLoader();
-        configLoader.loadConfig();
+        setDefaultConfigLoader();
     }
 
     public void setConfigLoader(LoginbuddyConfigLoader configLoader) {
@@ -27,24 +23,17 @@ public enum LoginbuddyConfig {
         this.configLoader.reloadConfig();
     }
 
-    /**
-     * Called on bootstrapping Loginbuddy in @see Overlord
-     *
-     * @return
-     */
-    public boolean isConfigured() {
-        return configLoader.isConfigured();
+    public void setDefaultConfigLoader() {
+        configLoader = new DefaultConfigLoader();
+        configLoader.loadConfig();
     }
 
     public ConfigUtil getConfigUtil() {
         return configLoader.getConfigUtil();
     }
 
-    public DiscoveryConfig getDiscoveryConfig() {
-        return DiscoveryConfig.CONFIG;
-    }
-
-    public PropertiesUtil getPropertiesUtil() {
-        return configLoader.getPropertiesUtil();
+    @Override
+    public boolean isConfigured() {
+        return configLoader != null && configLoader.isConfigured();
     }
 }

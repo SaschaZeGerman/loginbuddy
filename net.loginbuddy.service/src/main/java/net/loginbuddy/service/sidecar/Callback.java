@@ -14,7 +14,7 @@ import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -63,7 +63,7 @@ public class Callback  extends CallbackParent {
       String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
       ExchangeBean eb = new ExchangeBean();
-      eb.setIss(DiscoveryConfig.CONFIG.getIssuer());
+      eb.setIss(DiscoveryUtil.UTIL.getIssuer());
       eb.setIat(new Date().getTime() / 1000);
       eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
       eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));

@@ -11,52 +11,22 @@ package net.loginbuddy.service.config.discovery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.service.config.Bootstrap;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 public enum DiscoveryUtil implements Bootstrap {
 
-    CONFIG;
+    UTIL;
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryUtil.class));
 
+    private DiscoveryLoader loader;
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
-    private String path;
-
-    private DiscoveryConfig config;
-
     DiscoveryUtil() {
-        try {
-            config = MAPPER.readValue(new File(this.path).getAbsoluteFile(), DiscoveryConfig.class);
-        } catch (Exception e) {
-            LOGGER.severe("discovery.json file could not be loaded or it is invalid JSON! Existing!");
-        }
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    private DiscoveryConfig getConfig() {
-        try {
-            config = (DiscoveryConfig) LoginbuddyCache.CACHE.get("DiscoveryConfig");
-            if (config == null) {
-                config = MAPPER.readValue(new File(this.path).getAbsoluteFile(), DiscoveryConfig.class);
-                LoginbuddyCache.CACHE.put("DiscoveryConfig", config);
-            }
-            return config;
-        } catch (Exception e) {
-            LOGGER.severe("discovery.json file could not be loaded or it is invalid JSON! Existing!");
-        }
-        return null; // we should never get here
+        loader = new DefaultDiscoveryLoader();
+        loader.loadDiscovery();
     }
 
     /**
@@ -74,72 +44,68 @@ public enum DiscoveryUtil implements Bootstrap {
     }
 
     public String getIssuer() {
-        return getConfig().getIssuer();
+        return loader.getDiscoveryConfig().getIssuer();
     }
 
     public String[] getResponseTypesSupported() {
-        return getConfig().getResponseTypesSupported();
+        return loader.getDiscoveryConfig().getResponseTypesSupported();
     }
 
     public String[] getGrantTypesSupported() {
-        return getConfig().getGrantTypesSupported();
+        return loader.getDiscoveryConfig().getGrantTypesSupported();
     }
 
     public String[] getTokenEndpointAuthMethodsSupported() {
-        return getConfig().getTokenEndpointAuthMethodsSupported();
+        return loader.getDiscoveryConfig().getTokenEndpointAuthMethodsSupported();
     }
 
     public String[] getScopesSupported() {
-        return getConfig().getScopesSupported();
+        return loader.getDiscoveryConfig().getScopesSupported();
     }
 
     public String getAuthorizationEndpoint() {
-        return getConfig().getAuthorizationEndpoint();
+        return loader.getDiscoveryConfig().getAuthorizationEndpoint();
     }
 
     public String getTokenEndpoint() {
-        return getConfig().getTokenEndpoint();
+        return loader.getDiscoveryConfig().getTokenEndpoint();
     }
 
     public String getJwksUri() {
-        return getConfig().getJwksUri();
+        return loader.getDiscoveryConfig().getJwksUri();
     }
 
     public String[] getIdTokenSigningAlgValuesSupported() {
-        return getConfig().getIdTokenSigningAlgValuesSupported();
+        return loader.getDiscoveryConfig().getIdTokenSigningAlgValuesSupported();
     }
 
     public String getServiceDocumentation() {
-        return getConfig().getServiceDocumentation();
+        return loader.getDiscoveryConfig().getServiceDocumentation();
     }
 
     public String[] getSubjectTypesSupported() {
-        return getConfig().getSubjectTypesSupported();
+        return loader.getDiscoveryConfig().getSubjectTypesSupported();
     }
 
-    public String[] getCodechallengeMethodsSupported() {
-        return getConfig().getCodeChallengeMethodsSupported();
+    public String[] getCodeChallengeMethodsSupported() {
+        return loader.getDiscoveryConfig().getCodeChallengeMethodsSupported();
     }
 
     public String getUserinfoEndpoint() {
-        return getConfig().getUserinfoEndpoint();
+        return loader.getDiscoveryConfig().getUserinfoEndpoint();
     }
 
     public String getPushedAuthorizationRequestEndpoint() {
-        return getConfig().getPushedAuthorizationRequestEndpoint();
-    }
-
-    public DiscoveryConfig getOpenIdConfiguration() {
-        return getConfig();
+        return loader.getDiscoveryConfig().getPushedAuthorizationRequestEndpoint();
     }
 
     public String getOpenIdConfigurationAsJsonString() {
         try {
-            return MAPPER.writeValueAsString(config);
+            return MAPPER.writeValueAsString(loader.getDiscoveryConfig());
         } catch (JsonProcessingException e) {
             LOGGER.warning("Discovery document could not be produced as string");
         }
-        return "{\"error\":\"invalid_confiuration\", \"error_description\":\"the servcer configuration is faulty. Please contact teh administrator!\"}";
+        return "{\"error\":\"invalid_configuration\", \"error_description\":\"the server configuration is faulty. Please contact the administrator!\"}";
     }
 
     public String getTokenEndpointAuthMethodsSupportedAsString() {
@@ -150,16 +116,24 @@ public enum DiscoveryUtil implements Bootstrap {
         return HttpHelper.stringArrayToString(getScopesSupported());
     }
 
-    @Override
-    public boolean isConfigured() {
-        return getConfig() != null;
-    }
-
     public String[] getSigningAlgValuesSupported() {
-        return getConfig().getSigningAlgValuesSupported();
+        return loader.getDiscoveryConfig().getSigningAlgValuesSupported();
     }
 
     public String getSigningAlgValuesSupportedAsString() {
         return HttpHelper.stringArrayToString(getSigningAlgValuesSupported());
+    }
+
+    public Management getManagement() {
+        return loader.getDiscoveryConfig().getManagement();
+    }
+
+    public DiscoveryLoader getLoader() {
+        return loader;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return loader != null && loader.isConfigured();
     }
 }

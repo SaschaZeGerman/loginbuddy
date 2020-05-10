@@ -9,7 +9,8 @@ import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.service.config.ClientConfig;
 import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
@@ -177,7 +178,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request",
                     "invalid or unsupported response_type parameter or value"), response);
             return;
-        } else if (Stream.of((DiscoveryConfig.CONFIG.getResponseTypesSupported()))
+        } else if (Stream.of((DiscoveryUtil.UTIL.getResponseTypesSupported()))
                 .noneMatch(clientResponseTypeResult.getValue()::equals)) {
             LOGGER.warning(
                     String.format("The given response_type is not supported: %s", clientResponseTypeResult.getValue()));
@@ -228,7 +229,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         String clientScope = scopeResult.getValue();
         if (clientScope == null) {
             if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(cc.getClientType())) {
-                clientScope = DiscoveryConfig.CONFIG.getScopesSupportedAsString();
+                clientScope = DiscoveryUtil.UTIL.getScopesSupportedAsString();
             } else {
                 LOGGER.warning("Invalid or unsupported scope parameter!");
                 handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "invalid or unsupported scope parameter"), response);
@@ -237,7 +238,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         }
 
         Set<String> scopes = new TreeSet<>(
-                Arrays.asList((DiscoveryConfig.CONFIG.getScopesSupportedAsString()).split("[,; ]")));
+                Arrays.asList((DiscoveryUtil.UTIL.getScopesSupportedAsString()).split("[,; ]")));
         scopes.retainAll(Arrays.asList(clientScope.split("[,; ]")));
         if (scopes.size() == 0) {
             LOGGER.warning("Invalid or unsupported scope!");
@@ -251,7 +252,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
         String signResponseAlg = "";
         if (cc.getSignedResponseAlg() != null) {
-            Set<String> signedResponseAlgs = new TreeSet<>(Arrays.asList((DiscoveryConfig.CONFIG.getSigningAlgValuesSupportedAsString()).split("[,; ]")));
+            Set<String> signedResponseAlgs = new TreeSet<>(Arrays.asList((DiscoveryUtil.UTIL.getSigningAlgValuesSupportedAsString()).split("[,; ]")));
             if (signedResponseAlgs.contains(cc.getSignedResponseAlg())) {
                 signResponseAlg = cc.getSignedResponseAlg();
             }
@@ -274,7 +275,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
                 checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider(), signResponseAlg, obfuscateTokenResult.getBooleanValue(), parRequestUri);
 
-        LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
+        LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 
 // ***************************************************************
 // ** Present the provider selection page if non was given in this request. Otherwise, fast forward
@@ -285,7 +286,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             response.setStatus(201);
             JSONObject obj = new JSONObject();
             obj.put(Constants.REQUEST_URI.getKey(), parRequestUri);
-            obj.put(Constants.EXPIRES_IN.getKey(), LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
+            obj.put(Constants.EXPIRES_IN.getKey(), PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
             response.getWriter().write(obj.toJSONString());
         } else {
             handleAuthorizationResponse(request, response, sessionCtx, clientProviderResult.getValue());
@@ -297,7 +298,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
                     .forward(request, response);
         } else {
-            String hostname = DiscoveryConfig.CONFIG.getIssuer();
+            String hostname = DiscoveryUtil.UTIL.getIssuer();
             response.sendRedirect(String.format("%s/initialize?session=%s", hostname, (sessionCtx.getId())));
         }
     }

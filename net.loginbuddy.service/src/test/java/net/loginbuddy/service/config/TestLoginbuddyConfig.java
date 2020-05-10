@@ -1,8 +1,6 @@
 package net.loginbuddy.service.config;
 
 import hthurow.tomcatjndi.TomcatJNDI;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +19,7 @@ public class TestLoginbuddyConfig {
         tomcatJNDI = new TomcatJNDI();
         tomcatJNDI.processContextXml(new File("src/test/resources/testContext.xml"));
         tomcatJNDI.start();
+        LoginbuddyConfig.CONFIGS.setDefaultConfigLoader();
     }
 
     @After
@@ -39,16 +38,6 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
-    public void testLoadDiscovery() {
-        assertEquals("https://{your-domain}", DiscoveryConfig.CONFIG.getIssuer());
-    }
-
-    @Test
-    public void testLoadProperties() {
-        assertEquals(60, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.proxy.userinfo"));
-    }
-
-    @Test
     public void testReloadConfig() {
         LoginbuddyConfigLoader loader = new LoginbuddyConfigLoader() {
             @Override
@@ -64,11 +53,6 @@ public class TestLoginbuddyConfig {
             @Override
             public ConfigUtil getConfigUtil() {
                 return new TestConfigUtil();
-            }
-
-            @Override
-            public PropertiesUtil getPropertiesUtil() {
-                return null;
             }
 
             @Override

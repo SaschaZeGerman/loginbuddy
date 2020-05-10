@@ -7,11 +7,11 @@ public class Management {
     @JsonProperty("configuration_endpoint")
     private String configurationEndpoint;
 
-    public String getConfiguration() {
+    public String getConfigurationEndpoint() {
         return configurationEndpoint;
     }
 
-    public void setConfiguration(String configurationResource) {
+    public void setConfigurationEndpoint(String configurationResource) {
         this.configurationEndpoint = configurationResource;
     }
 }

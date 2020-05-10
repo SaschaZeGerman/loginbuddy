@@ -10,7 +10,8 @@ import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.PkcePair;
 import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.ProviderConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONObject;
@@ -191,7 +192,7 @@ public class HeadOfInitialize {
 
     sessionCtx.setSessionCallback(Constants.valueOf(providerConfig.getResponseType().toUpperCase()));
 
-    LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode.provider.flow"));
+    LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
     return authorizeUrl.toString();
   }
@@ -223,7 +224,7 @@ public class HeadOfInitialize {
     formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuer));
     formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrl));
     // TODO take loginbuddys redirect_uri for dynamic registrations from a config file
-    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), DiscoveryConfig.CONFIG.getRedirectUri()));
+    formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), DiscoveryUtil.UTIL.getRedirectUri()));
 
     MsgResponse msg = HttpHelper
         .postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");

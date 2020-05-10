@@ -16,7 +16,7 @@ secret=$(openssl rand -base64 32 | tr -d '=' | tr -d '/' | tr -d '+')
 #
 cp dev/.env_template .env
 
-# Exporting hostnames as environmen variables
+# Exporting hostnames as environment variables
 #
 export $(cat .env | grep HOSTNAME_LOGINBUDDY)
 export $(cat .env | grep HOSTNAME_LOGINBUDDY_DEMOCLIENT)

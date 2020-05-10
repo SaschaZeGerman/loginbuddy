@@ -8,7 +8,8 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 
 import javax.servlet.ServletException;
@@ -116,7 +117,7 @@ public class Callback extends HttpServlet {
                 String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
                 ExchangeBean eb = new ExchangeBean();
-                eb.setIss(DiscoveryConfig.CONFIG.getIssuer());
+                eb.setIss(DiscoveryUtil.UTIL.getIssuer());
                 eb.setIat(new Date().getTime() / 1000);
                 eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
                 eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
@@ -151,7 +152,7 @@ public class Callback extends HttpServlet {
             sessionCtx.put("eb", eb.toString());
         }
         sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-        LoginbuddyCache.CACHE.put(authorizationCode, sessionCtx, LoginbuddyConfig.CONFIGS.getPropertiesUtil().getLongProperty("lifetime.oauth.authcode"));
+        LoginbuddyCache.CACHE.put(authorizationCode, sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode"));
 
         response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), Constants.CODE.getKey(), authorizationCode));
     }

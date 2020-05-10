@@ -14,8 +14,7 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.discovery.DiscoveryConfig;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.util.SessionContext;
 
 import javax.servlet.ServletException;
@@ -74,7 +73,7 @@ public class Token extends HttpServlet {
         if (!grantTypeResult.getResult().equals(RESULT.VALID)) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
             return;
-        } else if (Stream.of((DiscoveryConfig.CONFIG.getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
+        } else if (Stream.of((DiscoveryUtil.UTIL.getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
             response.getWriter().write(Overlord.createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
             return;
         }

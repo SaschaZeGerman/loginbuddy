@@ -3,7 +3,6 @@ package net.loginbuddy.service.config.discovery;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.service.config.Bootstrap;
@@ -14,9 +13,8 @@ import java.util.logging.Logger;
  * Values to access the discovery document.
  * More details in the document here: https://openid.net/specs/openid-connect-discovery-1_0.html
  */
-public enum DiscoveryConfig implements Bootstrap {
-
-    CONFIG;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+class DiscoveryConfig implements Bootstrap {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryConfig.class));
 
@@ -68,15 +66,15 @@ public enum DiscoveryConfig implements Bootstrap {
     @JsonProperty("code_challenge_methods_supported")
     private String[] codeChallengeMethodsSupported;
 
-    @JsonProperty("signing_alg_values_supported")
-    private String[] signingAlgValuesSupported;
-
     @JsonProperty("pushed_authorization_request_endpoint")
     private String pushedAuthorizationRequestEndpoint;
 
     // *** values specific to Loginbuddy *** //
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+//    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Management management;
+
+    @JsonProperty("signing_alg_values_supported")
+    private String[] signingAlgValuesSupported;
 
     public String getIssuer() {
         return issuer;
@@ -218,28 +216,23 @@ public enum DiscoveryConfig implements Bootstrap {
         return getIssuer() + path;
     }
 
-    public String getOpenIdConfigurationAsJsonString() {
-        try {
-            return MAPPER.writeValueAsString(CONFIG);
-        } catch (JsonProcessingException e) {
-            LOGGER.warning("Discovery document could not be produced as string");
-        }
-        return "{\"error\":\"invalid_confiuration\", \"error_description\":\"the servcer configuration is faulty. Please contact teh administrator!\"}";
-    }
-
+    @JsonIgnore
     public String getScopesSupportedAsString() {
         return HttpHelper.stringArrayToString(getScopesSupported());
     }
 
+    @JsonIgnore
     public String getSigningAlgValuesSupportedAsString() {
         return HttpHelper.stringArrayToString(getSigningAlgValuesSupported());
     }
 
+    @JsonIgnore
     public String getTokenEndpointAuthMethodsSupportedAsString() {
         return HttpHelper.stringArrayToString(getTokenEndpointAuthMethodsSupported());
     }
 
     @Override
+    @JsonIgnore
     public boolean isConfigured() {
         return issuer != null;
     }
