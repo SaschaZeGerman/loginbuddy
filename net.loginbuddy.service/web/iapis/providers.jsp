@@ -7,8 +7,8 @@
   --%>
 <%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
 <%@ page import="net.loginbuddy.common.config.Constants" %>
-<%@ page import="net.loginbuddy.service.config.LoginbuddyConfig" %>
-<%@ page import="net.loginbuddy.service.config.ProviderConfig" %>
+<%@ page import="net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig" %>
+<%@ page import="net.loginbuddy.service.config.loginbuddy.Providers" %>
 <%@ page import="net.loginbuddy.service.util.SessionContext" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.logging.Logger" %>
@@ -28,9 +28,9 @@
         String sessionId = request.getParameter("session");
 
         SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(sessionId);
-        List<ProviderConfig> providerConfigs = null;
+        List<Providers> providerConfigs = null;
         try {
-            providerConfigs = LoginbuddyConfig.CONFIGS.getConfigUtil()
+            providerConfigs = LoginbuddyConfig.CONFIG.getLoginbuddyUtil()
                     .getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
         } catch (Exception e) {
           e.printStackTrace();
@@ -43,7 +43,7 @@
         int count = 0;
         StringBuilder providers = new StringBuilder();
         providers.append("<table class=\"table table-condensed\">");
-        for (ProviderConfig nextProvider : providerConfigs) {
+        for (Providers nextProvider : providerConfigs) {
             if (count % 3 == 0) {
                 providers.append("<tr><td style=\"text-align: center; vertical-align: middle;\">");
             } else {

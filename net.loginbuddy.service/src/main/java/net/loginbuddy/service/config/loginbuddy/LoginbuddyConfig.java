@@ -6,11 +6,13 @@
  *
  */
 
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.loginbuddy;
+
+import net.loginbuddy.service.config.Bootstrap;
 
 public enum LoginbuddyConfig implements Bootstrap {
 
-    CONFIGS;
+    CONFIG;
 
     private LoginbuddyConfigLoader configLoader;
 
@@ -28,8 +30,8 @@ public enum LoginbuddyConfig implements Bootstrap {
         configLoader.loadConfig();
     }
 
-    public ConfigUtil getConfigUtil() {
-        return configLoader.getConfigUtil();
+    public LoginbuddyUtil getLoginbuddyUtil() {
+        return configLoader.getLoginbuddyUtil();
     }
 
     @Override

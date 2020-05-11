@@ -3,9 +3,9 @@ package net.loginbuddy.service.server;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
-import net.loginbuddy.service.config.ClientConfig;
-import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.Clients;
 
 import java.util.Base64;
 import java.util.stream.Stream;
@@ -38,7 +38,7 @@ public class ClientAuthenticator {
 // ** Lookup the client registration details to verify given credentials
 // ***************************************************************
 
-        ClientConfig cc = LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId(clientId);
+        Clients cc = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId(clientId);
         if (cc != null) {
             // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
             String supportedMethods = DiscoveryUtil.UTIL.getTokenEndpointAuthMethodsSupportedAsString();
@@ -107,16 +107,16 @@ public class ClientAuthenticator {
 
         private String errorMsg;
         private boolean isValid;
-        private ClientConfig clientConfig;
+        private Clients clients;
 
         public ClientCredentialsResult(String errorMsg) {
             this(errorMsg, false, null);
         }
 
-        public ClientCredentialsResult(String errorMsg, boolean isValid, ClientConfig clientConfig) {
+        public ClientCredentialsResult(String errorMsg, boolean isValid, Clients clients) {
             this.errorMsg = errorMsg;
             this.isValid = isValid;
-            this.clientConfig = clientConfig;
+            this.clients = clients;
         }
 
         public String getErrorMsg() {
@@ -127,8 +127,8 @@ public class ClientAuthenticator {
             return isValid;
         }
 
-        public ClientConfig getClientConfig() {
-            return clientConfig;
+        public Clients getClients() {
+            return clients;
         }
     }
 

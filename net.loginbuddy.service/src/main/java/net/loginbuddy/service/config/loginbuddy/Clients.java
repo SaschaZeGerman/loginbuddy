@@ -6,12 +6,12 @@
  *
  */
 
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.loginbuddy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ClientConfig {
+public class Clients {
 
     @JsonProperty("redirect_uri")
     @JsonIgnore(false)
@@ -40,7 +40,7 @@ public class ClientConfig {
     @JsonProperty("signed_response_alg")
     private String signedResponseAlg;
 
-    public ClientConfig() {
+    public Clients() {
         acceptDynamicProvider = false;
     }
 

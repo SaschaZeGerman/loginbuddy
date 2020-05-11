@@ -1,7 +1,7 @@
 package net.loginbuddy.service.server;
 
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 
@@ -19,7 +19,7 @@ public class Overlord extends HttpServlet {
   public void init() throws ServletException {
     super.init();
     // initialize the configuration. If this fails, there is no reason to continue
-    if (LoginbuddyConfig.CONFIGS.isConfigured() && PropertiesUtil.UTIL.isConfigured() && DiscoveryUtil.UTIL.isConfigured()) {
+    if (LoginbuddyConfig.CONFIG.isConfigured() && PropertiesUtil.UTIL.isConfigured() && DiscoveryUtil.UTIL.isConfigured()) {
       LOGGER.info("Loginbuddy successfully started!");
     } else {
       LOGGER.severe("Stopping Loginbuddy since its configuration could not be loaded! Fix that first!");

@@ -13,8 +13,8 @@ import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
+import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
@@ -43,16 +43,16 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
             return;
         }
 
-        ProviderConfig providerConfig = null;
+        Providers providers = null;
         if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-            providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(provider);
+            providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(provider);
         } else {
-            providerConfig = new ProviderConfig();
+            providers = new Providers();
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
-            providerConfig.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
-            providerConfig.setClientSecret(sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
-            providerConfig.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
-            providerConfig.setIssuer(provider);
+            providers.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
+            providers.setClientSecret(sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
+            providers.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
+            providers.setIssuer(provider);
         }
 
         String access_token = null;
@@ -62,7 +62,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
 // ** Exchange the code for a token response
 // ***************************************************************
 
-        MsgResponse tokenResponse = HttpHelper.postTokenExchange(providerConfig.getClientId(), providerConfig.getClientSecret(), providerConfig.getRedirectUri(), codeResult.getValue(),
+        MsgResponse tokenResponse = HttpHelper.postTokenExchange(providers.getClientId(), providers.getClientSecret(), providers.getRedirectUri(), codeResult.getValue(),
                 sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
         JSONObject idTokenPayload = null;
         if (tokenResponse != null) {
@@ -81,8 +81,8 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                     try {
                         id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
                         MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-                        idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providerConfig.getIssuer(),
-                                providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                        idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(),
+                                providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                         eb.setIdTokenPayload(idTokenPayload);
                     } catch (Exception e) {
                         LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
@@ -124,7 +124,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                 LOGGER.warning("Retrieving userinfo failed!");
             }
         }
-        eb.setNormalized(Normalizer.normalizeDetails(providerConfig.mappingsAsJson(), eb.getEbAsJson(), access_token));
+        eb.setNormalized(Normalizer.normalizeDetails(providers.mappingsAsJson(), eb.getEbAsJson(), access_token));
 
 
 // ***************************************************************

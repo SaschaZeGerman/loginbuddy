@@ -9,8 +9,8 @@
 package net.loginbuddy.service.server;
 
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.service.config.ClientConfig;
-import net.loginbuddy.service.config.LoginbuddyConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
+import net.loginbuddy.service.config.loginbuddy.Clients;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +30,7 @@ public class Authorize extends AuthorizationHandler {
 
     @Override
     protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader) {
-        ClientConfig cc = LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId(clientIdResult.getValue());
+        Clients cc = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId(clientIdResult.getValue());
         if (cc == null) {
             return new ClientAuthenticator.ClientCredentialsResult("An invalid client_id was provided!", false, null);
         }

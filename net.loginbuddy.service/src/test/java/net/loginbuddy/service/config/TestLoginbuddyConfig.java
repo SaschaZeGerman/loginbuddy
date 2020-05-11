@@ -1,6 +1,7 @@
 package net.loginbuddy.service.config;
 
 import hthurow.tomcatjndi.TomcatJNDI;
+import net.loginbuddy.service.config.loginbuddy.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +20,7 @@ public class TestLoginbuddyConfig {
         tomcatJNDI = new TomcatJNDI();
         tomcatJNDI.processContextXml(new File("src/test/resources/testContext.xml"));
         tomcatJNDI.start();
-        LoginbuddyConfig.CONFIGS.setDefaultConfigLoader();
+        LoginbuddyConfig.CONFIG.setDefaultConfigLoader();
     }
 
     @After
@@ -29,12 +30,12 @@ public class TestLoginbuddyConfig {
 
     @Test
     public void testLoadClient() {
-        assertEquals("public", LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId("clientIdForTestingPurposes").getClientType());
+        assertEquals("public", LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId("clientIdForTestingPurposes").getClientType());
     }
 
     @Test
     public void testLoadProvider() {
-        assertEquals("loginbuddy_demoId", LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider("server_loginbuddy").getClientId());
+        assertEquals("loginbuddy_demoId", LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider("server_loginbuddy").getClientId());
     }
 
     @Test
@@ -51,8 +52,8 @@ public class TestLoginbuddyConfig {
             }
 
             @Override
-            public ConfigUtil getConfigUtil() {
-                return new TestConfigUtil();
+            public LoginbuddyUtil getLoginbuddyUtil() {
+                return new TestLoginbuddyUtil();
             }
 
             @Override
@@ -60,40 +61,40 @@ public class TestLoginbuddyConfig {
                 return false;
             }
         };
-        LoginbuddyConfig.CONFIGS.setConfigLoader(loader);
-        assertEquals("confidential", LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId("reloadClientId").getClientType());
+        LoginbuddyConfig.CONFIG.setConfigLoader(loader);
+        assertEquals("confidential", LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId("reloadClientId").getClientType());
 
         // check if the reloaded config is still active
-        assertEquals("confidential", LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId("reloadClientId").getClientType());
+        assertEquals("confidential", LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId("reloadClientId").getClientType());
     }
 
-    class TestConfigUtil extends ConfigUtil {
+    class TestLoginbuddyUtil extends LoginbuddyUtil {
 
         @Override
-        public ClientConfig getClientConfigByClientId(String clientId) {
-            ClientConfig cc = new ClientConfig();
+        public Clients getClientConfigByClientId(String clientId) {
+            Clients cc = new Clients();
             cc.setClientId("reloadClientId");
             cc.setClientType("confidential");
             return cc;
         }
 
         @Override
-        public List<ProviderConfig> getProviders(String clientId) throws Exception {
+        public List<Providers> getProviders(String clientId) throws Exception {
             return super.getProviders(clientId);
         }
 
         @Override
-        public ProviderConfig getProviderConfigByProvider(String providerHint) {
+        public Providers getProviderConfigByProvider(String providerHint) {
             return super.getProviderConfigByProvider(providerHint);
         }
 
         @Override
-        public ProviderConfig getProviderConfigByIssuer(String issuerHint) {
+        public Providers getProviderConfigByIssuer(String issuerHint) {
             return super.getProviderConfigByIssuer(issuerHint);
         }
 
         @Override
-        public ProviderConfig getProviderConfigFromJsonString(String providerHint) {
+        public Providers getProviderConfigFromJsonString(String providerHint) {
             return super.getProviderConfigFromJsonString(providerHint);
         }
 

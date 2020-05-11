@@ -2,10 +2,10 @@ package net.loginbuddy.service.management;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.service.config.ClientConfig;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.Clients;
+import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 
 import javax.servlet.ServletException;
@@ -52,10 +52,10 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadClients)
     private String doGetClients(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
-            ClientConfig clientConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getClientConfigByClientId(selector);
-            if(clientConfig != null) {
-                clientConfig.setClientSecret("***");
-                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(clientConfig);
+            Clients clients = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId(selector);
+            if(clients != null) {
+                clients.setClientSecret("***");
+                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(clients);
             }
         } else {
             return LoginbuddyScope.getInvalidScopeError(givenScope);
@@ -66,7 +66,7 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadProviders)
     private String doGetProviders(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadProviders.isScopeValid(givenScope)) {
-            ProviderConfig config = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(selector);
+            Providers config = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(selector);
             if(config != null) {
                 config.setClientSecret("***");
                 return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(config);

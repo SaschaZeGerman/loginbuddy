@@ -6,9 +6,9 @@ import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
@@ -72,11 +72,11 @@ public class CallbackSelfissued extends CallbackParent {
             eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             eb.setProvider(provider);
 
-            ProviderConfig providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(provider);
+            Providers providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(provider);
 
             JSONObject idTokenPayload = null;
             try {
-                idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), null, providerConfig.getIssuer(), providerConfig.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), null, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                 eb.setIdTokenPayload(idTokenPayload);
             } catch (Exception e) {
                 LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));

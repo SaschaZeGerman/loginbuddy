@@ -8,9 +8,9 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.PkcePair;
-import net.loginbuddy.service.config.LoginbuddyConfig;
-import net.loginbuddy.service.config.ProviderConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -50,21 +50,21 @@ public class HeadOfInitialize {
 // ***************************************************************
 
     // TODO Verify that the selected provider is valid for this client
-    ProviderConfig providerConfig = null;
+    Providers providers = null;
     try {
 
       // dynamic registration of unknown provider
       // we need: 'dynamic_provider', and 'issuer', client must be registered to accept dynamic provider
       if (checkForDynamicProvider(selectedProvider, issuerResult, discoveryUrlResult, sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey()))) {
-        providerConfig = registerProvider(issuerResult.getValue(), discoveryUrlResult.getValue(), sessionCtx);
-        if (providerConfig != null) {
-          selectedProvider = providerConfig.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
+        providers = registerProvider(issuerResult.getValue(), discoveryUrlResult.getValue(), sessionCtx);
+        if (providers != null) {
+          selectedProvider = providers.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
         }
       } else {
-        providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigByProvider(selectedProvider);
+        providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(selectedProvider);
       }
 
-      if (providerConfig == null) {
+      if (providers == null) {
         LOGGER.warning("The given provider is unknown or invalid");
         return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "The given provider is unknown or invalid");
       } else {
@@ -83,7 +83,7 @@ public class HeadOfInitialize {
 // ***************************************************************
 
     JSONObject oidcConfig = null;
-    String oidcConfigUrl = providerConfig.getOpenidConfigurationUri();
+    String oidcConfigUrl = providers.getOpenidConfigurationUri();
     if (oidcConfigUrl != null) {
       try {
         MsgResponse msg = HttpHelper.getAPI(oidcConfigUrl);
@@ -125,10 +125,10 @@ public class HeadOfInitialize {
 
     } else {
       // using the configured URLs since a well-known endpoint has not been configured
-      authorizeUrl.append(providerConfig.getAuthorizationEndpoint());
-      providerTokenEndpoint = providerConfig.getTokenEndpoint();
-      providerJwksEndpoint = providerConfig.getJwksUri();
-      providerUserinfoEndpoint = providerConfig.getUserinfoEndpoint();
+      authorizeUrl.append(providers.getAuthorizationEndpoint());
+      providerTokenEndpoint = providers.getTokenEndpoint();
+      providerJwksEndpoint = providers.getJwksUri();
+      providerUserinfoEndpoint = providers.getUserinfoEndpoint();
     }
 
 // ***************************************************************
@@ -149,7 +149,7 @@ public class HeadOfInitialize {
 // ***************************************************************
 
     String pkce = null;
-    if (providerConfig.getPkce()) {
+    if (providers.getPkce()) {
       PkcePair pair = Pkce.create(Pkce.CODE_CHALLENGE_METHOD_S256);
       sessionCtx.put(Constants.CODE_VERIFIER.getKey(), pair.getVerifier());
       pkce = String.format("&%s=%s&%s=S256", Constants.CODE_CHALLENGE.getKey(), pair.getChallenge(),
@@ -160,7 +160,7 @@ public class HeadOfInitialize {
 // ** some providers do expect 'response_mode' for certain SCOPE combinations. Include it if specified
 // ***************************************************************
 
-    String responseMode = providerConfig.getResponseMode();
+    String responseMode = providers.getResponseMode();
     if (Constants.RESPONSE_MODE_QUERY.getKey().equalsIgnoreCase(responseMode) || Constants.RESPONSE_MODE_FORM_POST.getKey().equalsIgnoreCase(responseMode)) {
       responseMode = "&response_mode=" + responseMode;
     }
@@ -174,11 +174,11 @@ public class HeadOfInitialize {
     String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey());
     String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey());
 
-    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getClientId())).
-        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getResponseType()))
-        .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getScope()))
+    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId())).
+        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getResponseType()))
+        .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getScope()))
         .append("&").append(Constants.NONCE.getKey()).append("=").append(HttpHelper.urlEncode((String)sessionCtx.get(Constants.CLIENT_NONCE.getKey())))
-        .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providerConfig.getRedirectUri()))
+        .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providers.getRedirectUri()))
         .append(pkce == null ? "" : pkce)
         .append(responseMode == null ? "" : responseMode)
         .append(cp)
@@ -190,7 +190,7 @@ public class HeadOfInitialize {
 // ** Finalize and update the session details
 // ***************************************************************
 
-    sessionCtx.setSessionCallback(Constants.valueOf(providerConfig.getResponseType().toUpperCase()));
+    sessionCtx.setSessionCallback(Constants.valueOf(providers.getResponseType().toUpperCase()));
 
     LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
@@ -217,7 +217,7 @@ public class HeadOfInitialize {
   /**
    * Register loginbuddy at the provider and remember a few details for later use
    */
-  private static ProviderConfig registerProvider(String issuer, String discoveryUrl, SessionContext sessionCtx)
+  private static Providers registerProvider(String issuer, String discoveryUrl, SessionContext sessionCtx)
       throws IOException {
 
     List<NameValuePair> formParameters = new ArrayList<>();
@@ -229,12 +229,12 @@ public class HeadOfInitialize {
     MsgResponse msg = HttpHelper
         .postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");
     if (msg.getStatus() == 200) {
-      ProviderConfig providerConfig = LoginbuddyConfig.CONFIGS.getConfigUtil().getProviderConfigFromJsonString(msg.getMsg());
+      Providers providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigFromJsonString(msg.getMsg());
       sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_OIDCDR.getKey());
-      sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providerConfig.getClientId()); // we have to store this in the session to make it available later
-      sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providerConfig.getClientSecret()); // we have to store this in the session to make it available later
-      sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providerConfig.getRedirectUri()); // we have to store this in the session to make it available later
-      return providerConfig;
+      sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providers.getClientId()); // we have to store this in the session to make it available later
+      sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providers.getClientSecret()); // we have to store this in the session to make it available later
+      sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providers.getRedirectUri()); // we have to store this in the session to make it available later
+      return providers;
     } else {
       LOGGER.warning(msg.getMsg());
       return null;

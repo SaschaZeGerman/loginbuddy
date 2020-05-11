@@ -1,14 +1,12 @@
 {
-  "loginbuddy": {
-    "clients": [
-      {
-        "client_id": "clientIdForReloadTest",
-        "client_secret": "clientSecretForReloadTest",
-        "client_type": "public",
-        "client_uri": "https://democlient.loginbuddy.net",
-        "redirect_uri": "https://democlient.loginbuddy.net/callback,https://democlient.loginbuddy.net/spa.html"
-      }
-    ],
-    "providers": []
-  }
+  "clients": [
+    {
+      "client_id": "clientIdForReloadTest",
+      "client_secret": "clientSecretForReloadTest",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback,https://democlient.loginbuddy.net/spa.html"
+    }
+  ],
+  "providers": []
 }

@@ -1,4 +1,4 @@
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.loginbuddy;
 
 public enum ProviderConfigType {
 

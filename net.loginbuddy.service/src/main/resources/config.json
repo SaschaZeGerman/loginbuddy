@@ -1,6 +1,4 @@
 {
-  "loginbuddy": {
-    "clients": [],
-    "providers": []
-  }
+  "clients": [],
+  "providers": []
 }

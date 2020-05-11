@@ -1,6 +1,6 @@
 <Context path="" docBase="/usr/local/tomcat/webapps/ROOT" debug="0" reloadable="true">
     <Resource name="bean/ConfigUtilFactory" auth="Container"
-              type="net.loginbuddy.service.config.ConfigUtil"
+              type="net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil"
               factory="org.apache.naming.factory.BeanFactory"
               path="src/test/resources/testConfig.json"/>
     <Resource name="bean/DiscoveryUtilFactory" auth="Container"

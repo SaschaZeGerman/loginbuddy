@@ -46,9 +46,9 @@ public class Token extends HttpServlet {
             return;
         }
 
-        if(clientCredentialsResult.getClientConfig().getClientProviders().length == 1 &&
-                clientCredentialsResult.getClientConfig().getClientProviders()[0].equalsIgnoreCase("loginbuddy") &&
-                clientCredentialsResult.getClientConfig().getClientType().equalsIgnoreCase(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey()) &&
+        if(clientCredentialsResult.getClients().getClientProviders().length == 1 &&
+                clientCredentialsResult.getClients().getClientProviders()[0].equalsIgnoreCase("loginbuddy") &&
+                clientCredentialsResult.getClients().getClientType().equalsIgnoreCase(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey()) &&
                 Constants.GRANT_TYPE_CLIENT_CREDENTIALS.getKey().equalsIgnoreCase(grantTypeResult.getValue())) {
 
             Map<String, String> claims = new HashMap<>();
@@ -71,7 +71,7 @@ public class Token extends HttpServlet {
                         DiscoveryUtil.UTIL.getIssuer(),
                         DiscoveryUtil.UTIL.getIssuer(),
                         5,
-                        clientCredentialsResult.getClientConfig().getClientId(),
+                        clientCredentialsResult.getClients().getClientId(),
                         false,
                         claims)
                         .getCompactSerialization();

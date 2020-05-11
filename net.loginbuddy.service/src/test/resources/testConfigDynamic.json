@@ -1,12 +1,10 @@
 {
-  "loginbuddy": {
-    "clients": [],
-    "providers": [
-      {
-        "provider": "server_dynamic",
-        "issuer": "https://demoserver.loginbuddy.net",
-        "openid_configuration_uri": "https://demoserver.loginbuddy.net/.well-known/openid-configuration"
-      }
-    ]
-  }
+  "clients": [],
+  "providers": [
+    {
+      "provider": "server_dynamic",
+      "issuer": "https://demoserver.loginbuddy.net",
+      "openid_configuration_uri": "https://demoserver.loginbuddy.net/.well-known/openid-configuration"
+    }
+  ]
 }

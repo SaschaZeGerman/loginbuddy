@@ -7,9 +7,8 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.Sanetizer;
-import net.loginbuddy.service.config.ClientConfig;
-import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.Clients;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
@@ -110,7 +109,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             handleError(400, clientValidationResult.getErrorMsg(), response);
             return;
         }
-        ClientConfig cc = clientValidationResult.getClientConfig();
+        Clients cc = clientValidationResult.getClients();
 
 // ***************************************************************
 // ** Check the given redirect_uri. Confidential clients only need to have one registered but not passed in

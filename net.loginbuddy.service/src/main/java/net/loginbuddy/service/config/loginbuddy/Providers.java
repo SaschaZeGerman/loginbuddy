@@ -6,7 +6,7 @@
  *
  */
 
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.loginbuddy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,9 +18,9 @@ import org.json.simple.parser.ParseException;
 
 import java.util.logging.Logger;
 
-public class ProviderConfig {
+public class Providers {
 
-  private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProviderConfig.class));
+  private static final Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
 
   @JsonProperty("provider")
   @JsonIgnore(false)
@@ -72,7 +72,7 @@ public class ProviderConfig {
   @JsonProperty("mappings")
   private JsonNode mappings;
 
-  public ProviderConfig() {
+  public Providers() {
     this.pkce = true;
     this.scope = Constants.OPENID_SCOPE.getKey();
     this.responseType = Constants.CODE.getKey();
@@ -82,7 +82,7 @@ public class ProviderConfig {
    * Updates the config and removes the oidc config endpoint. This way we do not do another API call to retrieve it
    * again. It does NOT update 'issuer' or 'provider'
    */
-  public void enhanceToFull(ProviderConfig config) {
+  public void enhanceToFull(Providers config) {
     this.clientId = config.getClientId();
     this.clientSecret = config.getClientSecret();
     this.redirectUri = config.getRedirectUri();

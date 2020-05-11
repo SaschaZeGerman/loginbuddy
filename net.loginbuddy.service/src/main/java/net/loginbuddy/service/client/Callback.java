@@ -7,7 +7,6 @@ import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.service.config.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;

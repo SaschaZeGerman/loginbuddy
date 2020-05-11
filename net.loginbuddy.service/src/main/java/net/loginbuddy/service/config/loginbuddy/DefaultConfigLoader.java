@@ -1,4 +1,6 @@
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.config.loginbuddy;
+
+import net.loginbuddy.service.config.Bootstrap;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -8,7 +10,7 @@ public class DefaultConfigLoader implements LoginbuddyConfigLoader {
 
     private final Logger LOGGER = Logger.getLogger(String.valueOf(DefaultConfigLoader.class));
 
-    private ConfigUtil configUtil;
+    private LoginbuddyUtil loginbuddyUtil;
 
     private String path;
 
@@ -25,7 +27,7 @@ public class DefaultConfigLoader implements LoginbuddyConfigLoader {
         try {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
-            configUtil = (ConfigUtil) envCtx.lookup("bean/ConfigUtilFactory");
+            loginbuddyUtil = (LoginbuddyUtil) envCtx.lookup("bean/ConfigUtilFactory");
             LOGGER.info("Default Loginbuddy Configuration loaded!");
         } catch (Exception e) {
             LOGGER.severe("Loginbuddy configurations could not be loaded!");
@@ -39,12 +41,12 @@ public class DefaultConfigLoader implements LoginbuddyConfigLoader {
     }
 
     @Override
-    public ConfigUtil getConfigUtil() {
-        return configUtil;
+    public LoginbuddyUtil getLoginbuddyUtil() {
+        return loginbuddyUtil;
     }
 
     @Override
     public boolean isConfigured() {
-        return configUtil != null && ((Bootstrap) configUtil).isConfigured();
+        return loginbuddyUtil != null && ((Bootstrap) loginbuddyUtil).isConfigured();
     }
 }
