@@ -1,11 +1,14 @@
 package net.loginbuddy.service.config.loginbuddy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.loginbuddy.service.config.Bootstrap;
 
 import java.util.List;
 
-public class Loginbuddy {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class Loginbuddy implements Bootstrap {
 
     @JsonProperty("clients")
     @JsonIgnore(false)
@@ -29,5 +32,11 @@ public class Loginbuddy {
 
     public void setProviders(List<Providers> providers) {
         this.providers = providers;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isConfigured() {
+        return clients != null && providers != null;
     }
 }

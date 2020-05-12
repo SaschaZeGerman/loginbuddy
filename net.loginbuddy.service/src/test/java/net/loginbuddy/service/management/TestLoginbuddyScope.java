@@ -1,6 +1,5 @@
-package net.loginbuddy.service.config;
+package net.loginbuddy.service.management;
 
-import net.loginbuddy.service.management.LoginbuddyScope;
 import org.junit.Test;
 
 import java.util.Set;

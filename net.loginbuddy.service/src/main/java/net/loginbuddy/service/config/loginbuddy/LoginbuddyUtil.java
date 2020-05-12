@@ -13,44 +13,45 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.service.config.Bootstrap;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
-import net.loginbuddy.service.server.Overlord;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class LoginbuddyUtil extends Overlord implements Bootstrap {
+public enum LoginbuddyUtil implements Bootstrap {
+
+    UTIL;
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyUtil.class));
 
+    private LoginbuddyLoader loader;
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
-    private String path;
-
-    private Loginbuddy loginbuddy;
-
-    public LoginbuddyUtil() {
+    LoginbuddyUtil() {
+        setDefaultLoader();
     }
 
-    private Loginbuddy getLoginbuddy() {
-        try {
-            loginbuddy = (Loginbuddy) LoginbuddyCache.CACHE.get("ConfigUtilGetConfig");
-            if (loginbuddy == null) {
-                loginbuddy = MAPPER.readValue(new File(this.path).getAbsoluteFile(), Loginbuddy.class);
-                LoginbuddyCache.CACHE.put("ConfigUtilGetConfig", loginbuddy);
-            }
-            return loginbuddy;
-        } catch (IOException e) {
-            LOGGER.severe("LoginBuddyConfiguration file could not be loaded!");
-            return null; // this should not occur ... TODO make this fail safe
-        }
+    public void setDefaultLoader() {
+        loader = new DefaultLoader();
+        loader.load();
+    }
+    @Override
+    public boolean isConfigured() {
+        return loader != null && loader.isConfigured();
+    }
+
+    public LoginbuddyLoader getLoader() {
+        return loader;
+    }
+
+    public void setLoader(LoginbuddyLoader loader) {
+        this.loader = loader;
     }
 
     private List<Clients> getClients() {
-        return getLoginbuddy().getClients();
+        return loader.getLoginbuddy().getClients();
     }
 
     private List<Providers> getProviders() {
@@ -58,7 +59,7 @@ public class LoginbuddyUtil extends Overlord implements Bootstrap {
         List<Providers> providers = (List<Providers>) LoginbuddyCache.CACHE.get("providers");
         try {
             if (providers == null) {
-                providers = getLoginbuddy().getProviders();
+                providers = loader.getLoginbuddy().getProviders();
                 for (Providers next : providers) {
                     if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
                         next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
@@ -72,14 +73,6 @@ public class LoginbuddyUtil extends Overlord implements Bootstrap {
             LOGGER.severe(String.format("Fail to map provider! Error: '%s'", e.getMessage()));
         }
         return providers;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public Clients getClientConfigByClientId(String clientId) {
@@ -128,10 +121,5 @@ public class LoginbuddyUtil extends Overlord implements Bootstrap {
             ;
             return null;
         }
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return getLoginbuddy() != null;
     }
 }

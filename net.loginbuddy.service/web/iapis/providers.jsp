@@ -7,11 +7,11 @@
   --%>
 <%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
 <%@ page import="net.loginbuddy.common.config.Constants" %>
-<%@ page import="net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig" %>
 <%@ page import="net.loginbuddy.service.config.loginbuddy.Providers" %>
 <%@ page import="net.loginbuddy.service.util.SessionContext" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.logging.Logger" %>
+<%@ page import="net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!
@@ -30,8 +30,7 @@
         SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(sessionId);
         List<Providers> providerConfigs = null;
         try {
-            providerConfigs = LoginbuddyConfig.CONFIG.getLoginbuddyUtil()
-                    .getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
+            providerConfigs = LoginbuddyUtil.UTIL.getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
         } catch (Exception e) {
           e.printStackTrace();
             // should never occur, this would have been caught in Providers

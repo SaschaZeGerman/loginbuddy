@@ -18,7 +18,7 @@ public class TestDiscoveryUtilMax {
         tomcatJNDI = new TomcatJNDI();
         tomcatJNDI.processContextXml(new File("src/test/resources/testContextDiscoveryMax.xml"));
         tomcatJNDI.start();
-        DiscoveryUtil.UTIL.getLoader().reloadDiscovery();
+        DiscoveryUtil.UTIL.getLoader().reload();
     }
 
     @After

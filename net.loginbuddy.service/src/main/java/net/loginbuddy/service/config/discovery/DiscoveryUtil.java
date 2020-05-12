@@ -25,8 +25,13 @@ public enum DiscoveryUtil implements Bootstrap {
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
     DiscoveryUtil() {
-        loader = new DefaultDiscoveryLoader();
-        loader.loadDiscovery();
+        loader = new DefaultLoader();
+        loader.load();
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return loader != null && loader.isConfigured();
     }
 
     /**
@@ -130,10 +135,5 @@ public enum DiscoveryUtil implements Bootstrap {
 
     public DiscoveryLoader getLoader() {
         return loader;
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return loader != null && loader.isConfigured();
     }
 }

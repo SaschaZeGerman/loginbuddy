@@ -8,8 +8,8 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.PkcePair;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
@@ -61,7 +61,7 @@ public class HeadOfInitialize {
           selectedProvider = providers.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
         }
       } else {
-        providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(selectedProvider);
+        providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selectedProvider);
       }
 
       if (providers == null) {
@@ -229,7 +229,7 @@ public class HeadOfInitialize {
     MsgResponse msg = HttpHelper
         .postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");
     if (msg.getStatus() == 200) {
-      Providers providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigFromJsonString(msg.getMsg());
+      Providers providers = LoginbuddyUtil.UTIL.getProviderConfigFromJsonString(msg.getMsg());
       sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_OIDCDR.getKey());
       sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providers.getClientId()); // we have to store this in the session to make it available later
       sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providers.getClientSecret()); // we have to store this in the session to make it available later

@@ -14,9 +14,9 @@ import java.util.logging.Logger;
  * More details in the document here: https://openid.net/specs/openid-connect-discovery-1_0.html
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class DiscoveryConfig implements Bootstrap {
+public class Discovery implements Bootstrap {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryConfig.class));
+    private Logger LOGGER = Logger.getLogger(String.valueOf(Discovery.class));
 
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 

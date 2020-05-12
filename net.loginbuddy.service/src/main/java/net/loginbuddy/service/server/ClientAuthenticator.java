@@ -3,9 +3,9 @@ package net.loginbuddy.service.server;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.config.loginbuddy.Clients;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
 
 import java.util.Base64;
 import java.util.stream.Stream;
@@ -38,7 +38,7 @@ public class ClientAuthenticator {
 // ** Lookup the client registration details to verify given credentials
 // ***************************************************************
 
-        Clients cc = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId(clientId);
+        Clients cc = LoginbuddyUtil.UTIL.getClientConfigByClientId(clientId);
         if (cc != null) {
             // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
             String supportedMethods = DiscoveryUtil.UTIL.getTokenEndpointAuthMethodsSupportedAsString();

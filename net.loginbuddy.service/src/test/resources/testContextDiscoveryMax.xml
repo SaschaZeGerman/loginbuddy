@@ -1,13 +1,17 @@
 <Context path="" docBase="/usr/local/tomcat/webapps/ROOT" debug="0" reloadable="true">
-    <Resource name="bean/ConfigUtilFactory" auth="Container"
-              type="net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil"
-              factory="org.apache.naming.factory.BeanFactory"
+    <Resource name="bean/LoginbuddyFactory" auth="Container"
+              type="net.loginbuddy.service.config.loginbuddy.Loginbuddy"
+              factory="net.loginbuddy.service.config.loginbuddy.Factory"
               path="src/test/resources/testConfig.json"/>
     <Resource name="bean/DiscoveryUtilFactory" auth="Container"
-              type="net.loginbuddy.service.config.discovery.DiscoveryConfig"
+              type="net.loginbuddy.service.config.discovery.Discovery"
               factory="net.loginbuddy.service.config.discovery.Factory"
               path="src/test/resources/testDiscoveryMax.json"/>
     <Resource name="bean/CacheFactory" auth="Container"
               type="net.loginbuddy.common.cache.DefaultCache"
               factory="org.apache.naming.factory.BeanFactory"/>
+    <Resource name="bean/PropertiesFactory" auth="Container"
+              type="java.util.Properties"
+              factory="net.loginbuddy.service.config.properties.Factory"
+              path="src/test/resources/testLoginbuddy.properties"/>
 </Context>

@@ -2,9 +2,9 @@ package net.loginbuddy.service.management;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.config.loginbuddy.Clients;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 
@@ -52,7 +52,7 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadClients)
     private String doGetClients(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
-            Clients clients = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getClientConfigByClientId(selector);
+            Clients clients = LoginbuddyUtil.UTIL.getClientConfigByClientId(selector);
             if(clients != null) {
                 clients.setClientSecret("***");
                 return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(clients);
@@ -66,7 +66,7 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadProviders)
     private String doGetProviders(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadProviders.isScopeValid(givenScope)) {
-            Providers config = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(selector);
+            Providers config = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selector);
             if(config != null) {
                 config.setClientSecret("***");
                 return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(config);

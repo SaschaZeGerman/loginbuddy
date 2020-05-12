@@ -4,7 +4,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyConfig;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.service.config.loginbuddy.Providers;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
@@ -34,7 +34,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
 
         Providers providers = null;
         if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-            providers = LoginbuddyConfig.CONFIG.getLoginbuddyUtil().getProviderConfigByProvider(provider);
+            providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
         } else {
             providers = new Providers();
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
