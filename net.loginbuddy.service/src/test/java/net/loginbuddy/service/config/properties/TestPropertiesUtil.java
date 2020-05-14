@@ -1,7 +1,6 @@
 package net.loginbuddy.service.config.properties;
 
 import hthurow.tomcatjndi.TomcatJNDI;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
 import org.apache.http.MethodNotSupportedException;
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +20,7 @@ public class TestPropertiesUtil {
         tomcatJNDI = new TomcatJNDI();
         tomcatJNDI.processContextXml(new File("src/test/resources/testContext.xml"));
         tomcatJNDI.start();
-        LoginbuddyUtil.UTIL.setDefaultLoader();
+        PropertiesUtil.UTIL.setDefaultLoader();
     }
 
     @After
@@ -42,6 +41,63 @@ public class TestPropertiesUtil {
             fail();
         } catch (MethodNotSupportedException e) {
             assertTrue(true);
+        }
+    }
+
+    @Test
+    public void testOverrideLoader() {
+        assertEquals(60l, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
+
+        PropertyLoader l = new TestPropertyLoader();
+        PropertiesUtil.UTIL.setLoader(l);
+
+        assertEquals(10l, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
+    }
+
+    class TestPropertyLoader implements PropertyLoader {
+
+        Properties testProps;
+
+        public TestPropertyLoader() {
+            testProps = new Properties();
+            testProps.put("lifetime.proxy.userinfo", "10");
+            testProps.put("lifetime.oauth.authcode.loginbuddy.flow", "20");
+            testProps.put("lifetime.oauth.authcode", "30");
+            testProps.put("lifetime.oauth.authcode.provider.flow", "40");
+        }
+
+        @Override
+        public Properties getProperties() {
+            return testProps;
+        }
+
+        @Override
+        public boolean isConfigured() {
+            return testProps != null;
+        }
+
+        @Override
+        public void load() {
+            // nothing to do here
+            // if we would get properties from a different location we would pull them in here
+        }
+
+        @Override
+        public void reload() {
+            // nothing to do here
+            // if we would get properties from a different location we would pull them in here
+        }
+
+        @Override
+        public <T> T save(T configuration) throws MethodNotSupportedException {
+            testProps = (Properties)configuration;
+            return (T)testProps;
+        }
+
+        @Override
+        public <T> T update(T configuration) throws MethodNotSupportedException {
+            testProps.putAll((Properties)configuration);
+            return (T)testProps;
         }
     }
 }

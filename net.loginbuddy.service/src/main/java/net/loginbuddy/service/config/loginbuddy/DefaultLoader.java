@@ -30,9 +30,8 @@ public class DefaultLoader implements LoginbuddyLoader {
 
     @Override
     public <T> T save(T configuration) throws MethodNotSupportedException {
-        throw new MethodNotSupportedException("loginbuddy configuration updates are not supported!");
+        throw new MethodNotSupportedException("setting loginbuddy configuration is not supported!");
     }
-
 
     @Override
     public <T> T update(T configuration) throws MethodNotSupportedException {

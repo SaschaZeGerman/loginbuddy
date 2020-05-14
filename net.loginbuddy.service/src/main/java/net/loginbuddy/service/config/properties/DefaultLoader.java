@@ -31,7 +31,7 @@ public class DefaultLoader implements PropertyLoader {
 
     @Override
     public <T> T save(T configuration) throws MethodNotSupportedException {
-        throw new MethodNotSupportedException("set properties are not supported!");
+        throw new MethodNotSupportedException("setting properties is not supported!");
     }
 
     @Override

@@ -34,16 +34,17 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     public void setDefaultLoader() {
-        loader = new DefaultLoader();
-        loader.load();
-    }
-
-    public LoginbuddyLoader getLoader() {
-        return loader;
+        setLoader(new DefaultLoader());
     }
 
     public void setLoader(LoginbuddyLoader loader) {
         this.loader = loader;
+        this.loader.load();
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return loader != null && loader.isConfigured();
     }
 
     public List<Clients> getClients() {
@@ -122,10 +123,5 @@ public enum LoginbuddyUtil implements Bootstrap {
     private ProviderConfigType getProviderType(Providers p) {
         return p.getClientId() == null ? ProviderConfigType.MINIMAL
                 : p.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return loader != null && loader.isConfigured();
     }
 }

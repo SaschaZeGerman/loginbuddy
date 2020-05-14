@@ -16,13 +16,21 @@ public enum PropertiesUtil implements Bootstrap {
     private PropertyLoader loader;
 
     PropertiesUtil() {
-        loader = new DefaultLoader();
-        loader.load();
+        setDefaultLoader();
+    }
+
+    public void setDefaultLoader() {
+        setLoader(new DefaultLoader());
     }
 
     public void setLoader(PropertyLoader loader) {
         this.loader = loader;
-        this.loader.reload();
+        this.loader.load();
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return loader != null && loader.isConfigured();
     }
 
     public long getLongProperty(String property) {
@@ -47,10 +55,5 @@ public enum PropertiesUtil implements Bootstrap {
 
     public Properties updateProperties(Properties props) throws MethodNotSupportedException {
         return loader.update(props);
-    }
-
-    @Override
-    public boolean isConfigured() {
-        return loader != null && loader.isConfigured();
     }
 }

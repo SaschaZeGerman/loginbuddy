@@ -35,7 +35,7 @@ public class DefaultLoader implements DiscoveryLoader {
 
     @Override
     public <T> T update(T configuration) throws MethodNotSupportedException {
-        throw new MethodNotSupportedException("discovery updates are not supported!");
+        throw new MethodNotSupportedException("discovery configuration updates are not supported!");
     }
 
     @Override
