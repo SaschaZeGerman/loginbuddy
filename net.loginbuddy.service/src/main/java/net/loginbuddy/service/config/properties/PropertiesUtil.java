@@ -1,6 +1,7 @@
 package net.loginbuddy.service.config.properties;
 
 import net.loginbuddy.service.config.Bootstrap;
+import org.apache.http.MethodNotSupportedException;
 import org.json.simple.JSONObject;
 
 import java.util.Properties;
@@ -38,6 +39,14 @@ public enum PropertiesUtil implements Bootstrap {
             output.put(nextProp.replace(".", "_"), props.getProperty(nextProp));
         }
         return output.toJSONString();
+    }
+
+    public Properties setProperties(Properties props) throws MethodNotSupportedException {
+        return loader.save(props);
+    }
+
+    public Properties updateProperties(Properties props) throws MethodNotSupportedException {
+        return loader.update(props);
     }
 
     @Override

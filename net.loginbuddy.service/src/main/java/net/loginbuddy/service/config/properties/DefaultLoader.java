@@ -1,11 +1,13 @@
 package net.loginbuddy.service.config.properties;
 
+import org.apache.http.MethodNotSupportedException;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-class DefaultLoader implements PropertyLoader {
+public class DefaultLoader implements PropertyLoader {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(DefaultLoader.class));
 
@@ -25,6 +27,16 @@ class DefaultLoader implements PropertyLoader {
     @Override
     public void reload() {
         load();
+    }
+
+    @Override
+    public <T> T save(T configuration) throws MethodNotSupportedException {
+        throw new MethodNotSupportedException("set properties are not supported!");
+    }
+
+    @Override
+    public <T> T update(T configuration) throws MethodNotSupportedException {
+        throw new MethodNotSupportedException("property updates are not supported!");
     }
 
     @Override

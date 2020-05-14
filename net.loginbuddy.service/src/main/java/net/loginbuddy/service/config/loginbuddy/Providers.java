@@ -9,6 +9,7 @@
 package net.loginbuddy.service.config.loginbuddy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import net.loginbuddy.common.config.Constants;
@@ -18,6 +19,7 @@ import org.json.simple.parser.ParseException;
 
 import java.util.logging.Logger;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Providers {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
@@ -78,6 +80,18 @@ public class Providers {
     this.responseType = Constants.CODE.getKey();
   }
 
+  public Providers(String issuer, String clientId, String redirectUri) {
+    this();
+    this.issuer = issuer;
+    this.clientId = clientId;
+    this.redirectUri = redirectUri;
+  }
+
+  public Providers(String issuer, String clientId, String redirectUri, String clientSecret) {
+    this(issuer, clientId, redirectUri);
+    this.clientSecret = clientSecret;
+  }
+
   /**
    * Updates the config and removes the oidc config endpoint. This way we do not do another API call to retrieve it
    * again. It does NOT update 'issuer' or 'provider'
@@ -95,113 +109,56 @@ public class Providers {
     this.openidConfigurationUri = null;
   }
 
-  public ProviderConfigType getProviderType() {
-    return clientId == null ? ProviderConfigType.MINIMAL
-        : openidConfigurationUri == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
-  }
-
   public String getProvider() {
     return provider;
-  }
-
-  public void setProvider(String provider) {
-    this.provider = provider;
   }
 
   public String getIssuer() {
     return issuer;
   }
 
-  public void setIssuer(String issuer) {
-    this.issuer = issuer;
-  }
-
   public String getClientId() {
     return clientId;
-  }
-
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
   }
 
   public String getClientSecret() {
     return clientSecret;
   }
 
-  public void setClientSecret(String clientSecret) {
-    this.clientSecret = clientSecret;
-  }
-
   public String getRedirectUri() {
     return redirectUri;
-  }
-
-  public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
   }
 
   public String getAuthorizationEndpoint() {
     return authorizationEndpoint;
   }
 
-  public void setAuthorizationEndpoint(String authorizationEndpoint) {
-    this.authorizationEndpoint = authorizationEndpoint;
-  }
-
   public String getOpenidConfigurationUri() {
     return openidConfigurationUri;
-  }
-
-  public void setOpenidConfigurationUri(String openidConfigurationUri) {
-    this.openidConfigurationUri = openidConfigurationUri;
   }
 
   public String getTokenEndpoint() {
     return tokenEndpoint;
   }
 
-  public void setTokenEndpoint(String tokenEndpoint) {
-    this.tokenEndpoint = tokenEndpoint;
-  }
-
   public String getUserinfoEndpoint() {
     return userinfoEndpoint;
-  }
-
-  public void setUserinfoEndpoint(String userinfoEndpoint) {
-    this.userinfoEndpoint = userinfoEndpoint;
   }
 
   public String getJwksUri() {
     return jwksUri;
   }
 
-  public void setJwksUri(String jwksUri) {
-    this.jwksUri = jwksUri;
-  }
-
   public String getScope() {
     return scope;
-  }
-
-  public void setScope(String scope) {
-    this.scope = scope;
   }
 
   public String getResponseType() {
     return responseType;
   }
 
-  public void setResponseType(String responseType) {
-    this.responseType = responseType;
-  }
-
-  public boolean getPkce() {
+ public boolean getPkce() {
     return pkce;
-  }
-
-  public void setPkce(boolean pkce) {
-    this.pkce = pkce;
   }
 
   public String getMappings() {
@@ -212,10 +169,6 @@ public class Providers {
     return responseMode;
   }
 
-  public void setResponseMode(String responseMode) {
-    this.responseMode = responseMode;
-  }
-
   public JSONObject mappingsAsJson() {
     try {
       return (JSONObject) new JSONParser().parse(getMappings());
@@ -223,9 +176,5 @@ public class Providers {
       LOGGER.warning(String.format("The mapping object is invalid: %s", getMappings() == null ? "" : getMappings()));
       return new JSONObject();
     }
-  }
-
-  public void setMappings(JsonNode mappings) {
-    this.mappings = mappings;
   }
 }

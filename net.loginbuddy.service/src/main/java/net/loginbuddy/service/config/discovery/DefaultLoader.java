@@ -1,5 +1,7 @@
 package net.loginbuddy.service.config.discovery;
 
+import org.apache.http.MethodNotSupportedException;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.logging.Logger;
@@ -24,6 +26,16 @@ public class DefaultLoader implements DiscoveryLoader {
     @Override
     public void reload() {
         load();
+    }
+
+    @Override
+    public <T> T save(T configuration) throws MethodNotSupportedException {
+        throw new MethodNotSupportedException("setting discovery configuration is not supported!");
+    }
+
+    @Override
+    public <T> T update(T configuration) throws MethodNotSupportedException {
+        throw new MethodNotSupportedException("discovery updates are not supported!");
     }
 
     @Override

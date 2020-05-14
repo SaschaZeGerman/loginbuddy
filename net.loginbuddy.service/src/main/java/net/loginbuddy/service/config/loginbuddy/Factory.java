@@ -18,14 +18,6 @@ public class Factory implements ObjectFactory {
 
     private String path;
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
     @Override
     public Object getObjectInstance(Object o, Name name, Context context, Hashtable<?, ?> hashtable) throws Exception {
         path = (String) ((ResourceRef) o).get("path").getContent();

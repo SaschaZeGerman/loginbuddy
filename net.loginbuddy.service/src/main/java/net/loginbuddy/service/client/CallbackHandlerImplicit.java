@@ -36,11 +36,15 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
         if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
             providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
         } else {
-            providers = new Providers();
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
-            providers.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
-            providers.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
-            providers.setIssuer(provider);
+            providers = new Providers(
+                    provider,
+                    sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
+                    sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey())
+            );
+//            providers.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
+//            providers.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
+//            providers.setIssuer(provider);
         }
 
         JSONObject idTokenPayload = null;

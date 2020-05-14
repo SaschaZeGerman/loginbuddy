@@ -52,9 +52,13 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadClients)
     private String doGetClients(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
+            if("all".equalsIgnoreCase(selector)) {
+                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(LoginbuddyUtil.UTIL.getClients());
+            }
             Clients clients = LoginbuddyUtil.UTIL.getClientConfigByClientId(selector);
             if(clients != null) {
-                clients.setClientSecret("***");
+                // TODO replace set method
+//                clients.setClientSecret("***");
                 return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(clients);
             }
         } else {
@@ -66,9 +70,13 @@ public class Configuration extends ConfigurationMaster {
     @RequireScope(expected = LoginbuddyScope.ReadProviders)
     private String doGetProviders(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadProviders.isScopeValid(givenScope)) {
+            if("all".equalsIgnoreCase(selector)) {
+                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(LoginbuddyUtil.UTIL.getProviders());
+            }
             Providers config = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selector);
             if(config != null) {
-                config.setClientSecret("***");
+                // TODO replace set method
+//                config.setClientSecret("***");
                 return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(config);
             }
         } else {

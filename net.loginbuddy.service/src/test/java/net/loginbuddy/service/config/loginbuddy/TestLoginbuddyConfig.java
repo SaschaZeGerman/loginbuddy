@@ -1,6 +1,7 @@
 package net.loginbuddy.service.config.loginbuddy;
 
 import hthurow.tomcatjndi.TomcatJNDI;
+import org.apache.http.MethodNotSupportedException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,16 @@ public class TestLoginbuddyConfig {
             }
 
             @Override
+            public <T> T save(T configuration) throws MethodNotSupportedException {
+                return null;
+            }
+
+            @Override
+            public <T> T update(T configuration) throws MethodNotSupportedException {
+                return null;
+            }
+
+            @Override
             public Loginbuddy getLoginbuddy() {
                 return new TestLoginbuddy();
             }
@@ -71,27 +82,25 @@ public class TestLoginbuddyConfig {
 
         @Override
         public List<Clients> getClients() {
-            Clients cc = new Clients();
-            cc.setClientId("reloadClientId");
-            cc.setClientType("confidential");
+            Clients cc = new Clients("reloadClientId", "confidential");
             List<Clients> clients = new ArrayList<>();
             clients.add(cc);
             return clients;
         }
 
-        @Override
-        public void setClients(List<Clients> clients) {
-            super.setClients(clients);
-        }
+//        @Override
+//        public void setClients(List<Clients> clients) {
+//            super.setClients(clients);
+//        }
 
         @Override
         public List<Providers> getProviders() {
             return super.getProviders();
         }
 
-        @Override
-        public void setProviders(List<Providers> providers) {
-            super.setProviders(providers);
-        }
+//        @Override
+//        public void setProviders(List<Providers> providers) {
+//            super.setProviders(providers);
+//        }
     }
 }

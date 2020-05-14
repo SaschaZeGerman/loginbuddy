@@ -37,10 +37,6 @@ public enum LoginbuddyUtil implements Bootstrap {
         loader = new DefaultLoader();
         loader.load();
     }
-    @Override
-    public boolean isConfigured() {
-        return loader != null && loader.isConfigured();
-    }
 
     public LoginbuddyLoader getLoader() {
         return loader;
@@ -50,18 +46,18 @@ public enum LoginbuddyUtil implements Bootstrap {
         this.loader = loader;
     }
 
-    private List<Clients> getClients() {
+    public List<Clients> getClients() {
         return loader.getLoginbuddy().getClients();
     }
 
-    private List<Providers> getProviders() {
+    public List<Providers> getProviders() {
         // need it from cache for provider configurations that used dynamic registrations. Otherwise we register again and again
         List<Providers> providers = (List<Providers>) LoginbuddyCache.CACHE.get("providers");
         try {
             if (providers == null) {
                 providers = loader.getLoginbuddy().getProviders();
                 for (Providers next : providers) {
-                    if (next.getProviderType().equals(ProviderConfigType.MINIMAL)) {
+                    if (getProviderType(next).equals(ProviderConfigType.MINIMAL)) {
                         next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
                                 DiscoveryUtil.UTIL.getRedirectUri()).toJSONString(),
                                 Providers.class));
@@ -121,5 +117,15 @@ public enum LoginbuddyUtil implements Bootstrap {
             ;
             return null;
         }
+    }
+
+    private ProviderConfigType getProviderType(Providers p) {
+        return p.getClientId() == null ? ProviderConfigType.MINIMAL
+                : p.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return loader != null && loader.isConfigured();
     }
 }

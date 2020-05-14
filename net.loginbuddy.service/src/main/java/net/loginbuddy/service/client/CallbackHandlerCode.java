@@ -31,10 +31,9 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
 
     public void handleCallback(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb, String provider) throws Exception {
 
-        // ***************************************************************
-        // ** If we did not get a valid code parameter we are done
-        // ***************************************************************
-
+// ***************************************************************
+// ** If we did not get a valid code parameter we are done
+// ***************************************************************
         ParameterValidatorResult codeResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
         if (!codeResult.getResult().equals(RESULT.VALID)) {
@@ -47,12 +46,12 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
         if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
             providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
         } else {
-            providers = new Providers();
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
-            providers.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
-            providers.setClientSecret(sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
-            providers.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
-            providers.setIssuer(provider);
+            providers = new Providers(
+                    provider,
+                    sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
+                    sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()),
+                    sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
         }
 
         String access_token = null;
@@ -125,8 +124,6 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
             }
         }
         eb.setNormalized(Normalizer.normalizeDetails(providers.mappingsAsJson(), eb.getEbAsJson(), access_token));
-
-
 // ***************************************************************
 // ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
 // ***************************************************************

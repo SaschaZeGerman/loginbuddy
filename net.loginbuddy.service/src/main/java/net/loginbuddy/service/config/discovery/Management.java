@@ -1,7 +1,9 @@
 package net.loginbuddy.service.config.discovery;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Management {
 
     @JsonProperty("configuration_endpoint")

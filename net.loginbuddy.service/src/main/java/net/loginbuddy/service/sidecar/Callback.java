@@ -69,20 +69,20 @@ public class Callback  extends CallbackParent {
       eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
       eb.setProvider(provider);
 
-      String access_token = null;
-      String id_token = null;
-
       Providers providers = null;
       if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
         providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
       } else {
-        providers = new Providers();
         // dynamically registered providers are in a separate container and not available here. Get details out of the session
-        providers.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
-        providers.setClientSecret(sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
-        providers.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
-        providers.setIssuer(provider);
+        providers = new Providers(
+                provider,
+                sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
+                sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()),
+                sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
       }
+
+      String access_token = null;
+      String id_token = null;
 
 // ***************************************************************
 // ** Exchange the code for a token response
@@ -96,10 +96,10 @@ public class Callback  extends CallbackParent {
           if (tokenResponse.getContentType().startsWith("application/json")) {
             JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
             LOGGER.fine(tokenResponseObject.toJSONString());
-            access_token = tokenResponseObject.get("access_token").toString();
+            access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
             eb.setTokenResponse(tokenResponseObject);
             try {
-              id_token = tokenResponseObject.get("id_token").toString();
+              id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
               MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
               idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(),
                   providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
