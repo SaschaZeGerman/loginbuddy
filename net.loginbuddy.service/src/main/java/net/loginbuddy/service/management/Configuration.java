@@ -53,13 +53,11 @@ public class Configuration extends ConfigurationMaster {
     private String doGetClients(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
             if("all".equalsIgnoreCase(selector)) {
-                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(LoginbuddyUtil.UTIL.getClients());
+                return LoginbuddyUtil.UTIL.getClientsAsJsonString();
             }
             Clients clients = LoginbuddyUtil.UTIL.getClientConfigByClientId(selector);
             if(clients != null) {
-                // TODO replace set method
-//                clients.setClientSecret("***");
-                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(clients);
+                return LoginbuddyUtil.UTIL.getClientAsJsonString(clients);
             }
         } else {
             return LoginbuddyScope.getInvalidScopeError(givenScope);
@@ -71,13 +69,11 @@ public class Configuration extends ConfigurationMaster {
     private String doGetProviders(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if(LoginbuddyScope.ReadProviders.isScopeValid(givenScope)) {
             if("all".equalsIgnoreCase(selector)) {
-                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(LoginbuddyUtil.UTIL.getProviders());
+                return LoginbuddyUtil.UTIL.getProvidersAsJsonString();
             }
-            Providers config = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selector);
-            if(config != null) {
-                // TODO replace set method
-//                config.setClientSecret("***");
-                return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(config);
+            Providers provider = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selector);
+            if(provider != null) {
+                return LoginbuddyUtil.UTIL.getProviderAsJsonString(provider);
             }
         } else {
             return LoginbuddyScope.getInvalidScopeError(givenScope);

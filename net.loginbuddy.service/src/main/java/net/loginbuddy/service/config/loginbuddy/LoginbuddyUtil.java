@@ -8,6 +8,7 @@
 
 package net.loginbuddy.service.config.loginbuddy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
@@ -118,6 +119,22 @@ public enum LoginbuddyUtil implements Bootstrap {
             ;
             return null;
         }
+    }
+
+    public String getClientsAsJsonString() throws JsonProcessingException {
+        return MAPPER.writeValueAsString(getClients());
+    }
+
+    public String getClientAsJsonString(Clients client) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(client);
+    }
+
+    public String getProvidersAsJsonString() throws JsonProcessingException {
+        return MAPPER.writeValueAsString(getProviders());
+    }
+
+    public String getProviderAsJsonString(Providers provider) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(provider);
     }
 
     private ProviderConfigType getProviderType(Providers p) {

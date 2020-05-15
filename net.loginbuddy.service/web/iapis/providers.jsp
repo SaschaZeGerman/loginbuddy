@@ -7,11 +7,11 @@
   --%>
 <%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
 <%@ page import="net.loginbuddy.common.config.Constants" %>
+<%@ page import="net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil" %>
 <%@ page import="net.loginbuddy.service.config.loginbuddy.Providers" %>
 <%@ page import="net.loginbuddy.service.util.SessionContext" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.logging.Logger" %>
-<%@ page import="net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!
