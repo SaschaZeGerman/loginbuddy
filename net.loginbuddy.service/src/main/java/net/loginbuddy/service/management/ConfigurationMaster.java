@@ -39,16 +39,55 @@ public abstract class ConfigurationMaster extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        response.setContentType("application/json");
+
+        Matcher matcher = pEntities.matcher(request.getPathInfo() == null ? "unknown" : request.getPathInfo());
+        if (matcher.find()) {
+            String requestContentType = request.getContentType();
+            try {
+                String httpBody = HttpHelper.readMessageBody(request.getReader());
+                if (requestContentType.startsWith("application/json")) {
+                    response.setStatus(200);
+                    response.getWriter().println(doPostProtected(httpBody, ConfigurationTypes.valueOf(matcher.group(1).toUpperCase()), matcher.group(2), new AccessToken(request, AccessToken.TokenLocation.HEADER)));
+                } else {
+                    response.setStatus(400);
+                    response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "the given content-type is not supported!"));
+                }
+            } catch (Exception e) {
+                response.setStatus(400);
+                response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", e.getMessage()).toJSONString());
+            }
+        } else {
+            response.setStatus(400);
+            response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "configuration type was not given or is not supported").toJSONString());
+        }
+    }
+
     /**
      * This method retrieves requested configuration.
      *
-     * @param request the request
-     * @param response the response
+     * @param request    the request
+     * @param response   the response
      * @param configType the requested configuration type. Values must match a valid of ConfigurationTypes
-     * @param selector depending on the type this value must identify a specific configuration. For example, client configurations this would require a valid client_id
-     * @param token the access_token for this request/ It must have been granted for required scope and resource
+     * @param selector   depending on the type this value must identify a specific configuration. For example, client configurations this would require a valid client_id
+     * @param token      the access_token for this request/ It must have been granted for required scope and resource
      * @throws ServletException
      * @throws IOException
      */
     protected abstract void doGetProtected(HttpServletRequest request, HttpServletResponse response, ConfigurationTypes configType, String selector, AccessToken token) throws ServletException, IOException;
+
+
+    /**
+     * This method replaces the given configuration.
+     *
+     * @param configType the requested configuration type. Values must match a valid of ConfigurationTypes
+     * @param selector   depending on the type this value must identify a specific configuration. For example, client configurations this would require a valid client_id
+     * @param token      the access_token for this request/ It must have been granted for required scope and resource
+     * @throws ServletException
+     * @throws IOException
+     */
+    protected abstract String doPostProtected(String httpBody, ConfigurationTypes configType, String selector, AccessToken token) throws Exception;
 }

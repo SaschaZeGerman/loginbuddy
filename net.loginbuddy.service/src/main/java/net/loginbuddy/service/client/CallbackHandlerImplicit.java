@@ -60,7 +60,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
             throw e;
         }
-        eb.setNormalized(Normalizer.normalizeDetails(providers.mappingsAsJson(), eb.getEbAsJson(), null));
+        eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), null));
 
 // ***************************************************************
 // ** In this flow there is no token response, we'll create ia manually

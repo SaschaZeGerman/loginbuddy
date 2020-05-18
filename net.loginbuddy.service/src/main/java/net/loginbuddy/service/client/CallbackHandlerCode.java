@@ -123,7 +123,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                 LOGGER.warning("Retrieving userinfo failed!");
             }
         }
-        eb.setNormalized(Normalizer.normalizeDetails(providers.mappingsAsJson(), eb.getEbAsJson(), access_token));
+        eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
 // ***************************************************************
 // ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
 // ***************************************************************

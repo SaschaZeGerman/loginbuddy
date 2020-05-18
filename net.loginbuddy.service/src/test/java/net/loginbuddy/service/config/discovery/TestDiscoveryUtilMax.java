@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.io.File;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class TestDiscoveryUtilMax {
 
@@ -18,7 +19,11 @@ public class TestDiscoveryUtilMax {
         tomcatJNDI = new TomcatJNDI();
         tomcatJNDI.processContextXml(new File("src/test/resources/testContextDiscoveryMax.xml"));
         tomcatJNDI.start();
-        DiscoveryUtil.UTIL.getLoader().reload();
+        try {
+            DiscoveryUtil.UTIL.getLoader().reload();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 
     @After

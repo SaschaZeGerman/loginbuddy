@@ -19,7 +19,23 @@
       "jwks_uri": "https://demoserver.loginbuddy.net/jwks",
       "scope": "openid profile email",
       "response_type": "code",
-      "redirect_uri": "https://local.loginbuddy.net/callback"
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "mappings": {
+        "key1": "value1",
+        "key2": "value2",
+        "key3": "value3"
+      }
+    },
+    {
+      "provider": "self-issued",
+      "issuer": "https://self-issued.me",
+      "client_id": "https://local.loginbuddy.net/callback",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "client_secret": "",
+      "response_type": "id_token",
+      "scope": "openid profile email address phone",
+      "authorization_endpoint": "openid://",
+      "pkce": true
     }
   ]
 }

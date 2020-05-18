@@ -38,17 +38,17 @@ public class Loginbuddy implements Bootstrap, Cloneable {
         return clients;
     }
 
-//    public void setClients(List<Clients> clients) {
-//        this.clients = clients;
-//    }
+    public void setClients(List<Clients> clients) {
+        this.clients = clients;
+    }
 
     public List<Providers> getProviders() {
         return providers;
     }
 
-//    public void setProviders(List<Providers> providers) {
-//        this.providers = providers;
-//    }
+    public void setProviders(List<Providers> providers) {
+        this.providers = providers;
+    }
 
     @Override
     @JsonIgnore

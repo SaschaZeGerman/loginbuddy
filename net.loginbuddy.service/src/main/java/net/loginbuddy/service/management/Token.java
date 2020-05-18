@@ -64,7 +64,8 @@ public class Token extends HttpServlet {
             if(grantedScopes.length() == 0) {
                 response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "no requested scope was granted").toJSONString());
             }
-            claims.put(Constants.SCOPE.getKey(), scopeResult.getValue());
+            claims.put(Constants.SCOPE.getKey(), grantedScopes);
+            claims.put(Constants.CLIENT_ID.getKey(), clientCredentialsResult.getClients().getClientId());
 
             try {
                 String token = Jwt.DEFAULT.createSignedJwtRs256(
@@ -79,7 +80,7 @@ public class Token extends HttpServlet {
                 result.put(Constants.ACCESS_TOKEN.getKey(), token);
                 result.put(Constants.TOKEN_TYPE.getKey(), Constants.BEARER.getKey());
                 result.put(Constants.EXPIRES_IN.getKey(), 300);
-                result.put(Constants.SCOPE.getKey(), scopeResult.getValue());
+                result.put(Constants.SCOPE.getKey(), grantedScopes);
                 response.setStatus(200);
                 response.getWriter().println(result.toJSONString());
             } catch (Exception e) {

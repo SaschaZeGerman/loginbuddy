@@ -14,18 +14,19 @@ public class DefaultLoader implements PropertyLoader {
     private Properties props;
 
     @Override
-    public void load() {
+    public void load() throws Exception {
         try {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             props = (Properties) envCtx.lookup("bean/PropertiesFactory");
         } catch (Exception e) {
             LOGGER.severe("Properties could not be loaded!");
+            throw e;
         }
     }
 
     @Override
-    public void reload() {
+    public void reload() throws Exception {
         load();
     }
 

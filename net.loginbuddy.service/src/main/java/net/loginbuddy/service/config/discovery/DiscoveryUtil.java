@@ -25,14 +25,19 @@ public enum DiscoveryUtil implements Bootstrap {
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
     DiscoveryUtil() {
-        setDefaultLoader();
+        try {
+            setDefaultLoader();
+        } catch (Exception e) {
+            LOGGER.severe(String.format("Discovery document could not be loaded! Error: '%s'", e.getMessage()));
+
+        }
     }
 
-    public void setDefaultLoader() {
+    public void setDefaultLoader() throws Exception {
         setLoader(new DefaultLoader());
     }
 
-    public void setLoader(DiscoveryLoader loader) {
+    public void setLoader(DiscoveryLoader loader) throws Exception{
         this.loader = loader;
         this.loader.load();
     }

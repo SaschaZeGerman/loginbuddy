@@ -1,0 +1,6 @@
+{
+  "client_id": "customClientIdForCustomLoader",
+  "client_type": "public",
+  "client_uri": "https://democlient.loginbuddy.net",
+  "redirect_uri": "https://democlient.loginbuddy.net/callback"
+}

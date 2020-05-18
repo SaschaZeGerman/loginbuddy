@@ -2,6 +2,7 @@ package net.loginbuddy.service.server;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.service.config.loginbuddy.LoginbuddyLoader;
 import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.service.config.properties.PropertiesUtil;
 
@@ -22,11 +23,21 @@ public class Overlord extends HttpServlet {
 
     if (LoginbuddyUtil.UTIL.isConfigured() && PropertiesUtil.UTIL.isConfigured() && DiscoveryUtil.UTIL.isConfigured()) {
       LOGGER.info("Loginbuddy successfully started!");
+      String customLoader = PropertiesUtil.UTIL.getStringProperty("config.loginbuddy.loader.default");
+      if(customLoader != null) {
+        try {
+          Class cls = Class.forName(customLoader);
+          LoginbuddyLoader myLoader = (LoginbuddyLoader)cls.getDeclaredConstructors()[0].newInstance();
+          LoginbuddyUtil.UTIL.setLoader(myLoader);
+          LOGGER.info(String.format("Custom LoginbuddyLoader was successfully initiated! Class: '%s'", customLoader));
+        } catch(Exception e) {
+          LOGGER.warning(String.format("Custom LoginbuddyLoader could not be initiated! Error: '%s'", e.getMessage()));
+        }
+      }
     } else {
       LOGGER.severe("Stopping Loginbuddy since its configuration could not be loaded! Fix that first!");
       System.exit(0);
     }
-
   }
 
   void notYetImplemented(HttpServletResponse response) throws IOException {

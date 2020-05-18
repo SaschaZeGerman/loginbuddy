@@ -161,19 +161,22 @@ public class Providers {
     return pkce;
   }
 
-  public String getMappings() {
-    return mappings == null ? "{}" : mappings.toString();
-  }
+//  public String getMappings() {
+//    return mappings == null ? "{}" : mappings.toString();
+//  }
 
   public String getResponseMode() {
     return responseMode;
   }
 
-  public JSONObject mappingsAsJson() {
+  public JSONObject getMappings() {
     try {
-      return (JSONObject) new JSONParser().parse(getMappings());
+      if(mappings == null) {
+        return new JSONObject();
+      }
+      return (JSONObject) new JSONParser().parse(mappings.toString());
     } catch (ParseException e) {
-      LOGGER.warning(String.format("The mapping object is invalid: %s", getMappings() == null ? "" : getMappings()));
+      LOGGER.warning(String.format("The mapping object is invalid: %s", mappings == null ? "" : mappings.toString()));
       return new JSONObject();
     }
   }

@@ -1,0 +1,99 @@
+{
+  "clients": [
+    {
+      "client_id": "clientIdForTestingPurposes",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect,https://democlient.loginbuddy.net/spa.html",
+      "providers": [
+        "server_loginbuddy",
+        "self-issued",
+        "server_dynamic"
+      ],
+      "accept_dynamic_provider": true
+    },
+    {
+      "client_id": "clientIdForTestingPurposesJwt",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
+      "providers": [
+        "server_loginbuddy",
+        "self-issued",
+        "server_dynamic"
+      ],
+      "accept_dynamic_provider": true,
+      "signed_response_alg": "RS256"
+    },
+    {
+      "client_id": "clientIdForTestingPurposesConfidential",
+      "client_secret": "myFancyAndSecureClientSecret",
+      "client_type": "confidential",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect",
+      "providers": [
+        "server_loginbuddy",
+        "not_for_public_client",
+        "server_dynamic"
+      ]
+    },
+    {
+      "client_id": "clientIdForTestingLoginbuddyManagement",
+      "client_secret": "myFancyAndSecureClientSecret",
+      "client_type": "confidential",
+      "client_uri": "https://local.loginbuddy.net",
+      "redirect_uri": "https://local.loginbuddy.net/management/callback,https://local.soapui.com/redirect",
+      "providers": [
+        "loginbuddy"
+      ]
+    }
+  ],
+  "providers": [
+    {
+      "provider": "server_dynamic",
+      "issuer": "https://demoserver.loginbuddy.net",
+      "openid_configuration_uri": "https://demoserver.loginbuddy.net/.well-known/openid-configuration"
+    },
+    {
+      "provider": "server_loginbuddy",
+      "issuer": "https://demoserver.loginbuddy.net",
+      "client_id": "loginbuddy_demoId",
+      "client_secret": "loginbuddy_demoSecret",
+      "authorization_endpoint": "https://demoserver.loginbuddy.net/authorize",
+      "token_endpoint": "https://demoserver.loginbuddy.net/token",
+      "userinfo_endpoint": "https://demoserver.loginbuddy.net/userinfo",
+      "jwks_uri": "https://demoserver.loginbuddy.net/jwks",
+      "scope": "openid profile email",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "response_mode": "query"
+    },
+    {
+      "provider": "not_for_public_client",
+      "issuer": "https://not_for_public_client/server",
+      "client_id": "not_for_public_client",
+      "client_secret": "not_for_public_client",
+      "authorization_endpoint": "https://not_for_public_client/authorize",
+      "token_endpoint": "https://not_for_public_client/token",
+      "userinfo_endpoint": "https://not_for_public_client/userinfo",
+      "jwks_uri": "https://not_for_public_client/jwks",
+      "scope": "openid profile email",
+      "response_type": "code",
+      "redirect_uri": "https://not_for_public_client/callback",
+      "response_mode": "form_post"
+    },
+    {
+      "provider": "self-issued",
+      "issuer": "https://self-issued.me",
+      "client_id": "https://local.loginbuddy.net/callback",
+      "client_secret": "",
+      "authorization_endpoint": "openid://",
+      "scope": "openid profile email address phone",
+      "response_type": "id_token",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "mappings": {
+        "provider": "$.details_provider.provider",
+        "sub": "$.details_provider.id_token_payload.sub"
+      }
+    }
+  ]
+}

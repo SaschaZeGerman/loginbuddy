@@ -20,7 +20,7 @@ public class Configuration extends ConfigurationMaster {
         int status = 400;
         String output = "{}";
         // TODO tie api to resource in access_token. endsWith() is not good enough
-        if(token.getResource().endsWith("/management/configuration")) {
+        if (token.getResource().endsWith("/management/configuration")) {
             if (ConfigurationTypes.CLIENTS.equals(configType)) {
                 if (selector != null) {
                     status = 200;
@@ -49,14 +49,29 @@ public class Configuration extends ConfigurationMaster {
         response.getWriter().println(output);
     }
 
+    @Override
+    protected String doPostProtected(String httpBody, ConfigurationTypes configType, String selector, AccessToken token) throws Exception {
+        if (token.getResource().endsWith("/management/configuration")) {
+            if (ConfigurationTypes.CLIENTS.equals(configType)) {
+                return doPostClients(httpBody, token.getClientId(), selector, token.getScope());
+            }
+            else {
+                return "";
+//                return doPostProviders(selector, token.getScope());
+            }
+        } else {
+            throw new IllegalArgumentException("requested resource is not available!");
+        }
+    }
+
     @RequireScope(expected = LoginbuddyScope.ReadClients)
     private String doGetClients(String selector, @ActualScope String givenScope) throws JsonProcessingException {
-        if(LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
-            if("all".equalsIgnoreCase(selector)) {
+        if (LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
+            if ("all".equalsIgnoreCase(selector)) {
                 return LoginbuddyUtil.UTIL.getClientsAsJsonString();
             }
             Clients clients = LoginbuddyUtil.UTIL.getClientConfigByClientId(selector);
-            if(clients != null) {
+            if (clients != null) {
                 return LoginbuddyUtil.UTIL.getClientAsJsonString(clients);
             }
         } else {
@@ -67,12 +82,12 @@ public class Configuration extends ConfigurationMaster {
 
     @RequireScope(expected = LoginbuddyScope.ReadProviders)
     private String doGetProviders(String selector, @ActualScope String givenScope) throws JsonProcessingException {
-        if(LoginbuddyScope.ReadProviders.isScopeValid(givenScope)) {
-            if("all".equalsIgnoreCase(selector)) {
+        if (LoginbuddyScope.ReadProviders.isScopeValid(givenScope)) {
+            if ("all".equalsIgnoreCase(selector)) {
                 return LoginbuddyUtil.UTIL.getProvidersAsJsonString();
             }
             Providers provider = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selector);
-            if(provider != null) {
+            if (provider != null) {
                 return LoginbuddyUtil.UTIL.getProviderAsJsonString(provider);
             }
         } else {
@@ -83,7 +98,7 @@ public class Configuration extends ConfigurationMaster {
 
     @RequireScope(expected = LoginbuddyScope.ReadProperties)
     private String doGetProperties(@ActualScope String givenScope) {
-        if(LoginbuddyScope.ReadProperties.isScopeValid(givenScope)) {
+        if (LoginbuddyScope.ReadProperties.isScopeValid(givenScope)) {
             return PropertiesUtil.UTIL.getPropertiesAsJsonString();
         } else {
             return LoginbuddyScope.getInvalidScopeError(givenScope);
@@ -92,10 +107,28 @@ public class Configuration extends ConfigurationMaster {
 
     @RequireScope(expected = LoginbuddyScope.ReadDiscovery)
     private String doGetDiscovery(@ActualScope String givenScope) {
-        if(LoginbuddyScope.ReadDiscovery.isScopeValid(givenScope)) {
+        if (LoginbuddyScope.ReadDiscovery.isScopeValid(givenScope)) {
             return DiscoveryUtil.UTIL.getOpenIdConfigurationAsJsonString();
         } else {
             return LoginbuddyScope.getInvalidScopeError(givenScope);
         }
+    }
+
+    @RequireScope(expected = LoginbuddyScope.WriteClients)
+    private String doPostClients(String httpBody, String clientId, String selector, @ActualScope String givenScope) throws
+            JsonProcessingException {
+        if (LoginbuddyScope.WriteClients.isScopeValid(givenScope)) {
+            if (selector == null) {
+                return LoginbuddyUtil.UTIL.getClientsAsJsonString(
+                        LoginbuddyUtil.UTIL.replaceClients(clientId, httpBody));
+            }
+//            Clients clients = LoginbuddyUtil.UTIL.getClientConfigByClientId(selector);
+//            if(clients != null) {
+//                return LoginbuddyUtil.UTIL.getClientAsJsonString(clients);
+//            }
+        } else {
+            return LoginbuddyScope.getInvalidScopeError(givenScope);
+        }
+        return "[]";
     }
 }

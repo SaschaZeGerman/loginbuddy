@@ -20,7 +20,11 @@ public class TestPropertiesUtil {
         tomcatJNDI = new TomcatJNDI();
         tomcatJNDI.processContextXml(new File("src/test/resources/testContext.xml"));
         tomcatJNDI.start();
-        PropertiesUtil.UTIL.setDefaultLoader();
+        try {
+            PropertiesUtil.UTIL.setDefaultLoader();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 
     @After
@@ -34,12 +38,19 @@ public class TestPropertiesUtil {
     }
 
     @Test
+    public void testGetStringProperty() {
+        assertEquals(
+                "net.loginbuddy.service.config.loginbuddy.CustomLoginbuddyConfigLoader",
+                PropertiesUtil.UTIL.getStringProperty("config.loginbuddy.loader.default"));
+    }
+
+    @Test
     public void testSave() {
         Properties props = new Properties();
         try {
             PropertiesUtil.UTIL.setProperties(props);
             fail();
-        } catch (MethodNotSupportedException e) {
+        } catch (Exception e) {
             assertTrue(true);
         }
     }
@@ -49,7 +60,11 @@ public class TestPropertiesUtil {
         assertEquals(60l, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
 
         PropertyLoader l = new TestPropertyLoader();
-        PropertiesUtil.UTIL.setLoader(l);
+        try {
+            PropertiesUtil.UTIL.setLoader(l);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
 
         assertEquals(10l, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
     }

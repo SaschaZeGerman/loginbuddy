@@ -61,6 +61,10 @@ public class AccessToken {
         return claims.getClaimValueAsString(Constants.RESOURCE.getKey());
     }
 
+    public String getClientId() {
+        return claims.getClaimValueAsString(Constants.CLIENT_ID.getKey());
+    }
+
     private JwtClaims validateAccessToken(String jwtAccessToken, String audience, String issuer, JsonWebKeySet jwks) throws InvalidJwtException {
         return new JwtConsumerBuilder()
                 .setRequireExpirationTime()

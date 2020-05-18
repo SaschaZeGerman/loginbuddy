@@ -1,0 +1,25 @@
+{
+  "clients": [
+    {
+      "client_id": "clientIdForTestingPurposes",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback"
+    },
+    {
+      "client_id": "loadWithCustomLoaderToReplaceDefault",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback"
+    },
+    {
+      "client_id": "clientIdNotToBeLost",
+      "client_secret": "111111111111111111111111111111111111000",
+      "client_type": "confidential",
+      "client_uri": "https://local.loginbuddy.net",
+      "redirect_uri": "https://local.loginbuddy.net/management/callback",
+      "providers": ["loginbuddy"]
+    }
+  ],
+  "providers": []
+}

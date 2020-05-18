@@ -13,18 +13,19 @@ public class DefaultLoader implements DiscoveryLoader {
     private Discovery config;
 
     @Override
-    public void load() {
+    public void load() throws Exception {
         try {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             config = (Discovery)envCtx.lookup("bean/DiscoveryUtilFactory");
         } catch (Exception e) {
             LOGGER.severe("configuration could not be loaded!");
+            throw e;
         }
     }
 
     @Override
-    public void reload() {
+    public void reload() throws Exception {
         load();
     }
 

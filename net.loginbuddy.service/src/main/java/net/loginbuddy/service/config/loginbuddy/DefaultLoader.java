@@ -12,25 +12,27 @@ public class DefaultLoader implements LoginbuddyLoader {
 
     private Loginbuddy config;
 
+
     @Override
-    public void load() {
+    public void load() throws Exception {
         try {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             config = (Loginbuddy) envCtx.lookup("bean/LoginbuddyFactory");
         } catch (Exception e) {
             LOGGER.severe("configuration could not be loaded!");
+            throw e;
         }
     }
 
     @Override
-    public void reload() {
+    public void reload() throws Exception {
         load();
     }
 
     @Override
     public <T> T save(T configuration) throws MethodNotSupportedException {
-        throw new MethodNotSupportedException("setting loginbuddy configuration is not supported!");
+        throw new MethodNotSupportedException("loginbuddy configuration updates are not supported!");
     }
 
     @Override

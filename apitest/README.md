@@ -39,6 +39,20 @@ Both SOAPUI projects are using properties instead of hard coded values. These ca
 
 If you want to use your own properties, simply copy that file and load them into SOAPUI for each project. 
 
+## Custom Configuration Loader
+
+This testsuite is using a custom loader for loading clients and providers. The custom loader has been implemented in the module net.loginbuddy.test.
+
+To make sure the latest update of that class is used, run this command:
+
+- `cd docker`
+- `make prepare-test`
+
+The class implementing the loader is configured here:
+
+- file: `./docker/loginbuddy.properties`
+- property: `config.loginbuddy.loader.default`
+
 ## Known issues
 
 - The SOAPUI project *Loginbuddy-Flows* has many duplicated test steps. This requires some effort to keep them in sync. When I get to it, I will do some refactoring

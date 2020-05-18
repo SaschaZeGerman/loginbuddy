@@ -31,14 +31,19 @@ public enum LoginbuddyUtil implements Bootstrap {
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
     LoginbuddyUtil() {
-        setDefaultLoader();
+        try {
+            setDefaultLoader();
+        } catch (Exception e) {
+            LOGGER.severe(String.format("Loginbuddy configuration could not be loaded! Error: '%s'", e.getMessage()));
+
+        }
     }
 
-    public void setDefaultLoader() {
+    public void setDefaultLoader() throws Exception {
         setLoader(new DefaultLoader());
     }
 
-    public void setLoader(LoginbuddyLoader loader) {
+    public void setLoader(LoginbuddyLoader loader) throws Exception {
         this.loader = loader;
         this.loader.load();
     }
@@ -74,7 +79,11 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     public Clients getClientConfigByClientId(String clientId) {
-        return getClients().stream()
+        return getClientConfigByClientId(getClients(), clientId);
+    }
+
+    public Clients getClientConfigByClientId(List<Clients> clients, String clientId) {
+        return clients.stream()
                 .filter(clientConfig -> clientConfig.getClientId().equals(clientId))
                 .findFirst()
                 .orElse(null);
@@ -116,13 +125,16 @@ public enum LoginbuddyUtil implements Bootstrap {
         } catch (IOException e) {
             LOGGER.warning("The provider configuration could no be mapped to ProviderConfig");
             e.printStackTrace();
-            ;
             return null;
         }
     }
 
     public String getClientsAsJsonString() throws JsonProcessingException {
-        return MAPPER.writeValueAsString(getClients());
+        return getClientsAsJsonString(getClients());
+    }
+
+    public String getClientsAsJsonString(List<Clients> clients) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(clients);
     }
 
     public String getClientAsJsonString(Clients client) throws JsonProcessingException {
@@ -135,6 +147,30 @@ public enum LoginbuddyUtil implements Bootstrap {
 
     public String getProviderAsJsonString(Providers provider) throws JsonProcessingException {
         return MAPPER.writeValueAsString(provider);
+    }
+
+    public List<Clients> replaceClients(String clientId, String clientsAsJsonString) throws IllegalArgumentException {
+        try {
+            List<Clients> newClients = new ArrayList<>();
+            if(clientsAsJsonString.startsWith("[")) {
+                newClients.addAll(Arrays.asList(MAPPER.readValue(clientsAsJsonString, Clients[].class)));
+            } else {
+                newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
+            }
+            if(clientId != null) {
+                if (getClientConfigByClientId(newClients, clientId) == null) {
+                    Clients tempClient = getClientConfigByClientId(clientId);
+                    if(tempClient != null) {
+                        newClients.add(tempClient);
+                    } else {
+                        throw new IllegalArgumentException("The given client_id is unknown!");
+                    }
+                }
+            }
+            return loader.save(newClients);
+        } catch(Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
     }
 
     private ProviderConfigType getProviderType(Providers p) {
