@@ -63,6 +63,21 @@ public class Configuration extends ConfigurationMaster {
         }
     }
 
+    @Override
+    protected String doPutProtected(String httpBody, ConfigurationTypes configType, String selector, AccessToken token) throws Exception {
+        if (DiscoveryUtil.UTIL.getManagement().getConfigurationEndpoint().equals(token.getResource())) {
+            if (ConfigurationTypes.CLIENTS.equals(configType)) {
+                return doPutClients(httpBody, token.getClientId(), selector, token.getScope());
+            } else if (ConfigurationTypes.PROVIDERS.equals(configType)) {
+                return doPutProviders(httpBody, selector, token.getScope());
+            } else {
+                throw new IllegalArgumentException("requested configuration is not supported");
+            }
+        } else {
+            throw new IllegalArgumentException("access_token not valid for this resource");
+        }
+    }
+
     @RequireScope(expected = LoginbuddyScope.ReadClients)
     private String doGetClients(String selector, @ActualScope String givenScope) throws JsonProcessingException {
         if (LoginbuddyScope.ReadClients.isScopeValid(givenScope)) {
@@ -135,6 +150,36 @@ public class Configuration extends ConfigurationMaster {
             if (selector == null && httpBody.startsWith("[")) {
                 return LoginbuddyUtil.UTIL.getProvidersAsJsonString(
                         LoginbuddyUtil.UTIL.replaceProviders(httpBody));
+            } else {
+                throw new IllegalArgumentException("provide a list of provider configurations");
+            }
+        } else {
+            return LoginbuddyScope.getInvalidScopeError(givenScope);
+        }
+    }
+
+    @RequireScope(expected = LoginbuddyScope.WriteClients)
+    private String doPutClients(String httpBody, String requestingClientId, String selector, @ActualScope String givenScope) throws
+            Exception {
+        if (LoginbuddyScope.WriteClients.isScopeValid(givenScope)) {
+            if (selector == null && httpBody.startsWith("[")) {
+                return LoginbuddyUtil.UTIL.getClientsAsJsonString(
+                        LoginbuddyUtil.UTIL.updateClients(requestingClientId, httpBody));
+            } else {
+                throw new IllegalArgumentException("provide a list of client configurations");
+            }
+        } else {
+            return LoginbuddyScope.getInvalidScopeError(givenScope);
+        }
+    }
+
+    @RequireScope(expected = LoginbuddyScope.WriteProviders)
+    private String doPutProviders(String httpBody, String selector, @ActualScope String givenScope) throws
+            Exception {
+        if (LoginbuddyScope.WriteProviders.isScopeValid(givenScope)) {
+            if (selector == null && httpBody.startsWith("[")) {
+                return LoginbuddyUtil.UTIL.getProvidersAsJsonString(
+                        LoginbuddyUtil.UTIL.updateProviders(httpBody));
             } else {
                 throw new IllegalArgumentException("provide a list of provider configurations");
             }

@@ -25,7 +25,7 @@
 
   <Service name="Catalina">
 
-    <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="@@sslport@@"/>
+    <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="@@sslport@@" parseBodyMethods="POST,PUT"/>
 
     <Connector
       SSLEnabled="true"
@@ -34,7 +34,8 @@
       port="@@sslport@@"
       defaultSSLHostConfigName="@@hostname@@"
       protocol="org.apache.coyote.http11.Http11NioProtocol"
-      maxThreads="150">
+      maxThreads="150"
+      parseBodyMethods="POST,PUT">
       <SSLHostConfig hostName="@@hostname@@"
         protocols="TLSv1.2"
         sslProtocol="TLS">

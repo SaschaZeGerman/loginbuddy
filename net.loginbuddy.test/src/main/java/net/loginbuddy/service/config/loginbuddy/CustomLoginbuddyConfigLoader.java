@@ -2,14 +2,13 @@ package net.loginbuddy.service.config.loginbuddy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.MethodNotSupportedException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -67,7 +66,34 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
             } else if (((List) configuration).get(0) instanceof Providers) {
                 lb.setProviders((List<Providers>) configuration);
             }
+            updateDbFileAndLoad();
         }
+        return configuration;
+    }
+
+    @Override
+    public <T> T update(T configuration) throws Exception {
+        if (configuration instanceof List && ((List) configuration).size() > 0) {
+            if (((List) configuration).get(0) instanceof Clients) {
+                Set<Clients> all = new HashSet<>();
+                all.addAll((List<Clients>)configuration);
+                all.addAll(lb.getClients());
+                lb.setClients(new ArrayList<>(all));
+                updateDbFileAndLoad();
+                return (T)lb.getClients();
+            } else if (((List) configuration).get(0) instanceof Providers) {
+                Set<Providers> all = new HashSet<>();
+                all.addAll((List<Providers>)configuration);
+                all.addAll(lb.getProviders());
+                lb.setProviders(new ArrayList<>(all));
+                updateDbFileAndLoad();
+                return (T)lb.getProviders();
+            }
+        }
+        return configuration;
+    }
+
+    private void updateDbFileAndLoad() throws Exception {
 
         JsonNode node = mapper.valueToTree(lb);
         node.traverse();
@@ -76,8 +102,8 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
         output.put("clients", new JSONParser().parse(node.get("clients").toString()));
         output.put("providers", new JSONParser().parse(node.get("providers").toString()));
         JSONParser p = new JSONParser();
-        for(Object obj : ((JSONArray)output.get("providers"))) {
-            ((JSONObject)obj).put("mappings", p.parse(((JSONObject)obj).get("mappings").toString()));
+        for (Object obj : ((JSONArray) output.get("providers"))) {
+            ((JSONObject) obj).put("mappings", p.parse(((JSONObject) obj).get("mappings").toString()));
         }
 
         FileWriter fw = new FileWriter(new File(dbLocation));
@@ -85,13 +111,6 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
         fw.flush();
         fw.close();
         load();
-
-        return configuration;
-    }
-
-    @Override
-    public <T> T update(T configuration) throws MethodNotSupportedException {
-        return null;
     }
 
     @Override

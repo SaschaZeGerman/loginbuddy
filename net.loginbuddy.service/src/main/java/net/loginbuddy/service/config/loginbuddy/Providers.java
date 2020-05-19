@@ -17,6 +17,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -161,10 +162,6 @@ public class Providers {
     return pkce;
   }
 
-//  public String getMappings() {
-//    return mappings == null ? "{}" : mappings.toString();
-//  }
-
   public String getResponseMode() {
     return responseMode;
   }
@@ -179,5 +176,18 @@ public class Providers {
       LOGGER.warning(String.format("The mapping object is invalid: %s", mappings == null ? "" : mappings.toString()));
       return new JSONObject();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Providers providers = (Providers) o;
+    return provider.equalsIgnoreCase(providers.provider);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(provider);
   }
 }

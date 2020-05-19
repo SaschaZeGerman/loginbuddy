@@ -1,0 +1,14 @@
+[
+  {
+    "client_id": "clientIdForTestingPurposes",
+    "client_type": "public",
+    "client_uri": "https://democlient.loginbuddy.net/updated",
+    "redirect_uri": "https://democlient.loginbuddy.net/callback,https://local.soapui.com/redirect,https://democlient.loginbuddy.net/spa.html",
+    "providers": [
+      "server_loginbuddy",
+      "self-issued",
+      "server_dynamic"
+    ],
+    "accept_dynamic_provider": true
+  }
+]

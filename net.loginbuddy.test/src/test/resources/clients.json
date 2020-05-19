@@ -1,7 +1,7 @@
 [
   {
     "client_id": "averylongclientidfortesting",
-    "redirect_uri": "https://localhost/custom/locader",
+    "redirect_uri": "https://localhost/custom/loader",
     "client_type": "public",
     "providers": [
       "custom"

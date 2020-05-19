@@ -185,6 +185,27 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     /**
+     * Updates the current list of clients with the given bew values!
+     * @param requestingClientId the client_id of the client that initiated the method.
+     * @param clientsAsJsonString the JSON list of clients to replace the existing ones.
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public List<Clients> updateClients(String requestingClientId, String clientsAsJsonString) throws IllegalArgumentException {
+        try {
+            List<Clients> newClients = new ArrayList<>();
+            if(clientsAsJsonString.startsWith("[")) {
+                newClients.addAll(Arrays.asList(MAPPER.readValue(clientsAsJsonString, Clients[].class)));
+            } else {
+                newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
+            }
+            return loader.update(newClients);
+        } catch(Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
      * Replaces the current list of providers with the given one.
      * @param providersAsJsonString the JSON list of providers to replace the existing ones.
      * @return
@@ -199,6 +220,26 @@ public enum LoginbuddyUtil implements Bootstrap {
                 newProviders.add(MAPPER.readValue(providersAsJsonString, Providers.class));
             }
             return loader.save(newProviders);
+        } catch(Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Updates the current list of providers with the given updated values.
+     * @param providersAsJsonString the JSON list of providers to replace the existing ones.
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public List<Providers> updateProviders(String providersAsJsonString) throws IllegalArgumentException {
+        try {
+            List<Providers> newProviders = new ArrayList<>();
+            if(providersAsJsonString.startsWith("[")) {
+                newProviders.addAll(Arrays.asList(MAPPER.readValue(providersAsJsonString, Providers[].class)));
+            } else {
+                newProviders.add(MAPPER.readValue(providersAsJsonString, Providers.class));
+            }
+            return loader.update(newProviders);
         } catch(Exception e) {
             throw new IllegalArgumentException(e.getMessage());
         }
