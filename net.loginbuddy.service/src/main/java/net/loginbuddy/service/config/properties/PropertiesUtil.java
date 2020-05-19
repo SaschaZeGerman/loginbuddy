@@ -1,7 +1,6 @@
 package net.loginbuddy.service.config.properties;
 
 import net.loginbuddy.service.config.Bootstrap;
-import org.apache.http.MethodNotSupportedException;
 import org.json.simple.JSONObject;
 
 import java.util.Properties;
