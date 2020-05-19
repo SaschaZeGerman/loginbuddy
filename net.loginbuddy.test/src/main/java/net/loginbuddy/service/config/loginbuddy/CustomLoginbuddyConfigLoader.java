@@ -80,6 +80,7 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
             if (((List) configuration).get(0) instanceof Clients) {
                 Set<Clients> all = new HashSet<>();
                 all.addAll((List<Clients>)configuration);
+                all.retainAll(lb.getClients());
                 all.addAll(lb.getClients());
                 lb.setClients(new ArrayList<>(all));
                 updateDbFileAndLoad();
@@ -87,6 +88,7 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
             } else if (((List) configuration).get(0) instanceof Providers) {
                 Set<Providers> all = new HashSet<>();
                 all.addAll((List<Providers>)configuration);
+                all.retainAll(lb.getProviders());
                 all.addAll(lb.getProviders());
                 lb.setProviders(new ArrayList<>(all));
                 updateDbFileAndLoad();

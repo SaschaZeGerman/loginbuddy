@@ -10,5 +10,10 @@
       "server_dynamic"
     ],
     "accept_dynamic_provider": true
+  },
+  {
+    "redirect_uri": "https://democlient.loginbuddy.net/callback",
+    "client_id": "newClientThatDoesNotYetExists",
+    "client_type": "confidential"
   }
 ]
