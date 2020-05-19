@@ -142,14 +142,25 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     public String getProvidersAsJsonString() throws JsonProcessingException {
-        return MAPPER.writeValueAsString(getProviders());
+        return getProvidersAsJsonString(getProviders());
+    }
+
+    public String getProvidersAsJsonString(List<Providers> providers) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(providers);
     }
 
     public String getProviderAsJsonString(Providers provider) throws JsonProcessingException {
         return MAPPER.writeValueAsString(provider);
     }
 
-    public List<Clients> replaceClients(String clientId, String clientsAsJsonString) throws IllegalArgumentException {
+    /**
+     * Replaces the current list of clients with the given one. However, the requesting client will not be replaced/ removed!
+     * @param requestingClientId the client_id of the client that initiated the method.
+     * @param clientsAsJsonString the JSON list of clients to replace the existing ones.
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public List<Clients> replaceClients(String requestingClientId, String clientsAsJsonString) throws IllegalArgumentException {
         try {
             List<Clients> newClients = new ArrayList<>();
             if(clientsAsJsonString.startsWith("[")) {
@@ -157,9 +168,9 @@ public enum LoginbuddyUtil implements Bootstrap {
             } else {
                 newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
             }
-            if(clientId != null) {
-                if (getClientConfigByClientId(newClients, clientId) == null) {
-                    Clients tempClient = getClientConfigByClientId(clientId);
+            if(requestingClientId != null) {
+                if (getClientConfigByClientId(newClients, requestingClientId) == null) {
+                    Clients tempClient = getClientConfigByClientId(requestingClientId);
                     if(tempClient != null) {
                         newClients.add(tempClient);
                     } else {
@@ -168,6 +179,26 @@ public enum LoginbuddyUtil implements Bootstrap {
                 }
             }
             return loader.save(newClients);
+        } catch(Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    /**
+     * Replaces the current list of providers with the given one.
+     * @param providersAsJsonString the JSON list of providers to replace the existing ones.
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public List<Providers> replaceProviders(String providersAsJsonString) throws IllegalArgumentException {
+        try {
+            List<Providers> newProviders = new ArrayList<>();
+            if(providersAsJsonString.startsWith("[")) {
+                newProviders.addAll(Arrays.asList(MAPPER.readValue(providersAsJsonString, Providers[].class)));
+            } else {
+                newProviders.add(MAPPER.readValue(providersAsJsonString, Providers.class));
+            }
+            return loader.save(newProviders);
         } catch(Exception e) {
             throw new IllegalArgumentException(e.getMessage());
         }

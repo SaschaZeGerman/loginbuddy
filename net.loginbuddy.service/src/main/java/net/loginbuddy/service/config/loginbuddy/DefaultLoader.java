@@ -12,7 +12,6 @@ public class DefaultLoader implements LoginbuddyLoader {
 
     private Loginbuddy config;
 
-
     @Override
     public void load() throws Exception {
         try {

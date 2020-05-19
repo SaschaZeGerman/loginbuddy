@@ -11,8 +11,17 @@ services:
       - "80:80"
       - "443:443"
       - "8000:8000"
+      - "9010:9010"
+      - "9011:9011"
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y \
+        -Dcom.sun.management.jmxremote \
+        -Dcom.sun.management.jmxremote.authenticate=false \
+        -Dcom.sun.management.jmxremote.ssl=false \
+        -Dcom.sun.management.jmxremote.port=9010 \
+        -Djava.rmi.server.hostname=local.loginbuddy.net \
+        -Dcom.sun.management.jmxremote.rmi.port=9011 \
+        -Dcom.sun.management.jmxremote.local.only=false"
       - "SUPPORT_OIDCDR=true"
       - "SSL_PWD=${SSL_PWD}"
     volumes:

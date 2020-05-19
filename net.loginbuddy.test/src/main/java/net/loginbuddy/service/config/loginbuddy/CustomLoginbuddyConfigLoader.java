@@ -1,6 +1,5 @@
 package net.loginbuddy.service.config.loginbuddy;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.MethodNotSupportedException;
@@ -13,6 +12,18 @@ import java.io.FileWriter;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * This is a simple example of a custom loader. It enables updates of configurations at runtime which is not supported by default!
+ * It leverages a simple file as it 'configuration database'. As a developer you may connect to a database if you wish.
+ *
+ * This specific class is used with JUnit tests but also with the api test suite.
+ *
+ * The class name is specified here: {loginbuddy}/apitest/docker/loginbuddy.properties
+ *
+ * When the test suite launches the class 'net.loginbuddy.service.server.Overlord' instantiate this class.
+ *
+ * For more details see {loginbuddy}/apitest/README.md
+ */
 public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyConfigLoader.class));
@@ -23,6 +34,7 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
     private String dbLocation;
 
     public CustomLoginbuddyConfigLoader() {
+        // this file location is used with Loginbuddys api tests ({loginbuddy}/apitest/docker)
         this("/usr/local/tomcat/webapps/ROOT/WEB-INF/testCustomLoginbuddyConfig.json");
     }
 
@@ -49,14 +61,11 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     @Override
     public <T> T save(T configuration) throws Exception {
-
         if (configuration instanceof List && ((List) configuration).size() > 0) {
             if (((List) configuration).get(0) instanceof Clients) {
                 lb.setClients((List<Clients>) configuration);
             } else if (((List) configuration).get(0) instanceof Providers) {
                 lb.setProviders((List<Providers>) configuration);
-                // new JSONParser().parse(node.toString())
-                // new JSONParser().parse(node.get("providers").get(3).get("mappings").asText())
             }
         }
 

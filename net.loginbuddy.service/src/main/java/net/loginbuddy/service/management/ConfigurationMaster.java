@@ -1,6 +1,7 @@
 package net.loginbuddy.service.management;
 
 import net.loginbuddy.common.api.HttpHelper;
+import net.loginbuddy.service.config.discovery.DiscoveryUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,6 +12,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ConfigurationMaster extends HttpServlet {
+
+    public static boolean isManagementEnabled() {
+        return DiscoveryUtil.UTIL.getManagement() != null;
+    }
+
+    public static boolean isConfigManagementEnabled() {
+        return isManagementEnabled() && DiscoveryUtil.UTIL.getManagement().getConfigurationEndpoint() != null;
+    }
 
     // TODO update group(2) when a JSON schema gets introduced that validates values such as permitted provider name length
     private static Pattern pEntities = Pattern.compile(
@@ -24,6 +33,12 @@ public abstract class ConfigurationMaster extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         response.setContentType("application/json");
+
+        if(!isConfigManagementEnabled()) {
+            response.setStatus(400);
+            response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "configuration management is not enabled").toJSONString());
+            return;
+        }
 
         Matcher matcher = pEntities.matcher(request.getPathInfo() == null ? "unknown" : request.getPathInfo());
         if (matcher.find()) {
@@ -44,14 +59,24 @@ public abstract class ConfigurationMaster extends HttpServlet {
 
         response.setContentType("application/json");
 
+        if(!isConfigManagementEnabled()) {
+            response.setStatus(400);
+            response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "configuration management is not enabled").toJSONString());
+            return;
+        }
+
         Matcher matcher = pEntities.matcher(request.getPathInfo() == null ? "unknown" : request.getPathInfo());
         if (matcher.find()) {
-            String requestContentType = request.getContentType();
             try {
                 String httpBody = HttpHelper.readMessageBody(request.getReader());
-                if (requestContentType.startsWith("application/json")) {
+                if (request.getContentType().startsWith("application/json")) {
                     response.setStatus(200);
-                    response.getWriter().println(doPostProtected(httpBody, ConfigurationTypes.valueOf(matcher.group(1).toUpperCase()), matcher.group(2), new AccessToken(request, AccessToken.TokenLocation.HEADER)));
+                    response.getWriter().println(
+                            doPostProtected(
+                                    httpBody,
+                                    ConfigurationTypes.valueOf(matcher.group(1).toUpperCase()),
+                                    matcher.group(2),
+                                    new AccessToken(request, AccessToken.TokenLocation.HEADER)));
                 } else {
                     response.setStatus(400);
                     response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "the given content-type is not supported!"));

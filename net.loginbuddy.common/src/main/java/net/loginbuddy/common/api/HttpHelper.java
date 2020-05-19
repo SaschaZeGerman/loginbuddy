@@ -291,6 +291,6 @@ public class HttpHelper {
     while((nextLine = reader.readLine()) != null) {
       sb.append(nextLine);
     }
-    return sb.toString();
+    return sb.toString().trim();
   }
 }

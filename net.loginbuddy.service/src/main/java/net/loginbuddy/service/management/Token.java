@@ -27,6 +27,12 @@ public class Token extends HttpServlet {
         response.addHeader("Pragma", "no-cache");
         response.setStatus(400);
 
+        if(!ConfigurationMaster.isManagementEnabled()) {
+            response.setStatus(400);
+            response.getWriter().println(HttpHelper.getErrorAsJson("invalid_request", "management is not enabled").toJSONString());
+            return;
+        }
+
         ParameterValidatorResult clientIdResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
         ParameterValidatorResult clientSecretResult = ParameterValidator
@@ -56,13 +62,23 @@ public class Token extends HttpServlet {
                 claims.put(Constants.NONCE.getKey(), nonceResult.getValue());
             }
 
-            // TODO validate resource
-            claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
+            if(resourceResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+                if(resourceResult.getValue().equals(DiscoveryUtil.UTIL.getManagement().getConfigurationEndpoint())) {
+                    claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
+                } else {
+                    response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "requested resource is not supported").toJSONString());
+                    return;
+                }
+            } else {
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "resource was not requested").toJSONString());
+                return;
+            }
 
             // grant any or even all 'configuration' scopes
             String grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
             if(grantedScopes.length() == 0) {
-                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "no requested scope was granted").toJSONString());
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "scope was not requested and-or no scope was granted").toJSONString());
+                return;
             }
             claims.put(Constants.SCOPE.getKey(), grantedScopes);
             claims.put(Constants.CLIENT_ID.getKey(), clientCredentialsResult.getClients().getClientId());
