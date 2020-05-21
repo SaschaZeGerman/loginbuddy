@@ -29,6 +29,7 @@ apitest/soapui/testresults/*
 
 # temporary test files
 apitest/tempfiles/*
+net.loginbuddy.test/src/test/resources/config.json
 
 # files for local development
 .env
