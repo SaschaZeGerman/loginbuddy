@@ -1,15 +1,13 @@
 package net.loginbuddy.service.server;
 
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyLoader;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
-import net.loginbuddy.service.config.properties.PropertiesUtil;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.LoginbuddyLoader;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.properties.PropertiesUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.logging.Logger;
 
 public class Overlord extends HttpServlet {
@@ -38,12 +36,6 @@ public class Overlord extends HttpServlet {
       LOGGER.severe("Stopping Loginbuddy since its configuration could not be loaded! Fix that first!");
       System.exit(0);
     }
-  }
-
-  void notYetImplemented(HttpServletResponse response) throws IOException {
-    response.setStatus(418);
-    response.setContentType("application/json");
-    response.getWriter().write("{\"sorry\":\"not yet implemented\"}");
   }
 
   public static String createJsonErrorResponse(String value) {

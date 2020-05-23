@@ -1,6 +1,6 @@
 package net.loginbuddy.service.server;
 
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

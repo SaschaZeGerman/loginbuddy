@@ -3,9 +3,9 @@ package net.loginbuddy.service.server;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
-import net.loginbuddy.service.config.loginbuddy.Clients;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.Clients;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 
 import java.util.Base64;
 import java.util.stream.Stream;

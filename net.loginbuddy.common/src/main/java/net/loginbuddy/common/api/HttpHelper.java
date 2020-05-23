@@ -179,7 +179,7 @@ public class HttpHelper {
       }
     } catch (Exception e) {
       // TODO need to handle errors
-      e.printStackTrace();
+//      e.printStackTrace();
       if(e.getMessage().contains("refused")) {
         return getErrorAsJson("invalid_server", "connection to openid provider was refused");
       } else if(e.getMessage().contains("registration_url")) {
@@ -292,5 +292,23 @@ public class HttpHelper {
       sb.append(nextLine);
     }
     return sb.toString().trim();
+  }
+
+
+  /**
+   * Check if the user chose to dynamically set a provider
+   */
+  public static boolean checkForDynamicProvider(String provider, ParameterValidatorResult issuer,
+                                                 ParameterValidatorResult discoveryUrlResult, boolean acceptDynamicProvider) {
+    boolean result = false;
+    if (acceptDynamicProvider) {
+      result = Constants.DYNAMIC_PROVIDER.getKey().equalsIgnoreCase(provider);
+      result = result && issuer.getResult().equals(RESULT.VALID);
+      result = result && HttpHelper.couldBeAUrl(issuer.getValue());
+      if (discoveryUrlResult.getResult().equals(RESULT.VALID)) {
+        result = result && HttpHelper.couldBeAUrl(discoveryUrlResult.getValue());
+      }
+    }
+    return result;
   }
 }

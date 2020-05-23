@@ -14,7 +14,7 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.common.util.Pkce;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.service.util.SessionContext;
 
 import javax.servlet.ServletException;

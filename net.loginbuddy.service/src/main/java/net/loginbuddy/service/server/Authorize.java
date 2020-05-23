@@ -9,8 +9,8 @@
 package net.loginbuddy.service.server;
 
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.service.config.loginbuddy.Clients;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.Clients;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletResponse;

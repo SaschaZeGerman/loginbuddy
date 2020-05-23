@@ -13,7 +13,7 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
-import net.loginbuddy.service.util.HeadOfInitialize;
+import net.loginbuddy.config.HeadOfInitialize;
 import net.loginbuddy.service.util.SessionContext;
 
 import javax.servlet.annotation.WebServlet;

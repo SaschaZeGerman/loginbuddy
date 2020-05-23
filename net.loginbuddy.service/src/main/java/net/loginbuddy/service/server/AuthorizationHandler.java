@@ -7,9 +7,9 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.common.util.Sanetizer;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
-import net.loginbuddy.service.config.loginbuddy.Clients;
-import net.loginbuddy.service.config.properties.PropertiesUtil;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.Clients;
+import net.loginbuddy.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 

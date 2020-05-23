@@ -1,5 +1,5 @@
 <%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
-<%@ page import="net.loginbuddy.common.config.Constants" %>
+<%@ page import="net.loginbuddy.common.net.loginbuddy.service.config.Constants" %>
 <%@ page import="net.loginbuddy.common.util.MsgResponse" %>
 <%@ page import="org.json.simple.JSONObject" %>
 <%@ page import="org.json.simple.parser.JSONParser" %>

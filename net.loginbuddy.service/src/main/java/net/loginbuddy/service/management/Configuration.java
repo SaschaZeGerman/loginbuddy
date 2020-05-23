@@ -2,11 +2,16 @@ package net.loginbuddy.service.management;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.service.config.discovery.DiscoveryUtil;
-import net.loginbuddy.service.config.loginbuddy.Clients;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
-import net.loginbuddy.service.config.loginbuddy.Providers;
-import net.loginbuddy.service.config.properties.PropertiesUtil;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.Clients;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.management.AccessToken;
+import net.loginbuddy.config.management.ActualScope;
+import net.loginbuddy.config.management.ConfigurationTypes;
+import net.loginbuddy.config.properties.PropertiesUtil;
+import net.loginbuddy.config.scope.LoginbuddyScope;
+import net.loginbuddy.config.scope.RequireScope;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

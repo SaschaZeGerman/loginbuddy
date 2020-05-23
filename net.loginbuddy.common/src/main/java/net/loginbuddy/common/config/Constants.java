@@ -33,6 +33,7 @@ public enum Constants {
     CODE_CHALLENGE_METHODS_SUPPORTED("code_challenge_methods_supported"),
     CONFIGURATION_ENDPOINT("configuration_endpoint"),
     DISCOVERY_URL("discovery_url"),
+    DYNAMIC_PROVIDER("dynamic_provider"),
     ERROR("error"),
     ERROR_DESCRIPTION("error_description"),
     EXPIRES_IN("expires_in"),

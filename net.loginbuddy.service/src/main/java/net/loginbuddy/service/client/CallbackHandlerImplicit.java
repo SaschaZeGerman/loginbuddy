@@ -4,8 +4,8 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
-import net.loginbuddy.service.config.loginbuddy.LoginbuddyUtil;
-import net.loginbuddy.service.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
 
@@ -42,9 +42,6 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
                     sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
                     sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey())
             );
-//            providers.setClientId(sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()));
-//            providers.setRedirectUri(sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()));
-//            providers.setIssuer(provider);
         }
 
         JSONObject idTokenPayload = null;

@@ -174,6 +174,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.util.PropertyPermission "com.fasterxml.jackson.core.util.BufferRecyclers.trackReusableBuffers", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "accessDeclaredMembers";
+    permission java.lang.RuntimePermission "exitVM.0";
     permission java.lang.RuntimePermission "exitVM.1";
     permission java.lang.RuntimePermission "getenv.SUPPORT_OIDCDR", "read";
     permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";

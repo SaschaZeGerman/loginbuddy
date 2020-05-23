@@ -24,9 +24,8 @@
         </dependency>
         <dependency>
             <groupId>net.loginbuddy</groupId>
-            <artifactId>service</artifactId>
+            <artifactId>config</artifactId>
             <version>1.0.0</version>
-            <classifier>classes</classifier>
         </dependency>
     </dependencies>
 

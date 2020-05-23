@@ -1,0 +1,61 @@
+#
+# This docker compose file is usable for development purposes:
+#
+# NOTE: use this only for local development purposes!
+#
+# IMPORTANT:
+# loginbuddy-sidecar should NOT expose ports in an 'online' scenario! Port 444 is available to other
+# containers within the same docker network by default! Do NOT include a port mapping!
+# Here it is done for testing purposes only!
+#
+version: '3.4'
+services:
+
+  loginbuddy-demoserver:
+    image: saschazegerman/loginbuddy:latest-demoserver
+    restart: always
+    ports:
+    - "443:443"
+    - "8003:8003"
+    environment:
+      - "HOSTNAME_LOGINBUDDY_DEMOSERVER=loginbuddy-demoserver"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8003,suspend=n,server=y"
+
+  loginbuddy-oidcdr:
+    image: saschazegerman/loginbuddy:latest-oidcdr
+    restart: always
+    depends_on:
+      - loginbuddy-demoserver
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./loginbuddy_oidcdr_test.sh:/opt/docker/loginbuddy.sh
+      - ./loginbuddy_demoserver_import.sh:/opt/docker/loginbuddy_demoserver_import.sh
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+
+  loginbuddy-sidecar:
+    image: saschazegerman/loginbuddy:latest-sidecar
+    restart: always
+    depends_on:
+      - loginbuddy-oidcdr
+    ports:
+      - "444:444"
+      - "8001:8001"
+      - "9011:9011"
+      - "9012:9012"
+    volumes:
+      - ./config.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
+      - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
+      - ./permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
+      - ./loginbuddy.properties:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/loginbuddy.properties
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8001,suspend=n,server=y \
+        -Dcom.sun.management.jmxremote \
+        -Dcom.sun.management.jmxremote.authenticate=false \
+        -Dcom.sun.management.jmxremote.ssl=false \
+        -Dcom.sun.management.jmxremote.port=9011 \
+        -Djava.rmi.server.hostname=local.loginbuddy.net \
+        -Dcom.sun.management.jmxremote.rmi.port=9012 \
+        -Dcom.sun.management.jmxremote.local.only=false"
+      - "SUPPORT_OIDCDR=true"

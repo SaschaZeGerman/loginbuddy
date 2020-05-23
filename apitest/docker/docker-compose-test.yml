@@ -3,6 +3,10 @@
 #
 # NOTE: use this only for local development purposes!
 #
+# IMPORTANT:
+# loginbuddy-sidecar and loginbuddy-oidcdr should NOT expose ports in an 'online' scenario! Port 444 and 445 are available to other
+# containers within the same docker network by default! Do NOT include a port mapping! Here it is done for testing purposes only!
+#
 version: '3.4'
 services:
 
@@ -30,7 +34,7 @@ services:
       - ./permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
       - ./loginbuddy.properties:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/loginbuddy.properties
       - ./testCustomLoginbuddyConfig.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/testCustomLoginbuddyConfig.json
-      - ./test-classes/net/loginbuddy/service/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/service/config/loginbuddy/CustomLoginbuddyConfigLoader.class
+      - ./test-classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
       - "SUPPORT_OIDCDR=true"

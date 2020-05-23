@@ -160,16 +160,6 @@
         <servlet-class>net.loginbuddy.service.management.Configuration</servlet-class>
     </servlet>
 
-    <!-- sidecar resources -->
-    <servlet>
-        <servlet-name>SidecarInitialize</servlet-name>
-        <servlet-class>net.loginbuddy.service.sidecar.Initialize</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>SidecarCallback</servlet-name>
-        <servlet-class>net.loginbuddy.service.sidecar.Callback</servlet-class>
-    </servlet>
-
     <!-- The mapping for the default servlet -->
     <servlet-mapping>
         <servlet-name>default</servlet-name>
@@ -235,16 +225,6 @@
         <url-pattern>/management/configuration/*</url-pattern>
     </servlet-mapping>
 
-    <!-- sidecar resources -->
-    <servlet-mapping>
-        <servlet-name>SidecarInitialize</servlet-name>
-        <url-pattern>/sidecar/initialize</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>SidecarCallback</servlet-name>
-        <url-pattern>/sidecar/callback</url-pattern>
-    </servlet-mapping>
-
     <error-page>
         <error-code>400</error-code>
         <location>/iapis/error.jsp</location>
@@ -302,9 +282,9 @@
         <role-name>admin</role-name>
     </security-role>
 
-    <session-config>
+    <session-net.loginbuddy.service.config>
         <session-timeout>120</session-timeout>
-    </session-config>
+    </session-net.loginbuddy.service.config>
 
     <mime-mapping>
         <extension>json</extension>

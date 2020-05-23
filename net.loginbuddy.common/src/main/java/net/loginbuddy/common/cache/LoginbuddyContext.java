@@ -1,5 +1,7 @@
 package net.loginbuddy.common.cache;
 
+import net.loginbuddy.common.config.Constants;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -47,4 +49,13 @@ public class LoginbuddyContext {
     return get(key, Boolean.class);
   }
   public Long getLong(String key) { return get(key, Long.class); }
+
+  /**
+   *
+   * @param responseType the responseType that was used. With that, we know what to expect at the callback
+   */
+  public void setSessionCallback(Constants responseType) {
+    put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_CALLBACK.getKey());
+    put(Constants.ACTION_USED_RESPONSE_TYPE.getKey(), responseType.getKey());
+  }
 }

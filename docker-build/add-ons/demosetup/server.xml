@@ -74,19 +74,19 @@
           pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
         <Context path="" docBase="/usr/local/tomcat/webapps/ROOT" debug="0" reloadable="true">
           <Resource name="bean/LoginbuddyFactory" auth="Container"
-            type="net.loginbuddy.service.config.loginbuddy.Loginbuddy"
-            factory="net.loginbuddy.service.config.loginbuddy.Factory"
+            type="net.loginbuddy.config.loginbuddy.Loginbuddy"
+            factory="net.loginbuddy.config.loginbuddy.Factory"
             path="webapps/ROOT/WEB-INF/classes/config.json"/>
           <Resource name="bean/DiscoveryUtilFactory" auth="Container"
-            type="net.loginbuddy.service.config.discovery.Discovery"
-            factory="net.loginbuddy.service.config.discovery.Factory"
+            type="net.loginbuddy.config.discovery.Discovery"
+            factory="net.loginbuddy.config.discovery.Factory"
             path="webapps/ROOT/WEB-INF/classes/discovery.json"/>
           <Resource name="bean/CacheFactory" auth="Container"
             type="net.loginbuddy.common.cache.DefaultCache"
             factory="org.apache.naming.factory.BeanFactory"/>
           <Resource name="bean/PropertiesFactory" auth="Container"
             type="java.util.Properties"
-            factory="net.loginbuddy.service.config.properties.Factory"
+            factory="net.loginbuddy.config.properties.Factory"
             path="webapps/ROOT/WEB-INF/classes/loginbuddy.properties"/>
         </Context>
       </Host>

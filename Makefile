@@ -5,6 +5,7 @@ build_all:
 	docker build --no-cache --tag saschazegerman/loginbuddy:latest-sidecar -f Dockerfile_sidecar .
 	docker build --no-cache --tag saschazegerman/loginbuddy:latest-oidcdr -f Dockerfile_oidcdr .
 	docker build --no-cache --tag saschazegerman/loginbuddy:latest-test -f Dockerfile_test .
+	docker build --no-cache --tag saschazegerman/loginbuddy:latest-demoserver -f Dockerfile_demoserver .
 
 docker_run_demo:
 	docker-compose -f docker-compose-demosetup.yml up -d
