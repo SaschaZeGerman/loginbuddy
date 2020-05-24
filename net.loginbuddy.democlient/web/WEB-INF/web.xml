@@ -59,10 +59,4 @@
         <welcome-file>/index.jsp</welcome-file>
     </welcome-file-list>
 
-<!--    <resource-env-ref>-->
-<!--        <description>Object factory for Cache instances</description>-->
-<!--        <resource-env-ref-name>bean/CacheFactory</resource-env-ref-name>-->
-<!--        <resource-env-ref-type>net.loginbuddy.common.cache.DefaultCache</resource-env-ref-type>-->
-<!--    </resource-env-ref>-->
-
 </web-app>

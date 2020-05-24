@@ -12,8 +12,8 @@ COPY net.loginbuddy.sidecar/target/sidecar-1.0.0 /usr/local/tomcat/webapps/ROOT
 
 COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/server/loginbuddy_oidcdr_import.sh /opt/docker/loginbuddy_oidcdr_import.sh
-COPY docker-build/add-ons/server/server.xml /usr/local/tomcat/conf/server.xml
 
+COPY docker-build/add-ons/sidecar/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/sidecar/loginbuddy.sh /opt/docker/loginbuddy.sh
 
 # Create directory for holding SSL keys

@@ -41,6 +41,7 @@ services:
       - loginbuddy-oidcdr
     ports:
       - "444:444"
+      - "8044:8044"
       - "8001:8001"
       - "9011:9011"
       - "9012:9012"
@@ -48,7 +49,6 @@ services:
       - ./config.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
       - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
       - ./permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
-      - ./loginbuddy.properties:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/loginbuddy.properties
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8001,suspend=n,server=y \
         -Dcom.sun.management.jmxremote \
