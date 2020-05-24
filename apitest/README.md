@@ -15,43 +15,76 @@ To run the tests a few pre-requisites are required:
 
 Next to this file there are three directories:
 
-- **docker:** this contains a docker-compose file and configuration, used with the tests
+- **docker:** this contains docker related content to stand-up the testing environments
 - **scripts:** this was only used when adding support for *response_type=id_token*
-- **soapui:** this contains SOAPUI project and properties files
+- **soapui:** contains SOAPUI projects and properties files
 
-To run tests follow these steps:
+### Docker
 
-- launch the Loginbuddy test setup
-  - ```$ cd ./docker```
-  - ```$ docker-compose -f docker-compose-test.yml up```
-- Launch SOAPUI
-- Import the project files found at *./soapui/project*
-- Double-click each project, select *TestSuites* and hit the green arrow
-- Verify that everything is green
-- You can also open the browser at *https://democlient.loginbuddy.net* for manual verifications. Not everything is automated yet!
-- Done!
+**Directory: ./docker/sidecar**
 
-## Configure SOAPUI
+This directory stands-up a test environment specifically for the sidecar deployment of Loginbuddy. It is used slightly different than how it would be used in a 
+real life scenario but this is to create tests that 'look into' Loginbuddy more. The test scenario consists of these components:
+- `loginbuddy-sidecar`: receives request from SOAPUI as its client
+- `loginbuddy-oidcdr`: used to test dynamic registration when loginbuddy-sidecar leverages that feature
+- `demoserver.loginbuddy.net`: simulates an OpenID provider
 
-Both SOAPUI projects are using properties instead of hard coded values. These can be found here:
+All containers are configured for remote debugging!
 
-```$ ./properties/template.properties```
+The differences to 'real life' setups are these:
+- `loginbuddy-sidecar`: the compose file exposes all ports of this container. This is required to connect from outside the docker network (SOAPUI). Since loginbuddy-sidecar 
+would usually be launched with a container that leverages it, that container would be part of the same network and therefore could access it via port 444 by default!
+- `loginbuddy-oidcdr`: when this container launches it imports the SSL vertificate of demoserver.loginbuddy.net. This is required because self-signed certificates are 
+not accepted by default and tests would fail. This modification is preferred than implementing 'http' instead of using 'https'!
+- `demoserver.loginbuddy.net`: when creating its DN for the self-signed certificate, it also includes 'loginbuddy-demoserver' as SNI name. This helps with DNS naming issues 
+that arise from SOAPUI being outside of the docker network and the other containers being part of it.
 
-If you want to use your own properties, simply copy that file and load them into SOAPUI for each project. 
+To run the tests do the following (assuming the pre-requisites are satisfied):
+- `cd ./docker/sidecar`
+- `docker-compose up`
+- Launch SOAPUI and import the project `./soapui/project/Loginbuddy-Sidecar.xml`
+- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
 
-## Custom Configuration Loader
+You should only see green diagrams!
+
+When this is done, run `docker-compose up` to stop the test environment!
+
+**Directory: ./docker**
+
+This directory contains the 'default' test setup and tests most bits and pieces. The test scenario consists of these components:
+- `loginbuddy-oidcdr`: testing dynamic registration
+- `loginbuddy-demo`: simulating the backend
+- `loginbuddy-sidecar`: testing the sidecar setup
+- `loginbuddy-test`: provides helper services
+
+In addition, this test setup uses a custom Loginbuddy config loader.
+
+To run the tests do the following (assuming the pre-requisites are satisfied):
+- `cd ./docker`
+- `make run-test`  // it copies test files and lauches the docker containers
+- Launch SOAPUI and import the projects `./soapui/project/loginbuddy-basic.xml`, `.../loginbuddy-configManagement.xml`, `.../loginbuddy-flows.xml`
+- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
+
+You should only see green diagrams!
+
+When this is done, run `make stop-test` to stop the test environment!
+
+### Custom Configuration Loader
 
 This testsuite is using a custom loader for loading clients and providers. The custom loader has been implemented in the module net.loginbuddy.test.
-
-To make sure the latest update of that class is used, run this command:
-
-- `cd docker`
-- `make prepare-test`
 
 The class implementing the loader is configured here:
 
 - file: `./docker/loginbuddy.properties`
 - property: `config.loginbuddy.loader.default`
+
+## Configure SOAPUI
+
+All SOAPUI projects are using properties instead of hard coded values. These can be found here:
+
+```$ ./properties/template.properties```
+
+If you want to use your own properties, simply copy that file and load them into SOAPUI for each project.
 
 ## Known issues
 
