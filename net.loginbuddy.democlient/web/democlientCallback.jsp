@@ -1,9 +1,9 @@
 <%@ page import="net.loginbuddy.common.cache.LoginbuddyCache" %>
-<%@ page import="net.loginbuddy.common.net.loginbuddy.service.config.Constants" %>
 <%@ page import="net.loginbuddy.common.util.MsgResponse" %>
 <%@ page import="org.json.simple.JSONObject" %>
 <%@ page import="org.json.simple.parser.JSONParser" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="net.loginbuddy.common.config.Constants" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <html>
