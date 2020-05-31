@@ -163,6 +163,15 @@
         "provider": "$.details_provider.provider",
         "sub": "$.details_provider.id_token_payload.sub"
       }
+    },
+    {
+      "provider": "pingone",
+      "issuer": "https://auth-staging.pingone.com/{environmentId}/as",
+      "openid_configuration_uri": "https://auth-staging.pingone.com/{environmentId}/as/.well-known/openid-configuration",
+      "client_id": "",
+      "client_secret": "",
+      "response_type": "code",
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     }
   ]
 }
