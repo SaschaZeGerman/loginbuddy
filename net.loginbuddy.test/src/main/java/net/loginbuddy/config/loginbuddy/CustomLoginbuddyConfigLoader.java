@@ -37,7 +37,7 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     public CustomLoginbuddyConfigLoader() {
         // this file location is used with Loginbuddys api tests ({loginbuddy}/apitest/docker)
-        this("/usr/local/tomcat/webapps/ROOT/WEB-INF/testCustomLoginbuddyConfig.json");
+        this("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json");
     }
 
     public CustomLoginbuddyConfigLoader(String dbLocation) {

@@ -178,6 +178,66 @@ public class Providers {
     }
   }
 
+  public void setProvider(String provider) {
+    this.provider = provider;
+  }
+
+  public void setIssuer(String issuer) {
+    this.issuer = issuer;
+  }
+
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
+
+  public void setRedirectUri(String redirectUri) {
+    this.redirectUri = redirectUri;
+  }
+
+  public void setClientSecret(String clientSecret) {
+    this.clientSecret = clientSecret;
+  }
+
+  public void setResponseType(String responseType) {
+    this.responseType = responseType;
+  }
+
+  public void setScope(String scope) {
+    this.scope = scope;
+  }
+
+  public void setAuthorizationEndpoint(String authorizationEndpoint) {
+    this.authorizationEndpoint = authorizationEndpoint;
+  }
+
+  public void setOpenidConfigurationUri(String openidConfigurationUri) {
+    this.openidConfigurationUri = openidConfigurationUri;
+  }
+
+  public void setTokenEndpoint(String tokenEndpoint) {
+    this.tokenEndpoint = tokenEndpoint;
+  }
+
+  public void setUserinfoEndpoint(String userinfoEndpoint) {
+    this.userinfoEndpoint = userinfoEndpoint;
+  }
+
+  public void setJwksUri(String jwksUri) {
+    this.jwksUri = jwksUri;
+  }
+
+  public void setResponseMode(String responseMode) {
+    this.responseMode = responseMode;
+  }
+
+  public void setPkce(boolean pkce) {
+    this.pkce = pkce;
+  }
+
+  public void setMappings(JsonNode mappings) {
+    this.mappings = mappings;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

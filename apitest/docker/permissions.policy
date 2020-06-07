@@ -6,7 +6,7 @@
 //
 //
 grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
-    permission java.io.FilePermission "/usr/local/tomcat/webapps/ROOT/WEB-INF/testCustomLoginbuddyConfig.json", "read, write";
+    permission java.io.FilePermission "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json", "read, write";
     permission java.net.SocketPermission "demoserver.loginbuddy.net", "connect,resolve";
     permission java.net.SocketPermission "loginbuddy-oidcdr", "connect,resolve";
 };

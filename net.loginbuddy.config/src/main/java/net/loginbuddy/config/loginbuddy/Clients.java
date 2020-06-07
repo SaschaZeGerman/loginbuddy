@@ -85,6 +85,38 @@ public class Clients {
         return signedResponseAlg;
     }
 
+    public void setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public void setClientType(String clientType) {
+        this.clientType = clientType;
+    }
+
+    public void setClientUri(String clientUri) {
+        this.clientUri = clientUri;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public void setClientProviders(String[] clientProviders) {
+        this.clientProviders = clientProviders;
+    }
+
+    public void setAcceptDynamicProvider(boolean acceptDynamicProvider) {
+        this.acceptDynamicProvider = acceptDynamicProvider;
+    }
+
+    public void setSignedResponseAlg(String signedResponseAlg) {
+        this.signedResponseAlg = signedResponseAlg;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

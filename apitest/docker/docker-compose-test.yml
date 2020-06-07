@@ -33,7 +33,7 @@ services:
       - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
       - ./permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
       - ./loginbuddy.properties:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/loginbuddy.properties
-      - ./testCustomLoginbuddyConfig.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/testCustomLoginbuddyConfig.json
+      - ./testCustomLoginbuddyConfig.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json
       - ./test-classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"

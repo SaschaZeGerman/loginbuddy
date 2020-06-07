@@ -147,6 +147,70 @@ public class Discovery implements Bootstrap {
         return getIssuer() + path;
     }
 
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public void setAuthorizationEndpoint(String authorizationEndpoint) {
+        this.authorizationEndpoint = authorizationEndpoint;
+    }
+
+    public void setTokenEndpoint(String tokenEndpoint) {
+        this.tokenEndpoint = tokenEndpoint;
+    }
+
+    public void setUserinfoEndpoint(String userinfoEndpoint) {
+        this.userinfoEndpoint = userinfoEndpoint;
+    }
+
+    public void setJwksUri(String jwksUri) {
+        this.jwksUri = jwksUri;
+    }
+
+    public void setScopesSupported(String[] scopesSupported) {
+        this.scopesSupported = scopesSupported;
+    }
+
+    public void setResponseTypesSupported(String[] responseTypesSupported) {
+        this.responseTypesSupported = responseTypesSupported;
+    }
+
+    public void setGrantTypesSupported(String[] grantTypesSupported) {
+        this.grantTypesSupported = grantTypesSupported;
+    }
+
+    public void setSubjectTypesSupported(String[] subjectTypesSupported) {
+        this.subjectTypesSupported = subjectTypesSupported;
+    }
+
+    public void setIdTokenSigningAlgValuesSupported(String[] idTokenSigningAlgValuesSupported) {
+        this.idTokenSigningAlgValuesSupported = idTokenSigningAlgValuesSupported;
+    }
+
+    public void setTokenEndpointAuthMethodsSupported(String[] tokenEndpointAuthMethodsSupported) {
+        this.tokenEndpointAuthMethodsSupported = tokenEndpointAuthMethodsSupported;
+    }
+
+    public void setServiceDocumentation(String serviceDocumentation) {
+        this.serviceDocumentation = serviceDocumentation;
+    }
+
+    public void setCodeChallengeMethodsSupported(String[] codeChallengeMethodsSupported) {
+        this.codeChallengeMethodsSupported = codeChallengeMethodsSupported;
+    }
+
+    public void setPushedAuthorizationRequestEndpoint(String pushedAuthorizationRequestEndpoint) {
+        this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
+    }
+
+    public void setManagement(Management management) {
+        this.management = management;
+    }
+
+    public void setSigningAlgValuesSupported(String[] signingAlgValuesSupported) {
+        this.signingAlgValuesSupported = signingAlgValuesSupported;
+    }
+
     @JsonIgnore
     public String getScopesSupportedAsString() {
         return HttpHelper.stringArrayToString(getScopesSupported());
