@@ -166,8 +166,8 @@
     },
     {
       "provider": "pingone",
-      "issuer": "https://auth-staging.pingone.com/{environmentId}/as",
-      "openid_configuration_uri": "https://auth-staging.pingone.com/{environmentId}/as/.well-known/openid-configuration",
+      "issuer": "https://auth.pingone.com/{environmentId}/as",
+      "openid_configuration_uri": "https://auth.pingone.com/{environmentId}/as/.well-known/openid-configuration",
       "client_id": "",
       "client_secret": "",
       "response_type": "code",
