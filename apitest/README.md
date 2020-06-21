@@ -47,7 +47,7 @@ To run the tests do the following (assuming the pre-requisites are satisfied):
 
 You should only see green diagrams!
 
-When this is done, run `docker-compose up` to stop the test environment!
+When this is done, run `docker-compose down` to stop the test environment!
 
 **Directory: ./docker**
 

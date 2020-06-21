@@ -10,6 +10,10 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 #
 COPY net.loginbuddy.sidecar/target/sidecar-1.0.0 /usr/local/tomcat/webapps/ROOT
 
+# Copy provider templates
+#
+COPY docker-build/add-ons/templates/configTemplates.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/configTemplates.json
+
 COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/server/loginbuddy_oidcdr_import.sh /opt/docker/loginbuddy_oidcdr_import.sh
 

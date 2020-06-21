@@ -103,6 +103,15 @@
         "email_verified": "asis:true",
         "provider": "$.details_provider.provider"
       }
+    },
+    {
+      "provider": "server_templated",
+      "template": "server_templated",
+      "client_id": "replacedClientId",
+      "client_secret": "replacedClientSecret",
+      "mappings": {
+        "key": "value"
+      }
     }
   ]
 }

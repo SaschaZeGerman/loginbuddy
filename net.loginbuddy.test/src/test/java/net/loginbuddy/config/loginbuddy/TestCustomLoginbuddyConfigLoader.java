@@ -36,7 +36,7 @@ public class TestCustomLoginbuddyConfigLoader {
             ll.save(clients);
             assertEquals(1, ll.getLoginbuddy().getClients().size());
             assertEquals("https://localhost/custom/loader", ll.getLoginbuddy().getClients().get(0).getRedirectUri());
-            assertEquals(4, ll.getLoginbuddy().getProviders().size());
+            assertEquals(5, ll.getLoginbuddy().getProviders().size());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -56,7 +56,20 @@ public class TestCustomLoginbuddyConfigLoader {
                 }
             }
             assertTrue(gotUpdated);
-            assertEquals(4, ll.getLoginbuddy().getProviders().size());
+            assertEquals(5, ll.getLoginbuddy().getProviders().size());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void TestProviderTemplatesClients() {
+        try {
+            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json", "src/test/resources/providerTemplates.json");
+            List<Providers> providers = ll.getLoginbuddy().getProviders();
+            assertEquals("replacedClientId", providers.get(4).getClientId());
+            assertEquals("https://template.loginbuddy.net/authorize", providers.get(4).getAuthorizationEndpoint());
+            assertEquals(4, ll.getLoginbuddy().getClients().size());
         } catch (Exception e) {
             fail(e.getMessage());
         }

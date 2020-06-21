@@ -4,15 +4,7 @@
   "providers": [
     {
       "provider": "server_loginbuddy",
-      "issuer": "https://demoserver.loginbuddy.net",
-      "client_id": "loginbuddy_demoId",
-      "client_secret": "loginbuddy_demoSecret",
-      "authorization_endpoint": "https://demoserver.loginbuddy.net/authorize",
-      "token_endpoint": "https://demoserver.loginbuddy.net/token",
-      "userinfo_endpoint": "https://demoserver.loginbuddy.net/userinfo",
-      "jwks_uri": "https://demoserver.loginbuddy.net/jwks",
-      "scope": "openid profile email",
-      "redirect_uri": "https://local.loginbuddy.net/callback"
+      "template": "server_loginbuddy"
     },
     {
       "provider": "self-issued",

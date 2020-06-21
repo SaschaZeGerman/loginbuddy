@@ -94,6 +94,15 @@
         "provider": "$.details_provider.provider",
         "sub": "$.details_provider.id_token_payload.sub"
       }
+    },
+    {
+      "provider": "server_templated",
+      "template": "server_templated",
+      "client_id": "replacedClientId",
+      "client_secret": "replacedClientSecret",
+      "mappings": {
+        "key": "value"
+      }
     }
   ]
 }

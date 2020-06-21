@@ -3,6 +3,10 @@
               type="net.loginbuddy.config.loginbuddy.Loginbuddy"
               factory="net.loginbuddy.config.loginbuddy.Factory"
               path="src/test/resources/testConfig.json"/>
+    <Resource name="bean/LoginbuddyTemplateFactory" auth="Container"
+              type="net.loginbuddy.config.loginbuddy.Loginbuddy"
+              factory="net.loginbuddy.config.loginbuddy.Factory"
+              path="src/test/resources/testConfigTemplates.json"/>
     <Resource name="bean/DiscoveryUtilFactory" auth="Container"
               type="net.loginbuddy.config.discovery.Discovery"
               factory="net.loginbuddy.config.discovery.Factory"

@@ -1,0 +1,18 @@
+{
+  "clients": [],
+  "providers": [
+    {
+      "provider": "server_templated",
+      "issuer": "https://template.loginbuddy.net",
+      "client_id": "",
+      "client_secret": "",
+      "authorization_endpoint": "https://template.loginbuddy.net/authorize",
+      "token_endpoint": "https://template.loginbuddy.net/token",
+      "userinfo_endpoint": "https://template.loginbuddy.net/userinfo",
+      "jwks_uri": "https://template.loginbuddy.net/jwks",
+      "scope": "openid profile email",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "response_mode": "query"
+    }
+  ]
+}

@@ -63,6 +63,10 @@
                               type="net.loginbuddy.config.loginbuddy.Loginbuddy"
                               factory="net.loginbuddy.config.loginbuddy.Factory"
                               path="webapps/ROOT/WEB-INF/classes/config.json"/>
+                    <Resource name="bean/LoginbuddyTemplateFactory" auth="Container"
+                              type="net.loginbuddy.config.loginbuddy.Loginbuddy"
+                              factory="net.loginbuddy.config.loginbuddy.Factory"
+                              path="webapps/ROOT/WEB-INF/classes/configTemplates.json"/>
                     <Resource name="bean/DiscoveryUtilFactory" auth="Container"
                               type="net.loginbuddy.config.discovery.Discovery"
                               factory="net.loginbuddy.config.discovery.Factory"

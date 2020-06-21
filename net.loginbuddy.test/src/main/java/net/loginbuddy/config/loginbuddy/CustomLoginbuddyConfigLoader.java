@@ -30,19 +30,27 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyConfigLoader.class));
 
-    private Loginbuddy lb;
+    private Loginbuddy lb, lbProviderTemplates;
     private ObjectMapper mapper;
 
-    private String dbLocation;
+    private String dbLocation, providerTemplateLocation;
 
     public CustomLoginbuddyConfigLoader() {
         // this file location is used with Loginbuddys api tests ({loginbuddy}/apitest/docker)
-        this("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json");
+        this(
+                "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json",
+                "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/providerTemplates.json"
+        );
     }
 
     public CustomLoginbuddyConfigLoader(String dbLocation) {
+        this(dbLocation, null);
+    }
+
+    public CustomLoginbuddyConfigLoader(String dbLocation, String providerTemplates) {
         mapper = new ObjectMapper();
         this.dbLocation = dbLocation;
+        this.providerTemplateLocation = providerTemplates;
         try {
             load();
         } catch (Exception e) {
@@ -53,6 +61,11 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
     @Override
     public void load() throws Exception {
         lb = mapper.readValue(new File(dbLocation), Loginbuddy.class);
+        if(providerTemplateLocation != null) {
+            lbProviderTemplates = mapper.readValue(new File(providerTemplateLocation), Loginbuddy.class);
+            lb.assimilateProviders(lbProviderTemplates);
+            LOGGER.info(String.format("Loading provider templates: '%s'", providerTemplateLocation));
+        }
         LOGGER.info(String.format("Loading custom test loginbuddy configuration: '%s'", dbLocation));
     }
 

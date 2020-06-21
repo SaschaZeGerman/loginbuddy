@@ -1,0 +1,26 @@
+{
+  "clients": [],
+  "providers": [
+    {
+      "template": "linkedin",
+      "provider": "LinkedIn",
+      "client_id": "MyLinkedInClientId",
+      "client_secret": "MyLinkedInClientSecret",
+      "redirect_uri": "https://my.linkedin.net/callback"
+    },
+    {
+      "template": "server_loginbuddy",
+      "provider": "MyLoginbuddyServer",
+      "issuer": "https://myserver.com",
+      "client_id": "loginbuddyServerId",
+      "client_secret": "loginbuddyServerSecret",
+      "redirect_uri": "https://myserver.com/callback"
+    },
+    {
+      "provider": "ignore",
+      "issuer": "https://demoserver.loginbuddy.net",
+      "client_id": "ignore",
+      "client_secret": "ignore"
+    }
+  ]
+}
