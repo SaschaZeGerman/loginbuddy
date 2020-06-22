@@ -10,9 +10,10 @@
       "token_endpoint": "https://template.loginbuddy.net/token",
       "userinfo_endpoint": "https://template.loginbuddy.net/userinfo",
       "jwks_uri": "https://template.loginbuddy.net/jwks",
-      "scope": "openid profile email",
+      "scope": "server_scope",
       "redirect_uri": "https://local.loginbuddy.net/callback",
-      "response_mode": "query"
+      "response_mode": "query",
+      "pkce": false
     }
   ]
 }

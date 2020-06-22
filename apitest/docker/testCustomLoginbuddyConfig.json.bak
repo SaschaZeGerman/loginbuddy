@@ -96,7 +96,7 @@
       }
     },
     {
-      "provider": "server_templated",
+      "provider": "server_after_template",
       "template": "server_templated",
       "client_id": "replacedClientId",
       "client_secret": "replacedClientSecret",

@@ -18,12 +18,6 @@ public class DefaultLoader implements LoginbuddyLoader {
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
             config = (Loginbuddy) envCtx.lookup("bean/LoginbuddyFactory");
-            try {
-                configTemplates = (Loginbuddy) envCtx.lookup("bean/LoginbuddyTemplateFactory");
-                config.assimilateProviders(configTemplates);
-            } catch(Exception e) {
-                LOGGER.warning(String.format("Configuration templates could not be loaded or assimilated and therefore Loginbuddys configuration may be incomplete! Error: '%s'", e.getMessage()));
-            }
         } catch (Exception e) {
             LOGGER.severe("configuration could not be loaded!");
             throw e;

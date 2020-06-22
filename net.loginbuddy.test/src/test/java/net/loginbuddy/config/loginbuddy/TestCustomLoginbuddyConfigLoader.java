@@ -63,13 +63,17 @@ public class TestCustomLoginbuddyConfigLoader {
     }
 
     @Test
-    public void TestProviderTemplatesClients() {
+    public void TestProviderTemplatesProviders() {
         try {
-            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json", "src/test/resources/providerTemplates.json");
+            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader(
+                    "src/test/resources/config.json",
+                    "src/test/resources/configTemplates.json");
             List<Providers> providers = ll.getLoginbuddy().getProviders();
             assertEquals("replacedClientId", providers.get(4).getClientId());
             assertEquals("https://template.loginbuddy.net/authorize", providers.get(4).getAuthorizationEndpoint());
-            assertEquals(4, ll.getLoginbuddy().getClients().size());
+            assertEquals(5, ll.getLoginbuddy().getProviders().size());
+            assertEquals("server_scope", ll.getLoginbuddy().getProviders().get(4).getScope());
+            assertEquals(false, ll.getLoginbuddy().getProviders().get(4).getPkce());
         } catch (Exception e) {
             fail(e.getMessage());
         }
