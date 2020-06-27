@@ -1,0 +1,16 @@
+grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
+    // permission java.net.SocketPermission "demoserver.loginbuddy.net", "connect,resolve";
+    // permission java.net.SocketPermission "loginbuddy-oidcdr", "connect,resolve";
+    // permission java.net.SocketPermission "loginbuddy-sidecar", "connect,resolve";
+    // permission java.net.SocketPermission "accounts.google.com", "connect,resolve";
+    // permission java.net.SocketPermission "oauth2.googleapis.com", "connect,resolve";
+    // permission java.net.SocketPermission "openidconnect.googleapis.com", "connect,resolve";
+    // permission java.net.SocketPermission "www.googleapis.com", "connect,resolve";
+    // permission java.net.SocketPermission "github.com", "connect,resolve";
+    // permission java.net.SocketPermission "api.github.com", "connect,resolve";
+    // permission java.net.SocketPermission "auth.pingone.com", "connect,resolve";
+    // permission java.net.SocketPermission "api.amazon.com", "connect,resolve";
+    // permission java.net.SocketPermission "www.linkedin.com", "connect,resolve";
+    // permission java.net.SocketPermission "api.linkedin.com", "connect,resolve";
+    // permission java.net.SocketPermission "appleid.apple.com", "connect,resolve";
+};

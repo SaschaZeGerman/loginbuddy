@@ -45,132 +45,51 @@
     },
     {
       "provider": "google",
-      "issuer": "https://accounts.google.com",
-      "openid_configuration_uri": "https://accounts.google.com/.well-known/openid-configuration",
+      "template": "google",
       "client_id": "",
       "client_secret": "",
-      "response_type": "code",
       "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "google_id_token",
-      "issuer": "https://accounts.google.com",
-      "openid_configuration_uri": "https://accounts.google.com/.well-known/openid-configuration",
+      "template": "google_id_token",
       "client_id": "",
       "client_secret": "",
-      "response_type": "id_token",
-      "pkce": false,
-      "redirect_uri": "https://local.oauth.blog/callback",
-      "mappings": {
-        "name": "$.details_provider.id_token_payload.name",
-        "given_name": "$.details_provider.id_token_payload.given_name",
-        "family_name": "$.details_provider.id_token_payload.family_name",
-        "picture": "$.details_provider.id_token_payload.picture",
-        "email": "$.details_provider.id_token_payload.email",
-        "email_verified": "$.details_provider.id_token_payload.email_verified",
-        "provider": "$.details_provider.provider",
-        "sub": "$.details_provider.id_token_payload.sub"
-      }
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "github",
-      "issuer": "https://github.com",
+      "template": "github",
       "client_id": "",
       "client_secret": "",
-      "authorization_endpoint": "https://github.com/login/oauth/authorize",
-      "token_endpoint": "https://github.com/login/oauth/access_token",
-      "userinfo_endpoint": "https://api.github.com/user",
-      "response_type": "code",
-      "scope": "read:user user:email",
-      "redirect_uri": "https://local.loginbuddy.net/callback",
-      "mappings": {
-        "name": "$.details_provider.userinfo.name",
-        "given_name": "$.details_provider.userinfo.name:[0]",
-        "family_name": "$.details_provider.userinfo.name:[1]",
-        "picture": "",
-        "email": "$.details_provider.userinfo.login",
-        "email_verified": "asis:true",
-        "provider": "$.details_provider.provider",
-        "sub": "$.details_provider.userinfo.id"
-      }
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "linkedin",
-      "issuer": "https://www.linkedin.com",
+      "template": "linkedin",
       "client_id": "",
       "client_secret": "",
-      "authorization_endpoint": "https://www.linkedin.com/oauth/v2/authorization",
-      "token_endpoint": "https://www.linkedin.com/oauth/v2/accessToken",
-      "userinfo_endpoint": "https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))",
-      "response_type": "code",
-      "scope": "r_liteprofile r_emailaddress",
-      "redirect_uri": "https://local.loginbuddy.net/callback",
-      "pkce": false,
-      "mappings": {
-        "sub": "$.details_provider.userinfo.id",
-        "given_name": "$.details_provider.userinfo.localizedFirstName",
-        "family_name": "$.details_provider.userinfo.localizedLastName",
-        "picture": "$.details_provider.userinfo.profilePicture.displayImage~.elements[0].identifiers[0].identifier",
-        "email": {
-          "resource": "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
-          "resource_type": "protected",
-          "mapping_rule": "$.elements[0].handle~.emailAddress"
-        },
-        "email_verified": "asis:true",
-        "provider": "$.details_provider.provider"
-      }
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "apple",
-      "issuer": "https://appleid.apple.com",
+      "template": "apple",
       "client_id": "",
       "client_secret": "",
-      "authorization_endpoint": "https://appleid.apple.com/auth/authorize",
-      "token_endpoint": "https://appleid.apple.com/auth/token",
-      "userinfo_endpoint": "",
-      "jwks_uri": "https://appleid.apple.com/auth/keys",
-      "response_type": "code",
-      "redirect_uri": "https://local.loginbuddy.net/callback",
-      "scope": "openid email name",
-      "response_mode": "form_post",
-      "mappings": {
-        "name": "asis:unknown",
-        "given_name": "asis:unknown",
-        "family_name": "asis:unknown",
-        "picture": "",
-        "email": "asis:unknown",
-        "email_verified": "asis:false",
-        "provider": "asis:apple",
-        "sub": "$.details_provider.id_token_payload.sub"
-      }
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "self-issued",
-      "issuer": "https://self-issued.me",
-      "client_id": "https://local.loginbuddy.net/callback",
-      "client_secret": "",
-      "authorization_endpoint": "openid://",
-      "scope": "openid profile email address phone",
-      "response_type": "id_token",
-      "redirect_uri": "https://local.loginbuddy.net/callback",
-      "mappings": {
-        "name": "asis:unknown",
-        "given_name": "asis:unknown",
-        "family_name": "asis:unknown",
-        "picture": "",
-        "email": "asis:unknown",
-        "email_verified": "asis:false",
-        "provider": "$.details_provider.provider",
-        "sub": "$.details_provider.id_token_payload.sub"
-      }
+      "template": "self-issued",
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "pingone",
+      "template": "pingone",
       "issuer": "https://auth.pingone.com/{environmentId}/as",
       "openid_configuration_uri": "https://auth.pingone.com/{environmentId}/as/.well-known/openid-configuration",
       "client_id": "",
       "client_secret": "",
-      "response_type": "code",
       "redirect_uri": "https://local.loginbuddy.net/callback"
     }
   ]

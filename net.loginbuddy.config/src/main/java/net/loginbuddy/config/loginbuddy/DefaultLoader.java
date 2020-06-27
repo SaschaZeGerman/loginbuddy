@@ -10,7 +10,7 @@ public class DefaultLoader implements LoginbuddyLoader {
 
     private final Logger LOGGER = Logger.getLogger(String.valueOf(DefaultLoader.class));
 
-    private Loginbuddy config;
+    private Loginbuddy config, configTemplates;
 
     @Override
     public void load() throws Exception {

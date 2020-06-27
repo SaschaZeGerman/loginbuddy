@@ -23,231 +23,246 @@ import java.util.logging.Logger;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Providers {
 
-  private static final Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
 
-  @JsonProperty("provider")
-  @JsonIgnore(false)
-  private String provider;
+    @JsonProperty("provider")
+    @JsonIgnore(false)
+    private String provider;
 
-  @JsonProperty("issuer")
-  @JsonIgnore(false)
-  private String issuer;
+    @JsonProperty("issuer")
+    @JsonIgnore(false)
+    private String issuer;
 
-  @JsonProperty("client_id")
-  @JsonIgnore(false)
-  private String clientId;
+    @JsonProperty("client_id")
+    @JsonIgnore(false)
+    private String clientId;
 
-  @JsonProperty("redirect_uri")
-  @JsonIgnore(false)
-  private String redirectUri;
+    @JsonProperty("redirect_uri")
+    @JsonIgnore(false)
+    private String redirectUri;
 
-  @JsonProperty("client_secret")
-  @JsonIgnore(false)
-  private String clientSecret;
+    @JsonProperty("client_secret")
+    @JsonIgnore(false)
+    private String clientSecret;
 
-  @JsonProperty("response_type")
-  private String responseType;
+    @JsonProperty("response_type")
+    private String responseType;
 
-  @JsonProperty("scope")
-  private String scope;
+    @JsonProperty("template")
+    private String template;
 
-  @JsonProperty("authorization_endpoint")
-  private String authorizationEndpoint;
+    @JsonProperty("scope")
+    private String scope;
 
-  @JsonProperty("openid_configuration_uri")
-  private String openidConfigurationUri;
+    @JsonProperty("authorization_endpoint")
+    private String authorizationEndpoint;
 
-  @JsonProperty("token_endpoint")
-  private String tokenEndpoint;
+    @JsonProperty("openid_configuration_uri")
+    private String openidConfigurationUri;
 
-  @JsonProperty("userinfo_endpoint")
-  private String userinfoEndpoint;
+    @JsonProperty("token_endpoint")
+    private String tokenEndpoint;
 
-  @JsonProperty("jwks_uri")
-  private String jwksUri;
+    @JsonProperty("userinfo_endpoint")
+    private String userinfoEndpoint;
 
-  @JsonProperty("response_mode")
-  private String responseMode;
+    @JsonProperty("jwks_uri")
+    private String jwksUri;
 
-  @JsonProperty("pkce")
-  private boolean pkce;
+    @JsonProperty("response_mode")
+    private String responseMode;
 
-  @JsonProperty("mappings")
-  private JsonNode mappings;
+    @JsonProperty("pkce")
+    private boolean pkce;
 
-  public Providers() {
-    this.pkce = true;
-    this.scope = Constants.OPENID_SCOPE.getKey();
-    this.responseType = Constants.CODE.getKey();
-  }
+    @JsonProperty("mappings")
+    private JsonNode mappings;
 
-  public Providers(String issuer, String clientId, String redirectUri) {
-    this();
-    this.issuer = issuer;
-    this.clientId = clientId;
-    this.redirectUri = redirectUri;
-  }
-
-  public Providers(String issuer, String clientId, String redirectUri, String clientSecret) {
-    this(issuer, clientId, redirectUri);
-    this.clientSecret = clientSecret;
-  }
-
-  /**
-   * Updates the net.loginbuddy.service.config and removes the oidc net.loginbuddy.service.config endpoint. This way we do not do another API call to retrieve it
-   * again. It does NOT update 'issuer' or 'provider'
-   */
-  public void enhanceToFull(Providers config) {
-    this.clientId = config.getClientId();
-    this.clientSecret = config.getClientSecret();
-    this.redirectUri = config.getRedirectUri();
-    this.scope = config.getScope();
-    this.authorizationEndpoint = config.getAuthorizationEndpoint();
-    this.tokenEndpoint = config.getTokenEndpoint();
-    this.userinfoEndpoint = config.getUserinfoEndpoint();
-    this.jwksUri = config.getJwksUri();
-    this.responseType = config.getResponseType();
-    this.openidConfigurationUri = null;
-  }
-
-  public String getProvider() {
-    return provider;
-  }
-
-  public String getIssuer() {
-    return issuer;
-  }
-
-  public String getClientId() {
-    return clientId;
-  }
-
-  public String getClientSecret() {
-    return clientSecret;
-  }
-
-  public String getRedirectUri() {
-    return redirectUri;
-  }
-
-  public String getAuthorizationEndpoint() {
-    return authorizationEndpoint;
-  }
-
-  public String getOpenidConfigurationUri() {
-    return openidConfigurationUri;
-  }
-
-  public String getTokenEndpoint() {
-    return tokenEndpoint;
-  }
-
-  public String getUserinfoEndpoint() {
-    return userinfoEndpoint;
-  }
-
-  public String getJwksUri() {
-    return jwksUri;
-  }
-
-  public String getScope() {
-    return scope;
-  }
-
-  public String getResponseType() {
-    return responseType;
-  }
-
- public boolean getPkce() {
-    return pkce;
-  }
-
-  public String getResponseMode() {
-    return responseMode;
-  }
-
-  public JSONObject getMappings() {
-    try {
-      if(mappings == null) {
-        return new JSONObject();
-      }
-      return (JSONObject) new JSONParser().parse(mappings.toString());
-    } catch (ParseException e) {
-      LOGGER.warning(String.format("The mapping object is invalid: %s", mappings == null ? "" : mappings.toString()));
-      return new JSONObject();
+    public Providers() {
+        this.pkce = true;
+        this.scope = Constants.OPENID_SCOPE.getKey();
+        this.responseType = Constants.CODE.getKey();
     }
-  }
 
-  public void setProvider(String provider) {
-    this.provider = provider;
-  }
+    public Providers(String issuer, String clientId, String redirectUri) {
+        this();
+        this.issuer = issuer;
+        this.clientId = clientId;
+        this.redirectUri = redirectUri;
+    }
 
-  public void setIssuer(String issuer) {
-    this.issuer = issuer;
-  }
+    public Providers(String issuer, String clientId, String redirectUri, String clientSecret) {
+        this(issuer, clientId, redirectUri);
+        this.clientSecret = clientSecret;
+    }
 
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
-  }
+    /**
+     * Updates the net.loginbuddy.service.config and removes the oidc net.loginbuddy.service.config endpoint. This way we do not do another API call to retrieve it
+     * again. It does NOT update 'issuer' or 'provider'
+     */
+    public void enhanceToFull(Providers config) {
+        this.clientId = config.getClientId();
+        this.clientSecret = config.getClientSecret();
+        this.redirectUri = config.getRedirectUri();
+        this.scope = config.getScope();
+        this.authorizationEndpoint = config.getAuthorizationEndpoint();
+        this.tokenEndpoint = config.getTokenEndpoint();
+        this.userinfoEndpoint = config.getUserinfoEndpoint();
+        this.jwksUri = config.getJwksUri();
+        this.responseType = config.getResponseType();
+        this.openidConfigurationUri = null;
+    }
 
-  public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
-  }
+    public String getProvider() {
+        return provider;
+    }
 
-  public void setClientSecret(String clientSecret) {
-    this.clientSecret = clientSecret;
-  }
+    public String getIssuer() {
+        return issuer;
+    }
 
-  public void setResponseType(String responseType) {
-    this.responseType = responseType;
-  }
+    public String getClientId() {
+        return clientId;
+    }
 
-  public void setScope(String scope) {
-    this.scope = scope;
-  }
+    public String getClientSecret() {
+        return clientSecret;
+    }
 
-  public void setAuthorizationEndpoint(String authorizationEndpoint) {
-    this.authorizationEndpoint = authorizationEndpoint;
-  }
+    public String getRedirectUri() {
+        return redirectUri;
+    }
 
-  public void setOpenidConfigurationUri(String openidConfigurationUri) {
-    this.openidConfigurationUri = openidConfigurationUri;
-  }
+    public String getAuthorizationEndpoint() {
+        return authorizationEndpoint;
+    }
 
-  public void setTokenEndpoint(String tokenEndpoint) {
-    this.tokenEndpoint = tokenEndpoint;
-  }
+    public String getOpenidConfigurationUri() {
+        return openidConfigurationUri;
+    }
 
-  public void setUserinfoEndpoint(String userinfoEndpoint) {
-    this.userinfoEndpoint = userinfoEndpoint;
-  }
+    public String getTokenEndpoint() {
+        return tokenEndpoint;
+    }
 
-  public void setJwksUri(String jwksUri) {
-    this.jwksUri = jwksUri;
-  }
+    public String getUserinfoEndpoint() {
+        return userinfoEndpoint;
+    }
 
-  public void setResponseMode(String responseMode) {
-    this.responseMode = responseMode;
-  }
+    public String getJwksUri() {
+        return jwksUri;
+    }
 
-  public void setPkce(boolean pkce) {
-    this.pkce = pkce;
-  }
+    public String getScope() {
+        return scope;
+    }
 
-  public void setMappings(JsonNode mappings) {
-    this.mappings = mappings;
-  }
+    public String getResponseType() {
+        return responseType;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Providers providers = (Providers) o;
-    return provider.equalsIgnoreCase(providers.provider);
-  }
+    public boolean getPkce() {
+        return pkce;
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(provider);
-  }
+    public String getResponseMode() {
+        return responseMode;
+    }
+
+    public JSONObject getMappings() {
+        try {
+            if (mappings == null) {
+                return new JSONObject();
+            }
+            return (JSONObject) new JSONParser().parse(mappings.toString());
+        } catch (ParseException e) {
+            LOGGER.warning(String.format("The mapping object is invalid: %s", mappings == null ? "" : mappings.toString()));
+            return new JSONObject();
+        }
+    }
+
+    public JsonNode mappingsAsJsonNode() {
+        return mappings;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public void setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
+    }
+
+    public void setResponseType(String responseType) {
+        this.responseType = responseType;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    public void setAuthorizationEndpoint(String authorizationEndpoint) {
+        this.authorizationEndpoint = authorizationEndpoint;
+    }
+
+    public void setOpenidConfigurationUri(String openidConfigurationUri) {
+        this.openidConfigurationUri = openidConfigurationUri;
+    }
+
+    public void setTokenEndpoint(String tokenEndpoint) {
+        this.tokenEndpoint = tokenEndpoint;
+    }
+
+    public void setUserinfoEndpoint(String userinfoEndpoint) {
+        this.userinfoEndpoint = userinfoEndpoint;
+    }
+
+    public void setJwksUri(String jwksUri) {
+        this.jwksUri = jwksUri;
+    }
+
+    public void setResponseMode(String responseMode) {
+        this.responseMode = responseMode;
+    }
+
+    public void setPkce(boolean pkce) {
+        this.pkce = pkce;
+    }
+
+    public void setMappings(JsonNode mappings) {
+        this.mappings = mappings;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Providers providers = (Providers) o;
+        return provider.equalsIgnoreCase(providers.provider);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(provider);
+    }
 }

@@ -7,6 +7,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,19 +31,27 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     private Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyConfigLoader.class));
 
-    private Loginbuddy lb;
+    private Loginbuddy lb, lbProviderTemplates;
     private ObjectMapper mapper;
 
-    private String dbLocation;
+    private String dbLocation, providerTemplateLocation;
 
     public CustomLoginbuddyConfigLoader() {
         // this file location is used with Loginbuddys api tests ({loginbuddy}/apitest/docker)
-        this("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json");
+        this(
+                "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json",
+                "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/configTemplates.json"
+        );
     }
 
     public CustomLoginbuddyConfigLoader(String dbLocation) {
+        this(dbLocation, null);
+    }
+
+    public CustomLoginbuddyConfigLoader(String dbLocation, String providerTemplates) {
         mapper = new ObjectMapper();
         this.dbLocation = dbLocation;
+        this.providerTemplateLocation = providerTemplates;
         try {
             load();
         } catch (Exception e) {
@@ -52,8 +61,16 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     @Override
     public void load() throws Exception {
-        lb = mapper.readValue(new File(dbLocation), Loginbuddy.class);
-        LOGGER.info(String.format("Loading custom test loginbuddy configuration: '%s'", dbLocation));
+        JSONObject configJson = (JSONObject)new JSONParser().parse(new FileReader(new File(dbLocation)));
+        if(providerTemplateLocation != null) {
+            LOGGER.info(String.format("Loading template configuration: '%s'", providerTemplateLocation));
+            JSONObject configTemplateJson = (JSONObject)new JSONParser().parse(new FileReader(new File(providerTemplateLocation)));
+            lb = mapper.readValue(Factory.getMergedConfigObject(configJson, configTemplateJson).toJSONString(), Loginbuddy.class);
+            LOGGER.info(String.format("Loaded custom test loginbuddy configuration with template. Config: '%s', template: '%s'", dbLocation, providerTemplateLocation));
+        } else {
+            lb = mapper.readValue(configJson.toJSONString(), Loginbuddy.class);
+        }
+        LOGGER.info(String.format("Loaded custom test loginbuddy configuration: '%s'", dbLocation));
     }
 
     @Override

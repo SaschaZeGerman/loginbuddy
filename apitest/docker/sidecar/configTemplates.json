@@ -4,11 +4,19 @@
   "providers": [
     {
       "provider": "server_loginbuddy",
-      "template": "server_loginbuddy"
+      "issuer": "https://demoserver.loginbuddy.net",
+      "client_id": "loginbuddy_demoId",
+      "client_secret": "loginbuddy_demoSecret",
+      "authorization_endpoint": "https://demoserver.loginbuddy.net/authorize",
+      "token_endpoint": "https://demoserver.loginbuddy.net/token",
+      "userinfo_endpoint": "https://demoserver.loginbuddy.net/userinfo",
+      "jwks_uri": "https://demoserver.loginbuddy.net/jwks",
+      "scope": "server_scope",
+      "redirect_uri": "https://local.loginbuddy.net/callback"
     },
     {
       "provider": "self-issued",
-      "issuer": "https://self-issued.me",
+      "issuer": "https://shouldnotbeused",
       "client_id": "https://local.loginbuddy.net/callback",
       "client_secret": "",
       "authorization_endpoint": "openid://",

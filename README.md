@@ -26,6 +26,17 @@ The high level design looks like this:
 
 Loginbuddy offers multiple ways for getting started depending on your objective. You can run the online demo or take pre-canned demos for a spin on your local machine. You can clone the repo and start setting up Loginbuddy for your application or you can start contributing to Loginbuddy with your own use cases. 
 
+Loginbuddy includes configuration templates for common OpenID providers which simplifies the configuration effort:
+
+- Google
+- GitHub
+- LinkedIn
+- Sign In with Apple
+- PingOne (Ping Identity)
+- Amazon (Login with Amazon)
+- OpenID Dynamic registration
+- self-issued
+
 ## Run the online demo 
 
 There is an online demo of Loginbuddy here: [https://client.loginbuddy.net](https://client.loginbuddy.net). 
