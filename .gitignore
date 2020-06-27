@@ -38,8 +38,6 @@ dev/loginbuddy.p12
 
 # images - logos
 **.png
-!**/simple_overview_01.png
-!**/self-issued.png
-!**/server_loginbuddy.png
-!**/server_dynamic.png
+!net.loginbuddy.service/web/images/*.png
+!docker-build/add-ons/demosetup/*.png
 !doc/intellij-logo.png

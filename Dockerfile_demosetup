@@ -13,7 +13,6 @@ COPY docker-build/add-ons/demosetup/permissions.policy /usr/local/tomcat/webapps
 COPY docker-build/add-ons/demosetup/server.xml /usr/local/tomcat/conf/server.xml
 COPY docker-build/add-ons/demosetup/server_loginbuddy.png /usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
 COPY docker-build/add-ons/demosetup/server_dynamic.png /usr/local/tomcat/webapps/ROOT/images/server_dynamic.png
-COPY docker-build/add-ons/demosetup/self-issued.png /usr/local/tomcat/webapps/ROOT/images/self-issued.png
 COPY docker-build/add-ons/server/loginbuddy_oidcdr_import.sh /opt/docker/loginbuddy_oidcdr_import.sh
 COPY docker-build/add-ons/templates/configTemplates.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/configTemplates.json
 
