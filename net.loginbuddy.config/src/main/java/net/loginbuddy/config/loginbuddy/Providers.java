@@ -17,11 +17,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.logging.Logger;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Providers {
+public class Providers implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
 

@@ -59,15 +59,25 @@ This directory contains the 'default' test setup and tests most bits and pieces.
 
 In addition, this test setup uses a custom Loginbuddy config loader.
 
-To run the tests do the following (assuming the pre-requisites are satisfied):
+To run the first set of tests do the following (assuming the pre-requisites are satisfied):
 - `cd ./docker`
 - `make run-test`  // it copies test files and lauches the docker containers
-- Launch SOAPUI and import the projects `./soapui/project/loginbuddy-basic.xml`, `.../loginbuddy-configManagement.xml`, `.../loginbuddy-flows.xml`
+- Launch SOAPUI and import the projects `./soapui/project/loginbuddy-basic.xml`, `.../loginbuddy-configManagement.xml`
 - run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
 
 You should only see green diagrams!
 
 When this is done, run `make stop-test` to stop the test environment!
+
+To run the second set of tests do the following (assuming the pre-requisites are satisfied):
+- `cd ./docker`
+- `make run-test-flows`  // it copies test files and lauches the docker containers
+- Launch SOAPUI and import the projects `.../loginbuddy-flows.xml`
+- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
+
+You should only see green diagrams!
+
+When this is done, run `make stop-test-flows` to stop the test environment!
 
 ### Custom Configuration Loader
 
@@ -96,7 +106,9 @@ If you want to use your own properties, simply copy that file and load them into
 
 Here are a few notes for using SOAPUI.
 
-### Extract header from previous response and stick into variable
+### Groovy Test Step
+
+#### Extract header from previous response and stick into variable
 
     //Find the 'Location' header of the response
     def location = testRunner.testCase.testSteps["test-step-name"].testRequest.response.responseHeaders["Location"][0]
@@ -105,13 +117,15 @@ Here are a few notes for using SOAPUI.
     def groovyUtils = new com.eviware.soapui.support.GroovyUtils( context )
     groovyUtils.setPropertyValue("test-step-target", "Endpoint", location.toString())
     
-### Extract header from previous response and assert value
+#### Extract header from previous response and assert value
 
     //Find the 'Location' header of the response
     def location = testRunner.testCase.testSteps["test-step-name"].testRequest.response.responseHeaders["Location"][0]
     assert location.startsWith('value-to-assert');
 
-### Extract header from current response
+### Script assertion in TestCase
+
+#### Extract header from current response
 
     // Find the 'Location' header of the response
     assert messageExchange.responseHeaders["Location"] != null
@@ -121,6 +135,6 @@ Here are a few notes for using SOAPUI.
     // Check if all expected parameters are included in the redirect_uri
     assert(location.contains("client_id"));
 
-### Access message body of current test step
+#### Access message body of current test step
 
     def bodyAsString = new String().valueOf(messageExchange.responseContent)

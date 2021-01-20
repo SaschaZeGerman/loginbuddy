@@ -4,6 +4,12 @@ run-test: prepare-test
 stop-test:
 	docker-compose -f docker-compose-test.yml down
 
+run-test-flows: prepare-test
+	docker-compose -f docker-compose-test-flows.yml up
+
+stop-test-flows:
+	docker-compose -f docker-compose-test-flows.yml down
+
 prepare-test:
 	cp -r ../../net.loginbuddy.test/target/classes/* test-classes
 	cp testCustomLoginbuddyConfig.json.bak testCustomLoginbuddyConfig.json
