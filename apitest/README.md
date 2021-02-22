@@ -21,6 +21,38 @@ Next to this file there are three directories:
 
 ### Docker
 
+**Directory: ./docker**
+
+This directory contains the 'default' test setup and tests most bits and pieces. The test scenario consists of these components:
+- `loginbuddy-oidcdr`: testing dynamic registration
+- `loginbuddy-demo`: simulating the backend
+- `loginbuddy-sidecar`: testing the sidecar setup
+- `loginbuddy-test`: provides helper services
+
+In addition, this test setup uses a custom Loginbuddy config loader.
+
+To run the first set of tests do the following (assuming the pre-requisites are satisfied):
+- `cd ./docker`
+- `make run-test`  // it copies test files and lauches the docker containers
+- Launch SOAPUI and import the projects `./soapui/project/loginbuddy-basic.xml`, `.../loginbuddy-configManagement.xml`
+- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
+
+You should only see green diagrams!
+
+When this is done, run `make stop-test` to stop the test environment!
+
+**TIP**: Run `make run-test-hazelcast`/ `make stop-test-hazelcast` to use a setup that leverages Hazelcast!
+
+To run the second set of tests do the following (assuming the pre-requisites are satisfied):
+- `cd ./docker`
+- `make run-test-flows`  // it copies test files and lauches the docker containers
+- Launch SOAPUI and import the projects `.../loginbuddy-flows.xml`
+- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
+
+You should only see green diagrams!
+
+When this is done, run `make stop-test-flows` to stop the test environment!
+
 **Directory: ./docker/sidecar**
 
 This directory stands-up a test environment specifically for the sidecar deployment of Loginbuddy. It is used slightly different than how it would be used in a 
@@ -48,36 +80,6 @@ To run the tests do the following (assuming the pre-requisites are satisfied):
 You should only see green diagrams!
 
 When this is done, run `docker-compose down` to stop the test environment!
-
-**Directory: ./docker**
-
-This directory contains the 'default' test setup and tests most bits and pieces. The test scenario consists of these components:
-- `loginbuddy-oidcdr`: testing dynamic registration
-- `loginbuddy-demo`: simulating the backend
-- `loginbuddy-sidecar`: testing the sidecar setup
-- `loginbuddy-test`: provides helper services
-
-In addition, this test setup uses a custom Loginbuddy config loader.
-
-To run the first set of tests do the following (assuming the pre-requisites are satisfied):
-- `cd ./docker`
-- `make run-test`  // it copies test files and lauches the docker containers
-- Launch SOAPUI and import the projects `./soapui/project/loginbuddy-basic.xml`, `.../loginbuddy-configManagement.xml`
-- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
-
-You should only see green diagrams!
-
-When this is done, run `make stop-test` to stop the test environment!
-
-To run the second set of tests do the following (assuming the pre-requisites are satisfied):
-- `cd ./docker`
-- `make run-test-flows`  // it copies test files and lauches the docker containers
-- Launch SOAPUI and import the projects `.../loginbuddy-flows.xml`
-- run the test by double-clicking the imported project, select 'TestSuites' and click the green 'run button'
-
-You should only see green diagrams!
-
-When this is done, run `make stop-test-flows` to stop the test environment!
 
 ### Custom Configuration Loader
 

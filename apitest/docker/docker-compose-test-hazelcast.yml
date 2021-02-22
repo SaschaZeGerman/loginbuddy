@@ -1,0 +1,71 @@
+#
+# This docker compose file is usable for development purposes:
+#
+# NOTE: use this only for local development purposes!
+#
+# IMPORTANT:
+# loginbuddy-sidecar and loginbuddy-oidcdr should NOT expose ports in an 'online' scenario! Port 444 and 445 are available to other
+# containers within the same docker network by default! Do NOT include a port mapping! Here it is done for testing purposes only!
+#
+version: '3.4'
+services:
+
+  loginbuddy-oidcdr:
+    image: saschazegerman/loginbuddy:latest-oidcdr
+    restart: always
+    ports:
+      - "445:445"
+      - "8002:8002"
+      - "9012:9012"
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
+
+  loginbuddy:
+    image: saschazegerman/loginbuddy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+      - "9010:9010"
+    volumes:
+      - ./config.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
+      - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
+      - ./permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
+      - ./loginbuddy.properties:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/loginbuddy.properties
+      - ./testCustomLoginbuddyConfig.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json
+      - ./configTemplates.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/configTemplates.json
+      - ./server_loginbuddy.png:/usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
+      - ./test-classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
+
+  loginbuddy-sidecar:
+    image: saschazegerman/loginbuddy:latest-sidecar
+    restart: always
+    ports:
+      - "444:444"
+      - "8001:8001"
+      - "9011:9011"
+    volumes:
+      - ./config_sidecar.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
+      - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
+      - ./permissions_sidecar.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8001,suspend=n,server=y"
+      - "SUPPORT_OIDCDR=true"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
+
+  hazelcast1:
+    image: hazelcast/hazelcast
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast1:5701"
+
+  hazelcast2:
+    image: hazelcast/hazelcast
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast2:5701"

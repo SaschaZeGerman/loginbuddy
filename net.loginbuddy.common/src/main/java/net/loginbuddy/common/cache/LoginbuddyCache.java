@@ -32,9 +32,6 @@ public enum LoginbuddyCache {
             if(System.getenv("HAZELCAST") != null) {
                 try {
                     cache = new RemoteCache(System.getenv("HAZELCAST"));
-//                    String testValue = new Date().toString();
-//                    put(testValue, testValue);  // if this fails the hazelcast cluster cannot be reached. Fall back to local cache
-//                    delete(testValue);
                 } catch(Exception e) {
                     LOGGER.severe(String.format("Hazelcast cluster cannot be reached. Fallback to local cache. Error: %s", e.getMessage()));
                     cache = (Cache) envCtx.lookup("bean/CacheFactory");

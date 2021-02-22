@@ -14,6 +14,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.config.Bootstrap;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,9 +66,13 @@ public enum LoginbuddyUtil implements Bootstrap {
                 providers = loader.getLoginbuddy().getProviders();
                 for (Providers next : providers) {
                     if (getProviderType(next).equals(ProviderConfigType.MINIMAL)) {
-                        next.enhanceToFull(MAPPER.readValue(HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),
-                                DiscoveryUtil.UTIL.getRedirectUri()).toJSONString(),
-                                Providers.class));
+                        JSONObject retrieveAndRegister = HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),DiscoveryUtil.UTIL.getRedirectUri());
+                        if(retrieveAndRegister.get("error") == null) {
+                            Providers readValue = MAPPER.readValue(retrieveAndRegister.toJSONString(), Providers.class);
+                            next.enhanceToFull(readValue);
+                        } else {
+                            LOGGER.warning(String.format("Could not register: '%s'", retrieveAndRegister.get("error_description")));
+                        }
                     }
                 }
                 LoginbuddyCache.CACHE.put("providers", providers);

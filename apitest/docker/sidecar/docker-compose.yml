@@ -33,6 +33,7 @@ services:
       - ./loginbuddy_demoserver_import.sh:/opt/docker/loginbuddy_demoserver_import.sh
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy-sidecar:
     image: saschazegerman/loginbuddy:latest-sidecar
@@ -60,3 +61,16 @@ services:
         -Dcom.sun.management.jmxremote.rmi.port=9012 \
         -Dcom.sun.management.jmxremote.local.only=false"
       - "SUPPORT_OIDCDR=true"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
+
+  hazelcast1:
+    image: hazelcast/hazelcast
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast1:5701"
+
+  hazelcast2:
+    image: hazelcast/hazelcast
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast2:5701"
