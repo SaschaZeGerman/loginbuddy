@@ -24,22 +24,9 @@ services:
         -Dcom.sun.management.jmxremote.local.only=false"
       - "SUPPORT_OIDCDR=true"
       - "SSL_PWD=${SSL_PWD}"
-      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
     volumes:
       - ./dev/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
 
   loginbuddy-oidcdr:
     image: saschazegerman/loginbuddy:latest-oidcdr
     restart: always
-
-  hazelcast1:
-    image: hazelcast/hazelcast
-    restart: always
-    environment:
-      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast1:5701"
-
-  hazelcast2:
-    image: hazelcast/hazelcast
-    restart: always
-    environment:
-      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast2:5701"
