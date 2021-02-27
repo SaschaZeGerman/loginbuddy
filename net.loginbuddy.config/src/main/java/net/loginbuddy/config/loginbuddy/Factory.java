@@ -1,10 +1,13 @@
 package net.loginbuddy.config.loginbuddy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import org.apache.naming.ResourceRef;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.naming.Context;
 import javax.naming.Name;
@@ -17,7 +20,7 @@ import java.util.logging.Logger;
 
 public class Factory implements ObjectFactory {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(Factory.class));
+    private static Logger LOGGER = Logger.getLogger(String.valueOf(Factory.class));
 
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
@@ -52,15 +55,23 @@ public class Factory implements ObjectFactory {
         result.put("clients", configJson.get("clients"));
         JSONArray resultProviders = new JSONArray();
         Iterator iter = ((JSONArray)configJson.get("providers")).iterator();
+        DocumentContext ctx = JsonPath.parse(((JSONArray)configTemplateJson.get("providers")).toJSONString());
         while(iter.hasNext()) {
             final JSONObject nextProvider = (JSONObject)iter.next();
             if(nextProvider.get("template") != null) {
-                JSONObject pt = (JSONObject)((JSONArray) configTemplateJson.get("providers")).stream()
-                        .filter(provider -> ((String) ((JSONObject) provider).get("provider")).equalsIgnoreCase((String) nextProvider.get("template")))
-                        .findFirst()
-                        .orElse(null);
-                pt.putAll(nextProvider);
-                resultProviders.add(pt);
+                JSONArray templates = null;
+                try {
+                    templates = (JSONArray)new JSONParser().parse(ctx.read(String.format("$..[?(@.provider == '%s')]", nextProvider.get("template"))).toString());
+                    if(templates != null && templates.size() > 0) {
+                        JSONObject pt = (JSONObject)templates.get(0);
+                        pt.putAll(nextProvider);
+                        resultProviders.add(pt);
+                    } else {
+                        LOGGER.severe(String.format("The referenced template '%s' is unknown. The provider configuration '%s' is being ignored!", nextProvider.get("template"), nextProvider.get("provider")));
+                    }
+                } catch (ParseException e) {
+                    LOGGER.severe(String.format("The template of '%s' could not be applied!", nextProvider.get("template")));
+                }
             } else {
                 resultProviders.add(nextProvider);
             }

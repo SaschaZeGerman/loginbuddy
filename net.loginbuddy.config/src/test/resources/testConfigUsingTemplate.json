@@ -17,6 +17,14 @@
       "redirect_uri": "https://myserver.com/callback"
     },
     {
+      "template": "server_loginbuddy",
+      "provider": "MyLoginbuddyServer01",
+      "issuer": "https://myserver.com./01",
+      "client_id": "loginbuddyServerId01",
+      "client_secret": "loginbuddyServerSecret01",
+      "redirect_uri": "https://myserver.com/callback/01"
+    },
+    {
       "provider": "ignore",
       "issuer": "https://demoserver.loginbuddy.net",
       "client_id": "ignore",
