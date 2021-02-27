@@ -25,6 +25,33 @@
         "key2": "value2",
         "key3": "value3"
       }
+    },{
+      "provider": "server_loginbuddy_01",
+      "template": "server_loginbuddy",
+      "client_id": "loginbuddy_demoId_temp01"
+    },
+    {
+      "provider": "server_loginbuddy_02",
+      "template": "server_loginbuddy",
+      "client_id": "loginbuddy_demoId_temp02"
+    },
+    {
+      "provider": "google",
+      "template": "google",
+      "client_id": "loginbuddy_google_client_id",
+      "client_secret": "loginbuddy_google_client_secret_01"
+    },
+    {
+      "provider": "google",
+      "template": "google",
+      "client_id": "duplicate_provider_should_be_ignored",
+      "client_secret": "loginbuddy_google_client_secret_02"
+    },
+    {
+      "provider": "googleUnknown",
+      "template": "unKnownTemplate",
+      "client_id": "loginbuddy_google_client_id",
+      "client_secret": "loginbuddy_google_client_secret_02"
     },
     {
       "provider": "self-issued",

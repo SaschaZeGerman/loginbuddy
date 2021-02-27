@@ -55,13 +55,34 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
+    public void testTemplates() {
+         Providers c = LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy_01");
+         assertEquals("loginbuddy_demoId_temp01", c.getClientId());
+
+         c = LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy_02");
+         assertEquals("loginbuddy_demoId_temp02", c.getClientId());
+
+         c = LoginbuddyUtil.UTIL.getProviderConfigByProvider("google");
+         assertEquals("https://local.loginbuddy.net/callback", c.getRedirectUri());
+         assertEquals("loginbuddy_google_client_secret_01", c.getClientSecret());
+
+         // this references the client_id of the duplicate provider configuration
+         // only the first appearance of a provider configuration should be used
+         c = LoginbuddyUtil.UTIL.getProviderConfigByProvider("google");
+         assertEquals("https://local.loginbuddy.net/callback", c.getRedirectUri());
+         assertNotEquals("loginbuddy_google_client_secret_02", c.getClientSecret());
+
+         assertNull(LoginbuddyUtil.UTIL.getProviderConfigByProvider("googleUnknown"));
+    }
+
+    @Test
     public void testReplaceClientsWithCustomLoader() {
         try {
 
             // check the defaults
             assertEquals(1, LoginbuddyUtil.UTIL.getClients().size());
             assertEquals("public", LoginbuddyUtil.UTIL.getClientConfigByClientId("clientIdForTestingPurposes").getClientType());
-            assertEquals(2, LoginbuddyUtil.UTIL.getProviders().size());
+            assertEquals(6, LoginbuddyUtil.UTIL.getProviders().size());
 
             // set the new loader that has three clients and contains the client we do not want to lose on 'replaceClients'
             LoginbuddyLoader l = new CustomLoginbuddyLoader();
