@@ -10,10 +10,18 @@
         <servlet-name>JWTProvider</servlet-name>
         <servlet-class>net.loginbuddy.test.SOAPUIHelper</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SideCarClient</servlet-name>
+        <servlet-class>net.loginbuddy.example.sidecar.SideCarClient</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>JWTProvider</servlet-name>
         <url-pattern>/test/generate/jwt</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SideCarClient</servlet-name>
+        <url-pattern>/example/sidecar/client</url-pattern>
     </servlet-mapping>
 
 </web-app>
