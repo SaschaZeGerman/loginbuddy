@@ -46,6 +46,16 @@ fi
 #
 cat /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy >> /usr/local/tomcat/conf/catalina.policy
 
+# Check if hazelcast is used. In that case, add required permissions
+#
+if [ -z "$HAZELCAST" ]
+then
+  printf "Using local cache."
+else
+  printf "Attempting to use remote cache with Hazelcast. Adding required permissions\n"
+  cat /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/hazelcastPermissions.policy >> /usr/local/tomcat/conf/catalina.policy
+fi
+
 # specifying that 'none' is invalid for JWT signature algorithms
 #
 export CATALINA_OPTS="${SYSTEM_PROPS} -Dorg.jose4j.jws.default-allow-none=false"

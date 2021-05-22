@@ -3,9 +3,10 @@ package net.loginbuddy.demoserver.provider;
 import net.loginbuddy.common.cache.LoginbuddyContext;
 import net.loginbuddy.common.config.Constants;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class SessionContext extends LoginbuddyContext {
+public class SessionContext extends LoginbuddyContext implements Serializable {
 
   public SessionContext() {
     super();

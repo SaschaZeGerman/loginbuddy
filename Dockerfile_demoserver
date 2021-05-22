@@ -10,6 +10,7 @@ COPY net.loginbuddy.demoserver/target/demoserver-1.0.0 /usr/local/tomcat/webapps
 COPY docker-build/add-ons/demoserver/loginbuddy.sh /opt/docker/loginbuddy.sh
 COPY docker-build/add-ons/demoserver/permissions.policy /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
 COPY docker-build/add-ons/demoserver/server.xml /usr/local/tomcat/conf/server.xml
+COPY docker-build/add-ons/templates/hazelcastPermissions.policy /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/hazelcastPermissions.policy
 
 # Create directory for holding SSL keys
 #

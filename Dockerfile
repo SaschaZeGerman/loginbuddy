@@ -10,9 +10,10 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 #
 COPY net.loginbuddy.service/target/service-1.0.0 /usr/local/tomcat/webapps/ROOT
 
-# Copy provider templates
+# Copy provider and hazelcast permissions templates
 #
 COPY docker-build/add-ons/templates/configTemplates.json /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/configTemplates.json
+COPY docker-build/add-ons/templates/hazelcastPermissions.policy /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/hazelcastPermissions.policy
 
 COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
 COPY docker-build/add-ons/server/server.xml /usr/local/tomcat/conf/server.xml

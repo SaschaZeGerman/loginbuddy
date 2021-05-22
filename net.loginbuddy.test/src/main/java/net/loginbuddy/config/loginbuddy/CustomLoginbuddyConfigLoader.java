@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 /**
  * This is a simple example of a custom loader. It enables updates of configurations at runtime which is not supported by default!
- * It leverages a simple file as it 'configuration database'. As a developer you may connect to a database if you wish.
+ * It leverages a simple file as its 'configuration database'. As a developer you may connect to a database if you wish.
  *
  * This specific class is used with JUnit tests but also with the api test suite.
  *

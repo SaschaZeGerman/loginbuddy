@@ -2,11 +2,12 @@ package net.loginbuddy.common.cache;
 
 import net.loginbuddy.common.config.Constants;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class LoginbuddyContext {
+public class LoginbuddyContext  implements Serializable  {
 
   private UUID id;
 

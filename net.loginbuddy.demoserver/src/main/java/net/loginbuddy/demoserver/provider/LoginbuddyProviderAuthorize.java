@@ -85,8 +85,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
       }
 
       // Need to remember all these values for the current session
-      SessionContext session = new SessionContext();
-      session.sessionInit(
+      SessionContext sessionContext = new SessionContext();
+      sessionContext.sessionInit(
           clientId,
           scope,
           response_type,
@@ -95,10 +95,10 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
           redirectUri,
           nonce,
           state);
-      LoginbuddyCache.CACHE.put(session.getId(), session);
+      LoginbuddyCache.CACHE.put(sessionContext.getId(), sessionContext);
 
       // forward to a fake login page
-      request.getRequestDispatcher("demoserverUsername.jsp?session=" + session.getId()).forward(request, response);
+      request.getRequestDispatcher("demoserverUsername.jsp?session=" + sessionContext.getId()).forward(request, response);
     } catch (Exception e) {
       LOGGER.warning("The authorization request was invalid");
       e.printStackTrace();
@@ -119,23 +119,23 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
     sessionId = "null".equals(sessionId) ? null : sessionId; // for some reason we get "null"
     String action = request.getParameter("action");
 
-    SessionContext sessionValues = null;
+    SessionContext sessionContext = null;
     if (sessionId != null && sessionId.trim().length() > 0) {
-      sessionValues = (SessionContext) LoginbuddyCache.CACHE.remove(sessionId);
-      if (sessionValues == null) {
+      sessionContext = (SessionContext) LoginbuddyCache.CACHE.remove(sessionId);
+      if (sessionContext == null) {
         LOGGER.warning("Unknown or expired session!");
         response.sendError(400, "Unknown or expired session!");
         return;
       } else {
         // let's check if the given session is the one associated with the sessionValues
-        String sessionState = sessionValues.getId();
+        String sessionState = sessionContext.getId();
         if (!sessionId.equals(sessionState)) {
           LOGGER.warning("Sessions at FakeProvider are mixed up!");
           response.sendError(400, "Sessions at FakeProvider are mixed up!");
           return;
         }
         // let's check if the given action is the one we expect (unless it is 'cancel')
-        String actionExpected = sessionValues.getString(Constants.ACTION_EXPECTED.getKey());
+        String actionExpected = sessionContext.getString(Constants.ACTION_EXPECTED.getKey());
         if (!actionExpected.equals(action) && !"cancel".equalsIgnoreCase(action)) {
           LOGGER.warning(
               "The current action was not expected! Given: '" + action + "', expected: '" + actionExpected + "'");
@@ -156,8 +156,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
         if ("login".equalsIgnoreCase(action)) {
           if (email != null && email.trim().length() > 0) {
             // add the email to the current session, but also check if it is the expected one
-            sessionValues.sessionLoginProvided("email", email);
-            LoginbuddyCache.CACHE.put(sessionId, sessionValues);
+            sessionContext.sessionLoginProvided("email", email);
+            LoginbuddyCache.CACHE.put(sessionId, sessionContext);
             request.getRequestDispatcher("demoserverAuthenticate.jsp?session=" + sessionId).forward(request, response);
           } else {
             // TODO: else { ... return an error and request the email-address or allow to cancel ... }
@@ -166,8 +166,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
           }
         } else if ("cancel".equalsIgnoreCase(action)) {
 
-          String clientRedirectUri = sessionValues.getString(Constants.REDIRECT_URI.getKey());
-          String clientState = sessionValues.getString(Constants.STATE.getKey());
+          String clientRedirectUri = sessionContext.getString(Constants.REDIRECT_URI.getKey());
+          String clientState = sessionContext.getString(Constants.STATE.getKey());
 
           if (clientRedirectUri.contains("?")) {
             clientRedirectUri += "&state=" + clientState;
@@ -181,8 +181,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
         String password = request.getParameter("password");
         if ("authenticate".equalsIgnoreCase(action)) {
           if (password != null && password.trim().length() > 0) {
-            sessionValues.sessionAuthenticated();
-            LoginbuddyCache.CACHE.put(sessionId, sessionValues);
+            sessionContext.sessionAuthenticated();
+            LoginbuddyCache.CACHE.put(sessionId, sessionContext);
             request.getRequestDispatcher("demoserverConsent.jsp?session=" + sessionId).forward(request, response);
           } else {
             // TODO: else { ... return an error and request the password or allow to cancel ... }
@@ -190,8 +190,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
           }
         } else if ("cancel".equalsIgnoreCase(action)) {
 
-          String clientRedirectUri = sessionValues.getString(Constants.REDIRECT_URI.getKey());
-          String clientState = sessionValues.getString(Constants.STATE.getKey());
+          String clientRedirectUri = sessionContext.getString(Constants.REDIRECT_URI.getKey());
+          String clientState = sessionContext.getString(Constants.STATE.getKey());
 
           if (clientRedirectUri.contains("?")) {
             clientRedirectUri += "&state=" + clientState;
@@ -207,11 +207,11 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
           // now it is time to issue an authorization code
           String code = UUID.randomUUID().toString();
 
-          sessionValues.sessionGranted();
-          LoginbuddyCache.CACHE.put(code, sessionValues);
+          sessionContext.sessionGranted();
+          LoginbuddyCache.CACHE.put(code, sessionContext);
 
-          String clientRedirectUri = sessionValues.getString(Constants.REDIRECT_URI.getKey());
-          String clientState = sessionValues.getString(Constants.STATE.getKey());
+          String clientRedirectUri = sessionContext.getString(Constants.REDIRECT_URI.getKey());
+          String clientState = sessionContext.getString(Constants.STATE.getKey());
 
           if (clientRedirectUri.contains("?")) {
             clientRedirectUri += "&state=" + clientState;
@@ -224,8 +224,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
         } // TODO: else { ... return an error and request the consent or allow to cancel ... }
         else if ("cancel".equalsIgnoreCase(action)) {
 
-          String clientRedirectUri = sessionValues.get(Constants.REDIRECT_URI.getKey(), String.class);
-          String clientState = sessionValues.get(Constants.STATE.getKey(), String.class);
+          String clientRedirectUri = sessionContext.get(Constants.REDIRECT_URI.getKey(), String.class);
+          String clientState = sessionContext.get(Constants.STATE.getKey(), String.class);
 
           if (clientRedirectUri.contains("?")) {
             clientRedirectUri += "&state=" + clientState;

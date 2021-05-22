@@ -19,6 +19,7 @@ services:
       - "9012:9012"
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy:
     image: saschazegerman/loginbuddy:latest
@@ -39,6 +40,7 @@ services:
       - ./test-classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy-sidecar:
     image: saschazegerman/loginbuddy:latest-sidecar
@@ -54,3 +56,16 @@ services:
     environment:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8001,suspend=n,server=y"
       - "SUPPORT_OIDCDR=true"
+      - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
+
+  hazelcast1:
+    image: hazelcast/hazelcast
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast1:5701"
+
+  hazelcast2:
+    image: hazelcast/hazelcast
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Dhazelcast:local:publicAddress=hazelcast2:5701"

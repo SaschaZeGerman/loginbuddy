@@ -29,7 +29,16 @@ public enum LoginbuddyCache {
             listOfExpirations = new ConcurrentHashMap<>();
             Context initCtx = new InitialContext();
             Context envCtx = (Context) initCtx.lookup("java:comp/env");
-            cache = (DefaultCache) envCtx.lookup("bean/CacheFactory");
+            if(System.getenv("HAZELCAST") != null) {
+                try {
+                    cache = new RemoteCache(System.getenv("HAZELCAST"));
+                } catch(Exception e) {
+                    LOGGER.severe(String.format("Hazelcast cluster cannot be reached. Fallback to local cache. Error: %s", e.getMessage()));
+                    cache = (Cache) envCtx.lookup("bean/CacheFactory");
+                }
+            } else {
+                cache = (Cache) envCtx.lookup("bean/CacheFactory");
+            }
             removeExpiredEntries();
         } catch (Exception e) {
             LOGGER.severe(String.format("LoginbuddyCache could not be loaded! Error: '%s'", e.getMessage()));

@@ -18,6 +18,8 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     // permission java.net.SocketPermission "api.linkedin.com", "connect,resolve";
     // permission java.net.SocketPermission "appleid.apple.com", "connect,resolve";
     // permission java.net.SocketPermission "auth.pingone.com", "connect,resolve";
+       permission java.net.SocketPermission "hazelcast1", "connect,resolve";
+       permission java.net.SocketPermission "hazelcast2", "connect,resolve";
 };
 // [Loginbuddy_DEMOCLIENT]: adding permissions for loginbuddy-democlient to connect to loginbuddy
 grant codeBase "file:${catalina.home}/webapps/democlient/-" {
@@ -29,9 +31,49 @@ grant codeBase "file:${catalina.home}/webapps/democlient/-" {
     permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY_DEMOCLIENT", "read";
     permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";
     permission java.net.SocketPermission "local.loginbuddy.net", "connect,resolve";
+    permission java.net.SocketPermission "hazelcast1", "connect,resolve";
+    permission java.net.SocketPermission "hazelcast2", "connect,resolve";
+
+    // permissions related to hazelcast
+    permission java.lang.RuntimePermission "getenv.HAZELCAST";
+    permission java.lang.RuntimePermission "setContextClassLoader";
+    permission java.lang.RuntimePermission "enableContextClassLoaderOverride";
+    permission java.lang.RuntimePermission "getFileSystemAttributes";
+    permission java.util.PropertyPermission "java.io.tmpdir", "read";
+    permission java.util.PropertyPermission "user.home", "read";
+    permission java.util.PropertyPermission "hazelcast.*", "read";
+    permission java.util.PropertyPermission "com.hazelcast.*", "read";
+    permission java.net.SocketPermission "localhost:0", "listen,resolve";
+    permission javax.management.MBeanServerPermission "createMBeanServer";
+    permission java.io.FilePermission "/root", "read";
+    permission java.lang.RuntimePermission "accessClassInPackage.sun.management";
+    permission java.util.PropertyPermission "sun.arch.data.model", "read";
+    permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
+    permission java.util.PropertyPermission "user.dir", "read";
 };
 // [Loginbuddy_DEMOSERVER]: adding permissions for loginbuddy-demoserver
 grant codeBase "file:${catalina.home}/webapps/demoserver/-" {
     permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
-    permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY_DEMOSERVER", "read";
+    permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY_DEMOSERVER";
+    permission java.net.SocketPermission "hazelcast1", "connect,resolve";
+    permission java.net.SocketPermission "hazelcast2", "connect,resolve";
+
+    // permissions related to hazelcast
+    permission java.lang.RuntimePermission "getenv.HAZELCAST";
+    permission java.lang.RuntimePermission "setContextClassLoader";
+    permission java.lang.RuntimePermission "enableContextClassLoaderOverride";
+    permission java.util.PropertyPermission "java.io.tmpdir", "read";
+    permission java.util.PropertyPermission "user.home", "read";
+    permission java.util.PropertyPermission "hazelcast.*", "read";
+    permission java.util.PropertyPermission "com.hazelcast.*", "read";
+    permission java.net.SocketPermission "localhost:0", "listen,resolve";
+    permission javax.management.MBeanServerPermission "createMBeanServer";
+    permission java.lang.RuntimePermission "getFileSystemAttributes";
+    permission java.io.FilePermission "/root", "read";
+    permission java.lang.RuntimePermission "accessClassInPackage.sun.management";
+    permission java.util.PropertyPermission "sun.arch.data.model", "read";
+    permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
+    permission java.util.PropertyPermission "user.dir", "read";
 };

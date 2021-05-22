@@ -47,12 +47,12 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 }
                 // need to verify that the given requestUri is the one that belongs to this session
                 if(requestUriResult.getValue() != null && requestUriResult.getValue().equals(sessionCtx.useParRequestUri())) {
+                    LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
                     handleAuthorizationResponse(request, response, sessionCtx, sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()));
-                    return;
                 } else {
                     handleError(400, "invalid request_uri", response);
-                    return;
                 }
+                return;
             } else {
                 handleError(400, "invalid request_uri", response);
                 return;

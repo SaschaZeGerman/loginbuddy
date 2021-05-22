@@ -53,8 +53,8 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         String code = request.getParameter(Constants.CODE.getKey());
 
         // find the session and fail if it is unknown
-        SessionContext sessionValues = (SessionContext)LoginbuddyCache.CACHE.remove(code);
-        if (sessionValues == null) {
+        SessionContext sessionContext = (SessionContext)LoginbuddyCache.CACHE.remove(code);
+        if (sessionContext == null) {
             LOGGER.warning("The given authorization_code is invalid or has expired or none was given");
             resp.put("error_description", "The given authorization_code is invalid or has expired or none was given");
             resp.put("error", "invalid_request");
@@ -64,7 +64,7 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         }
 
         // Need to check if the given clientId is the one associated with the given authorization_code
-        if (clientId == null || !clientId.equals(sessionValues.get(Constants.CLIENT_ID.getKey())) ) {
+        if (clientId == null || !clientId.equals(sessionContext.get(Constants.CLIENT_ID.getKey())) ) {
             LOGGER.warning("The given client_id is not valid for the given authorization_code");
             resp.put("error_description", "The given client_id is not valid for the given authorization_code");
             resp.put("error", "invalid_request");
@@ -84,7 +84,7 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         }
 
         // Validate 'code_verifier' if PKCE was used (which is the default for loginbuddy)
-        String code_challenge = sessionValues.getString(Constants.CODE_CHALLENGE.getKey());
+        String code_challenge = sessionContext.getString(Constants.CODE_CHALLENGE.getKey());
         if(code_challenge != null) {
             String code_verifier = request.getParameter(Constants.CODE_VERIFIER.getKey());
             if (code_verifier == null || "".equals(code_verifier.trim()) || request.getParameterValues(Constants.CODE_VERIFIER.getKey()).length > 1) {
@@ -95,7 +95,7 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
                 response.getWriter().write(resp.toJSONString());
                 return;
             } else {
-                if (!Pkce.validate(code_challenge, sessionValues.getString(Constants.CODE_CHALLENGE_METHOD.getKey()), code_verifier)) {
+                if (!Pkce.validate(code_challenge, sessionContext.getString(Constants.CODE_CHALLENGE_METHOD.getKey()), code_verifier)) {
                     LOGGER.warning("The given code_verifier is invalid");
                     resp.put("error_description", "The given code_verifier is invalid");
                     resp.put("error", "invalid_request");
@@ -113,21 +113,21 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         try {
             id_token = Jwt.DEFAULT.createSignedJwtRs256(
                     "https://" + System.getenv("HOSTNAME_LOGINBUDDY_DEMOSERVER"),
-                    sessionValues.getString("client_id"),
+                    sessionContext.getString("client_id"),
                     5,
-                    getSub(sessionValues.getString("client_id"), sessionValues.getString("email"), false),
-                    sessionValues.getString("nonce"),
+                    getSub(sessionContext.getString("client_id"), sessionContext.getString("email"), false),
+                    sessionContext.getString("nonce"),
                     false).getCompactSerialization();
         } catch (Exception e) {
             LOGGER.warning(String.format("Could not create id_token: %s", e.getMessage()));
         }
 
         // Add to the sessionValues
-        long accessTokenLifetime = sessionValues.sessionToken(access_token, refresh_token, id_token);
+        long accessTokenLifetime = sessionContext.sessionToken(access_token, refresh_token, id_token);
 
         // associate with access_token. We'll ignore the refresh_token for now. Remember, this is all 'fake'
-        LoginbuddyCache.CACHE.put(access_token, sessionValues, accessTokenLifetime);
-        LoginbuddyCache.CACHE.put(refresh_token, sessionValues, sessionValues.get("refresh_token_expiration", Long.class));
+        LoginbuddyCache.CACHE.put(access_token, sessionContext, accessTokenLifetime);
+        LoginbuddyCache.CACHE.put(refresh_token, sessionContext, sessionContext.get("refresh_token_expiration", Long.class));
 
         // create the response message that includes the issued token
         JSONObject fakeProviderResponse = new JSONObject();
@@ -136,7 +136,7 @@ public class LoginbuddyProviderToken extends LoginbuddyProviderCommon {
         fakeProviderResponse.put("token_type", "Bearer");
         fakeProviderResponse.put("expires_in", accessTokenLifetime);
         fakeProviderResponse.put("id_token", id_token);
-        fakeProviderResponse.put("scope", sessionValues.get(Constants.SCOPE.getKey()));
+        fakeProviderResponse.put("scope", sessionContext.get(Constants.SCOPE.getKey()));
 
         response.setStatus(200);
         response.getWriter().println(fakeProviderResponse);

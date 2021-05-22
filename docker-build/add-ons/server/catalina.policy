@@ -176,6 +176,9 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.lang.RuntimePermission "accessDeclaredMembers";
     permission java.lang.RuntimePermission "exitVM.0";
     permission java.lang.RuntimePermission "exitVM.1";
-    permission java.lang.RuntimePermission "getenv.SUPPORT_OIDCDR", "read";
+    permission java.lang.RuntimePermission "getenv.SUPPORT_OIDCDR";
     permission java.io.FilePermission "/usr/local/tomcat/ssl/loginbuddy.p12", "read";
+
+    // permission to check if a hazelcast server (cluster) should be used
+    permission java.lang.RuntimePermission "getenv.HAZELCAST";
 };
