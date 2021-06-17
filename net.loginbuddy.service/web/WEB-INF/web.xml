@@ -153,11 +153,16 @@
         <servlet-class>net.loginbuddy.service.management.Token</servlet-class>
     </servlet>
 
-
     <!-- Loginbuddy configuration management -->
     <servlet>
         <servlet-name>Configuration</servlet-name>
         <servlet-class>net.loginbuddy.service.management.Configuration</servlet-class>
+    </servlet>
+
+    <!-- Loginbuddy runtime management -->
+    <servlet>
+        <servlet-name>Runtime</servlet-name>
+        <servlet-class>net.loginbuddy.service.management.Runtime</servlet-class>
     </servlet>
 
     <!-- The mapping for the default servlet -->
@@ -223,6 +228,12 @@
     <servlet-mapping>
         <servlet-name>Configuration</servlet-name>
         <url-pattern>/management/configuration/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Loginbuddy runtime management -->
+    <servlet-mapping>
+        <servlet-name>Runtime</servlet-name>
+        <url-pattern>/management/runtime/*</url-pattern>
     </servlet-mapping>
 
     <error-page>

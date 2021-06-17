@@ -20,7 +20,10 @@ public enum LoginbuddyScope {
     WriteClients("management.configuration.write.clients", "access to write-only client configuration APIs"),
     WriteProviders("management.configuration.write.providers", "access to write-only providers configuration APIs"),
     WriteProperties("management.configuration.write.properties", "access to write-only properties configuration APIs"),
-    WriteDiscovery("management.configuration.write.discovery", "access to write-only discovery configuration APIs");
+    WriteDiscovery("management.configuration.write.discovery", "access to write-only discovery configuration APIs"),
+    Runtime("management.runtime", "access to runtime management APIs" ),
+    RuntimeRead("management.runtime.read", "access to read-only runtime management APIs" ),
+    RuntimeWrite("management.runtime.write", "access to write-only runtime management APIs" );
 
     String scope, description;
 

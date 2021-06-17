@@ -7,18 +7,13 @@ import net.loginbuddy.config.management.AccessTokenLocation;
 import net.loginbuddy.config.management.ConfigurationTypes;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class ConfigurationMaster extends HttpServlet {
-
-    public static boolean isManagementEnabled() {
-        return DiscoveryUtil.UTIL.getManagement() != null;
-    }
+public abstract class ConfigurationMaster extends Management {
 
     public static boolean isConfigManagementEnabled() {
         return isManagementEnabled() && DiscoveryUtil.UTIL.getManagement().getConfigurationEndpoint() != null;

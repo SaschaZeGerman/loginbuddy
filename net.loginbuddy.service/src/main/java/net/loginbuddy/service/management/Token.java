@@ -63,9 +63,15 @@ public class Token extends HttpServlet {
                 claims.put(Constants.NONCE.getKey(), nonceResult.getValue());
             }
 
+            String grantedScopes = "";
+
             if(resourceResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
                 if(resourceResult.getValue().equals(DiscoveryUtil.UTIL.getManagement().getConfigurationEndpoint())) {
                     claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
+                    grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
+                } else if(resourceResult.getValue().equals(DiscoveryUtil.UTIL.getManagement().getRuntimeEndpoint())) {
+                    claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
+                    grantedScopes = LoginbuddyScope.Runtime.grantScopeAsString(scopeResult.getValue());
                 } else {
                     response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "requested resource is not supported").toJSONString());
                     return;
@@ -75,8 +81,6 @@ public class Token extends HttpServlet {
                 return;
             }
 
-            // grant any or even all 'configuration' scopes
-            String grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
             if(grantedScopes.length() == 0) {
                 response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "scope was not requested and-or no scope was granted").toJSONString());
                 return;

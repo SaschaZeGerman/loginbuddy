@@ -68,4 +68,27 @@ public class TestLoginbuddyScope {
         assertTrue(actual.contains("management.configuration.write"));
         assertTrue(actual.contains("management.configuration.read"));
     }
+
+    @Test
+    public void testGrantReadWriteManagementRuntimeScope() {
+        Set<String> actual = LoginbuddyScope.Management.grantScope("management.runtime.write management.runtime.read");
+        assertEquals(2, actual.size());
+        assertTrue(actual.contains("management.runtime.read"));
+        assertTrue(actual.contains("management.runtime.write"));
+    }
+
+    @Test
+    public void testGrantReadWriteRuntimeRuntimeScope() {
+        Set<String> actual = LoginbuddyScope.Runtime.grantScope("management.runtime.write management.runtime.read");
+        assertEquals(2, actual.size());
+        assertTrue(actual.contains("management.runtime.read"));
+        assertTrue(actual.contains("management.runtime.write"));
+    }
+
+    @Test
+    public void testGrantReadRuntimeScope() {
+        Set<String> actual = LoginbuddyScope.RuntimeRead.grantScope("management.runtime.write management.runtime.read management.runtime");
+        assertEquals(1, actual.size());
+        assertTrue(actual.contains("management.runtime.read"));
+    }
 }
