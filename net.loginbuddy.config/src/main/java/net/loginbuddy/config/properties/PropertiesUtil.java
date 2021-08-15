@@ -44,7 +44,7 @@ public enum PropertiesUtil implements Bootstrap {
 
     public String getStringProperty(String property) {
         LOGGER.fine(String.format("Requested string property: '%s'", property));
-        return String.valueOf(loader.getProperties().get(property));
+        return loader.getProperties().get(property) == null ? null : String.valueOf(loader.getProperties().get(property));
     }
 
     public String getPropertiesAsJsonString() {

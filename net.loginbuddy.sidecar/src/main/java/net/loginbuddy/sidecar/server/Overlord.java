@@ -7,6 +7,7 @@ import net.loginbuddy.config.properties.PropertiesUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 public class Overlord extends HttpServlet {
@@ -27,9 +28,15 @@ public class Overlord extends HttpServlet {
                     LoginbuddyLoader myLoader = (LoginbuddyLoader) cls.getDeclaredConstructors()[0].newInstance();
                     LoginbuddyUtil.UTIL.setLoader(myLoader);
                     LOGGER.info(String.format("Custom LoginbuddyLoader was successfully initiated! Class: '%s'", customLoader));
+                } catch (InvocationTargetException e) {
+                    if (e.getTargetException() != null) {
+                        LOGGER.warning(String.format("Custom LoginbuddyLoader created an error: '%s'", e.getTargetException().getMessage()));
+                    }
                 } catch (Exception e) {
                     LOGGER.warning(String.format("Custom LoginbuddyLoader could not be initiated! Error: '%s'", e.getMessage()));
                 }
+            } else {
+                LOGGER.info("No custom LoginbuddyLoader was configured! Using the default loader");
             }
         } else {
             LOGGER.severe("Stopping Loginbuddy since its configuration could not be loaded! Fix that first!");
