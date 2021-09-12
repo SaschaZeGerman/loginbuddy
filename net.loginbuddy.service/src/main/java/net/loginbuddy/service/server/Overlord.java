@@ -23,7 +23,7 @@ public class Overlord extends HttpServlet {
     if (LoginbuddyUtil.UTIL.isConfigured() && PropertiesUtil.UTIL.isConfigured() && DiscoveryUtil.UTIL.isConfigured()) {
       LOGGER.info("Loginbuddy successfully started!");
       String customLoader = PropertiesUtil.UTIL.getStringProperty("config.loginbuddy.loader.default");
-      if(customLoader != null) {
+      if(! (customLoader == null || "null".equalsIgnoreCase(customLoader)) ) {
         try {
           Class cls = Class.forName(customLoader);
           LoginbuddyLoader myLoader = (LoginbuddyLoader) cls.getDeclaredConstructors()[0].newInstance();
