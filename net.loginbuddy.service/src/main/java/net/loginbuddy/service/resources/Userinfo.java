@@ -23,11 +23,11 @@ public class Userinfo extends Overlord {
     String authorizationHeader = request.getHeader(Constants.AUTHORIZATION.getKey());
 
     String hint;
-    String[] token = HttpHelper.extractAccessToken(accessToken, authorizationHeader).split(".");
+    String[] token = HttpHelper.extractAccessToken(accessToken, authorizationHeader).split("[.]");
     if(token.length == 3) {
       hint = token[2];
     } else {
-      hint = accessToken.getValue();
+      hint = token[0];
     }
 
     MsgResponse msg;
@@ -38,7 +38,7 @@ public class Userinfo extends Overlord {
       msg.setContentType("application/json");
       msg.setMsg(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
     } else {
-      msg = HttpHelper.getAPI(accessToken.getValue(), (String)apis.get(Constants.USERINFO_ENDPOINT.getKey()));
+      msg = HttpHelper.getAPI(hint, (String)apis.get(Constants.USERINFO_ENDPOINT.getKey()));
     }
 
     response.setStatus(msg.getStatus());

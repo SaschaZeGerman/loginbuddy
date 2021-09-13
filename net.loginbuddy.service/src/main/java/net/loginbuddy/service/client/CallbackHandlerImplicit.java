@@ -60,7 +60,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
         eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), null));
 
 // ***************************************************************
-// ** In this flow there is no token response, we'll create ia manually
+// ** In this flow there is no token response, we'll create it manually
 // ***************************************************************
 
         JSONObject tokenResponseObject = new JSONObject();
