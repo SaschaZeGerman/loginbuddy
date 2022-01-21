@@ -45,6 +45,9 @@ public class Clients implements Serializable {
     @JsonProperty("signed_response_alg")
     private String signedResponseAlg;
 
+    @JsonProperty("resign")
+    private String[] resignTokenTypes;
+
     public Clients() {
         acceptDynamicProvider = false;
     }
@@ -86,6 +89,10 @@ public class Clients implements Serializable {
         return signedResponseAlg;
     }
 
+    public String[] getResignTokenTypes() {
+        return resignTokenTypes;
+    }
+
     public void setRedirectUri(String redirectUri) {
         this.redirectUri = redirectUri;
     }
@@ -116,6 +123,10 @@ public class Clients implements Serializable {
 
     public void setSignedResponseAlg(String signedResponseAlg) {
         this.signedResponseAlg = signedResponseAlg;
+    }
+
+    public void setResignTokenTypes(String[] resignTokenTypes) {
+        this.resignTokenTypes = resignTokenTypes;
     }
 
     @Override

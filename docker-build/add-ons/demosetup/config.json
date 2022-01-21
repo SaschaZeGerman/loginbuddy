@@ -9,7 +9,10 @@
         "server_loginbuddy",
         "server_dynamic"
       ],
-      "accept_dynamic_provider": true
+      "accept_dynamic_provider": true,
+      "resign": [
+        "id_token"
+      ]
     },
     {
       "client_id": "clientIdForTestingPurposesJwt",
