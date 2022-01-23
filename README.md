@@ -79,7 +79,7 @@ To stop the docker container when you are done, run the following:
 
 To develop with Loginbuddy you will need a couple of tools: 
 
-* java jdk8
+* java jdk11
 * maven
 * docker
 * docker-compose
