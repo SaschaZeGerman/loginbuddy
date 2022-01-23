@@ -17,8 +17,9 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.lang.RuntimePermission "getFileSystemAttributes";
     permission java.io.FilePermission "/root", "read";
     permission java.lang.RuntimePermission "accessClassInPackage.sun.management";
+    permission java.lang.RuntimePermission "accessClassInPackage.com.sun.management.internal";
     permission java.util.PropertyPermission "sun.arch.data.model", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
-    permission java.lang.RuntimePermission "accessDeclaredMembers";
     permission java.util.PropertyPermission "user.dir", "read";
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
 };

@@ -171,6 +171,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.util.PropertyPermission "user.dir", "read";
     permission java.util.PropertyPermission "JSON_SMART_SIMPLE", "read";
     permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
+    permission java.util.PropertyPermission "org.jose4j.jws.use-legacy-rsapss-alg-names", "read";
     permission java.util.PropertyPermission "com.fasterxml.jackson.core.util.BufferRecyclers.trackReusableBuffers", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "accessDeclaredMembers";
@@ -181,4 +182,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
 
     // permission to check if a hazelcast server (cluster) should be used
     permission java.lang.RuntimePermission "getenv.HAZELCAST";
+
+    // required as of upgrade to tomcat with jdk11
+    permission java.net.NetPermission "specifyStreamHandler";
 };

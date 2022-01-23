@@ -19,7 +19,7 @@ services:
     - "8003:8003"
     environment:
       - "HOSTNAME_LOGINBUDDY_DEMOSERVER=loginbuddy-demoserver"
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8003,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8003,suspend=n,server=y"
 
   loginbuddy-oidcdr:
     image: saschazegerman/loginbuddy:latest-oidcdr
@@ -32,7 +32,7 @@ services:
       - ./loginbuddy_oidcdr_test.sh:/opt/docker/loginbuddy.sh
       - ./loginbuddy_demoserver_import.sh:/opt/docker/loginbuddy_demoserver_import.sh
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8002,suspend=n,server=y"
       - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy-sidecar:
@@ -52,7 +52,7 @@ services:
       - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
       - ./permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8001,suspend=n,server=y \
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8001,suspend=n,server=y \
         -Dcom.sun.management.jmxremote \
         -Dcom.sun.management.jmxremote.authenticate=false \
         -Dcom.sun.management.jmxremote.ssl=false \

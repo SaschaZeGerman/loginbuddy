@@ -41,7 +41,7 @@ You should only see green diagrams!
 
 When this is done, run `make stop-test` to stop the test environment!
 
-**TIP**: Run `make run-test-hazelcast`/ `make stop-test-hazelcast` to use a setup that leverages Hazelcast!
+**TIP**: Run `make run-test-hazelcast`/ `make stop-test-hazelcast` to use the setup leveraging Hazelcast!
 
 To run the second set of tests do the following (assuming the pre-requisites are satisfied):
 - `cd ./docker`  // unless you ar ealready in that directory

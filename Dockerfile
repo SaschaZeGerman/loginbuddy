@@ -1,4 +1,4 @@
-FROM tomcat:alpine
+FROM tomcat:jdk11-openjdk
 
 # We do not want to keep the default applications, remove them
 #
@@ -27,7 +27,7 @@ RUN mkdir /usr/local/tomcat/ssl
 # create non-priviliged user (with its own group) to run tomcat
 #
 RUN addgroup tomcat
-RUN adduser -SG tomcat tomcat
+RUN adduser --ingroup tomcat tomcat
 RUN chown -R tomcat:tomcat /usr/local/tomcat/
 
 # Run the entrypoint script to run tomcat with security manager

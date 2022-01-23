@@ -31,7 +31,7 @@ keytool -importcert -alias loginbuddy -file /usr/local/tomcat/ssl/loginbuddy.crt
 #
 if [ -z "$HAZELCAST" ]
 then
-  printf "Using local cache."
+  printf "Using local cache.\n"
 else
   printf "Attempting to use remote cache with Hazelcast. Adding required permissions\n"
   cat /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/hazelcastPermissions.policy >> /usr/local/tomcat/conf/catalina.policy

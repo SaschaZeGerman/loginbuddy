@@ -12,8 +12,8 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebServlet(name = "Authorize")

@@ -18,7 +18,7 @@ services:
       - "8002:8002"
       - "9012:9012"
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8002,suspend=n,server=y"
       - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy:
@@ -39,7 +39,7 @@ services:
       - ./server_loginbuddy.png:/usr/local/tomcat/webapps/ROOT/images/server_loginbuddy.png
       - ./test-classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8000,suspend=n,server=y"
       - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy-sidecar:
@@ -54,7 +54,7 @@ services:
       - ./discovery.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
       - ./permissions_sidecar.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8001,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8001,suspend=n,server=y"
       - "SUPPORT_OIDCDR=true"
       - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 

@@ -47,10 +47,14 @@ grant codeBase "file:${catalina.home}/webapps/democlient/-" {
     permission javax.management.MBeanServerPermission "createMBeanServer";
     permission java.io.FilePermission "/root", "read";
     permission java.lang.RuntimePermission "accessClassInPackage.sun.management";
+    permission java.lang.RuntimePermission "accessClassInPackage.com.sun.management.internal";
     permission java.util.PropertyPermission "sun.arch.data.model", "read";
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "accessDeclaredMembers";
     permission java.util.PropertyPermission "user.dir", "read";
+
+    // required as of upgrade to tomcat with jdk11
+    permission java.net.NetPermission "specifyStreamHandler";
 };
 // [Loginbuddy_DEMOSERVER]: adding permissions for loginbuddy-demoserver
 grant codeBase "file:${catalina.home}/webapps/demoserver/-" {
@@ -76,4 +80,6 @@ grant codeBase "file:${catalina.home}/webapps/demoserver/-" {
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.lang.RuntimePermission "accessDeclaredMembers";
     permission java.util.PropertyPermission "user.dir", "read";
+
+    permission java.util.PropertyPermission "org.jose4j.jws.use-legacy-rsapss-alg-names", "read";
 };

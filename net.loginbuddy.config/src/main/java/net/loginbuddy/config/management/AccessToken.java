@@ -13,7 +13,7 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.resolvers.JwksVerificationKeyResolver;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.logging.Logger;
 
 public class AccessToken {
@@ -71,7 +71,7 @@ public class AccessToken {
                 .setExpectedIssuer(issuer)
                 .setVerificationKeyResolver(new JwksVerificationKeyResolver(jwks.getJsonWebKeys()))
                 .setJwsAlgorithmConstraints(
-                        AlgorithmConstraints.ConstraintType.WHITELIST,
+                        AlgorithmConstraints.ConstraintType.PERMIT,
                         AlgorithmIdentifiers.RSA_USING_SHA256)
                 .build()
                 .processToClaims(jwtAccessToken);

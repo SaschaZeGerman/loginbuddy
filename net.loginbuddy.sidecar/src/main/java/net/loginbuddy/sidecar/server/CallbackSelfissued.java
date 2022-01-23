@@ -12,8 +12,8 @@ import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.sidecar.util.SessionContext;
 import org.json.simple.JSONObject;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Logger;

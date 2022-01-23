@@ -41,14 +41,14 @@
     <h2>An error occured</h2>
     <%
         // Analyze the servlet exception
-        Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
-        Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-        String errorMsg = (String) request.getAttribute("javax.servlet.error.message");
-        String servletName = (String) request.getAttribute("javax.servlet.error.servlet_name");
+        Throwable throwable = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
+        Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
+        String errorMsg = (String) request.getAttribute("jakarta.servlet.error.message");
+        String servletName = (String) request.getAttribute("jakarta.servlet.error.servlet_name");
         if (servletName == null) {
             servletName = "Unknown";
         }
-        String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri"); // this is the URL path
+        String requestUri = (String) request.getAttribute("jakarta.servlet.error.request_uri"); // this is the URL path
         if (requestUri == null) {
             requestUri = "Unknown";
         }

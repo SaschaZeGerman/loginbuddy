@@ -6,8 +6,10 @@ import net.loginbuddy.config.loginbuddy.LoginbuddyLoader;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.properties.PropertiesUtil;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
@@ -26,7 +28,17 @@ public class Overlord extends HttpServlet {
       if(! (customLoader == null || "null".equalsIgnoreCase(customLoader)) ) {
         try {
           Class cls = Class.forName(customLoader);
-          LoginbuddyLoader myLoader = (LoginbuddyLoader) cls.getDeclaredConstructors()[0].newInstance();
+          LoginbuddyLoader myLoader = null;
+          if(cls.getDeclaredConstructors().length > 1) {
+            for(Constructor constructor : cls.getDeclaredConstructors()) {
+              if(constructor.getParameterCount() == 0) {
+                myLoader = (LoginbuddyLoader) constructor.newInstance();
+                break;
+              }
+            }
+          } else {
+            myLoader = (LoginbuddyLoader) cls.getDeclaredConstructors()[0].newInstance();
+          }
           LoginbuddyUtil.UTIL.setLoader(myLoader);
           LOGGER.info(String.format("Custom LoginbuddyLoader was successfully initiated! Class: '%s'", customLoader));
         } catch (InvocationTargetException e) {

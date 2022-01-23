@@ -1,4 +1,4 @@
-FROM tomcat:alpine
+FROM tomcat:jdk11-openjdk
 
 # We do not want to keep the default applications, remove them
 #

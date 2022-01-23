@@ -18,7 +18,7 @@ services:
       - "8002:8002"
       - "9012:9012"
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8002,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8002,suspend=n,server=y"
 
   loginbuddy-demo:
     image: saschazegerman/loginbuddy:latest-demo
@@ -37,7 +37,7 @@ services:
       - ./configTemplates.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/configTemplates.json
       - ./test-classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/net/loginbuddy/config/loginbuddy/CustomLoginbuddyConfigLoader.class
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8000,suspend=n,server=y"
       - "SUPPORT_OIDCDR=true"
 
   loginbuddy-test:
@@ -47,4 +47,4 @@ services:
       - "8003:8003"
       - "8999:8080"
     environment:
-      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8003,suspend=n,server=y"
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8003,suspend=n,server=y"

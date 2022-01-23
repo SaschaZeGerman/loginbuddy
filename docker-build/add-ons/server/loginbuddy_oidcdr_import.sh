@@ -15,14 +15,14 @@ then
   connected=false
   until [ $retry_count -eq $MAX_RETRIES ] || [ $connected == true ]
   do
-    nc -w 1 -v loginbuddy-oidcdr 445 > result 2>&1
-    connected=$(cat result | grep -qi 'open' && echo TRUE || echo FALSE)
+    keytool -printcert -sslserver loginbuddy-oidcdr:445 -rfc > pubCert 2<&1
+    connected=$(cat pubCert | grep -qi 'BEGIN' && echo TRUE || echo FALSE)
     if [ "TRUE" = "${connected}" ]
     then
       echo "connecting to loginbuddy-oidcdr"
       # Import loginbuddy-oidcdr certificates as trusted certificate
       #
-      keytool -printcert -sslserver loginbuddy-oidcdr:445 -rfc > /usr/local/tomcat/ssl/loginbuddy-oidcdr.crt
+      cat pubCert > /usr/local/tomcat/ssl/loginbuddy-oidcdr.crt
       keytool -importcert -alias loginbuddy-oidcdr -file /usr/local/tomcat/ssl/loginbuddy-oidcdr.crt -storepass changeit -keystore $JAVA_HOME/lib/security/cacerts -trustcacerts -noprompt
       exit 0
     else
