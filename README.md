@@ -39,12 +39,13 @@ Loginbuddy includes configuration templates for common OpenID providers which si
 - OpenID Dynamic registration
 - self-issued
 
-## Run the online demo 
+## No time to read? Try the online demo
 
-There is an online demo of Loginbuddy here: [https://client.loginbuddy.net](https://client.loginbuddy.net). 
-The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy. 
+There is an online demo of Loginbuddy here: [https://client.loginbuddy.net](https://client.loginbuddy.net).
+The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy. The resulting page displays the content your client would receive after
+a user would complete an authentication/ authorization flow!
 
-**Note**: It can be offline at times if something breaks or new updates are being pushed. 
+**Note**: It can be offline at times if something breaks or new updates are being pushed.
 
 ## Run the pre-canned demo setup locally 
 
@@ -56,9 +57,9 @@ The sample setup consists of three components:
 The instructions are made for Docker on a MacBook and may need to be adjusted for Windows users.
 
 - Preparation
-  - modify your hosts file, add **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
-  - for MacBooks this would be done at ```sudo /etc/hosts```
-- Run ```docker run -p 80:80 -p 443:443 -d saschazegerman/loginbuddy-demo:latest```
+  - modify your hosts file, add this line: **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
+  - for MacBooks this would be done at ```/etc/hosts```
+- Run ```docker run --name loginbuddy-demo -p 80:80 -p 443:443 -d saschazegerman/loginbuddy-demo:latest```
   - this will pull the latest demo image from docker hub
   - this will use ports 80 (http) and 443 (https)
 - Open a browser
@@ -66,9 +67,13 @@ The instructions are made for Docker on a MacBook and may need to be adjusted fo
 
 The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy!
 
-The last page displays the type of message Loginbuddy would return to your application. (if you have used the web app dem,o client, copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
+The last page displays the type of message Loginbuddy would return to your application. (if you have used the web app demo client, copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
 
 Since the demo uses self-signed certificates, confirm the SSL security screens in your browser, three times, once per component. 
+
+To stop the docker container when you are done, run the following:
+
+- `docker stop loginbuddy-demo`
 
 ## Run your own development setup 
 
