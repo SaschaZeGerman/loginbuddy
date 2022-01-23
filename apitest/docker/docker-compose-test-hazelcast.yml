@@ -11,7 +11,7 @@ version: '3.4'
 services:
 
   loginbuddy-oidcdr:
-    image: saschazegerman/loginbuddy:latest-oidcdr
+    image: saschazegerman/loginbuddy-oidcdr:latest
     restart: always
     ports:
       - "445:445"
@@ -43,7 +43,7 @@ services:
       - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy-sidecar:
-    image: saschazegerman/loginbuddy:latest-sidecar
+    image: saschazegerman/loginbuddy-sidecar:latest
     restart: always
     ports:
       - "444:444"

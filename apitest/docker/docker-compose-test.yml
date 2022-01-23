@@ -11,7 +11,7 @@ version: '3.4'
 services:
 
   loginbuddy-oidcdr:
-    image: saschazegerman/loginbuddy:latest-oidcdr
+    image: saschazegerman/loginbuddy-oidcdr:latest
     restart: always
     ports:
       - "445:445"
@@ -41,7 +41,7 @@ services:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8000,suspend=n,server=y"
 
   loginbuddy-sidecar:
-    image: saschazegerman/loginbuddy:latest-sidecar
+    image: saschazegerman/loginbuddy-sidecar:latest
     restart: always
     ports:
       - "444:444"

@@ -12,7 +12,7 @@ version: '3.4'
 services:
 
   loginbuddy-demoserver:
-    image: saschazegerman/loginbuddy:latest-demoserver
+    image: saschazegerman/loginbuddy-demoserver:latest
     restart: always
     ports:
     - "443:443"
@@ -22,7 +22,7 @@ services:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8003,suspend=n,server=y"
 
   loginbuddy-oidcdr:
-    image: saschazegerman/loginbuddy:latest-oidcdr
+    image: saschazegerman/loginbuddy-oidcdr:latest
     restart: always
     depends_on:
       - loginbuddy-demoserver
@@ -36,7 +36,7 @@ services:
       - "HAZELCAST=hazelcast1:5701,hazelcast2:5701"
 
   loginbuddy-sidecar:
-    image: saschazegerman/loginbuddy:latest-sidecar
+    image: saschazegerman/loginbuddy-sidecar:latest
     restart: always
     depends_on:
       - loginbuddy-oidcdr

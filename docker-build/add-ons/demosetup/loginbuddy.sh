@@ -19,7 +19,7 @@ then
   printf "===============\n"
   printf "== Loginbuddy: Using the default democlient hostname democlient.loginbuddy.net\n"
   printf "== Loginbuddy: Please configure the enviroment variable HOSTNAME_LOGINBUDDY_DEMOCLIENT containing the hostname you want to use\n"
-  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY_DEMOCLIENT=yourhostname saschazegerman/loginbuddy:latest-demo\n"
+  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY_DEMOCLIENT=yourhostname saschazegerman/loginbuddy-demo:latest\n"
   printf "== Loginbuddy: or add HOSTNAME_LOGINBUDDY_DEMOCLIENT=yourhostname in the environments section in docker-compose-demosetup.yml\n"
   printf "===============\n"
   HOSTNAME_LOGINBUDDY_DEMOCLIENT=democlient.loginbuddy.net
@@ -30,7 +30,7 @@ then
   printf "===============\n"
   printf "== Loginbuddy: Using the default demoserver hostname demoserver.loginbuddy.net\n"
   printf "== Loginbuddy: Please configure the enviroment variable HOSTNAME_LOGINBUDDY_DEMOSERVER containing the hostname you want to use\n"
-  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY_DEMOSERVER=yourhostname saschazegerman/loginbuddy:latest-demo\n"
+  printf "== Loginbuddy: use: docker run -e HOSTNAME_LOGINBUDDY_DEMOSERVER=yourhostname saschazegerman/loginbuddy-demo:latest\n"
   printf "== Loginbuddy: or add HOSTNAME_LOGINBUDDY_DEMOSERVER=yourhostname in the environments section in docker-compose-demosetup.yml\n"
   printf "===============\n"
   HOSTNAME_LOGINBUDDY_DEMOSERVER=demoserver.loginbuddy.net

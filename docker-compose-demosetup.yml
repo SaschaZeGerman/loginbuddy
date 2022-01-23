@@ -5,7 +5,7 @@ version: '3.4'
 services:
 
   loginbuddy-demosetup:
-    image: saschazegerman/loginbuddy:latest-demo
+    image: saschazegerman/loginbuddy-demo:latest
     restart: always
     ports:
       - "80:80"
@@ -28,5 +28,5 @@ services:
       - ./dev/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
 
   loginbuddy-oidcdr:
-    image: saschazegerman/loginbuddy:latest-oidcdr
+    image: saschazegerman/loginbuddy-oidcdr:latest
     restart: always

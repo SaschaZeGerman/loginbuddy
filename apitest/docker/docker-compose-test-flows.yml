@@ -11,7 +11,7 @@ version: '3.4'
 services:
 
   loginbuddy-oidcdr:
-    image: saschazegerman/loginbuddy:latest-oidcdr
+    image: saschazegerman/loginbuddy-oidcdr:latest
     restart: always
     ports:
       - "445:445"
@@ -21,7 +21,7 @@ services:
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8002,suspend=n,server=y"
 
   loginbuddy-demo:
-    image: saschazegerman/loginbuddy:latest-demo
+    image: saschazegerman/loginbuddy-demo:latest
     restart: always
     ports:
       - "80:80"
@@ -41,7 +41,7 @@ services:
       - "SUPPORT_OIDCDR=true"
 
   loginbuddy-test:
-    image: saschazegerman/loginbuddy:latest-test
+    image: saschazegerman/loginbuddy-test:latest
     restart: always
     ports:
       - "8003:8003"
