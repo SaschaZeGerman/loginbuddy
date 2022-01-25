@@ -8,7 +8,7 @@ build_all:
 	docker build --no-cache --tag saschazegerman/loginbuddy-demoserver:latest -f Dockerfile_demoserver .
 
 docker_run_demo:
-	docker-compose -f docker-compose-demosetup.yml up
+	docker-compose -f docker-compose-demosetup.yml up -d
 
 docker_stop_demo:
 	docker-compose -f docker-compose-demosetup.yml down
