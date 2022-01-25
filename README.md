@@ -56,10 +56,9 @@ The sample setup consists of three components:
 
 The instructions are made for Docker on a MacBook and may need to be adjusted for Windows users.
 
-- Preparation
-  - modify your hosts file, add this line: **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
-  - for MacBooks this would be done at ```/etc/hosts```
-- Run ```docker run --name loginbuddy-demo -p 80:80 -p 443:443 -d saschazegerman/loginbuddy-demo:latest```
+- Add this line to your hosts file: **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
+  - for MacBooks this would be done at: `/etc/hosts`
+- Run `docker run --name loginbuddy-demo -p 80:80 -p 443:443 -d saschazegerman/loginbuddy-demo:latest`
   - this will pull the latest demo image from docker hub
   - this will use ports 80 (http) and 443 (https)
 - Open a browser
@@ -67,7 +66,7 @@ The instructions are made for Docker on a MacBook and may need to be adjusted fo
 
 The demo simulates a client, a social login provider (called 'FAKE') and uses Loginbuddy!
 
-The last page displays the type of message Loginbuddy would return to your application. (if you have used the web app demo client, copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON').
+The last page displays the type of message Loginbuddy would return to your application (if you have used the web app demo client, copy the content, paste it into [JSONLINT](https://jsonlint.com) and click 'Validate JSON' to make it look nice).
 
 Since the demo uses self-signed certificates, confirm the SSL security screens in your browser, three times, once per component. 
 
@@ -75,78 +74,7 @@ To stop the docker container when you are done, run the following:
 
 - `docker stop loginbuddy-demo`
 
-## Run your own development setup 
-
-To develop with Loginbuddy you will need a couple of tools: 
-
-* java jdk11
-* maven
-* docker
-* docker-compose
-* make // this is for you convenience. If not available its commands can be run manually
-
-With these tools installed the steps to build:
-
-* Preparation
-	* Clone the Loginbuddy repo:  `git clone https://github.com/SaschaZeGerman/loginbuddy.git` 
-	* Modify your hosts file, add **127.0.0.1 democlient.loginbuddy.net demoserver.loginbuddy.net local.loginbuddy.net**
-	* For MacBooks this would be done at `sudo /etc/hosts`
-* Run `make initialize_dev`
-    * This will create a private key for development purposes
-* Run `make build_all`
-	* This will compile all sources and build new versions of Loginbuddy images
-* Run `docker-compose -f docker-compose-demosetup.yml up`
-	* This will launch the demo setup including Loginbuddy, the demo client and demo openID Provider
-	* This will use ports 80 (http), 443 (https)
-* Open a browser
-	* Go to `https://democlient.loginbuddy.net`
-	* The screen displays some info, select one of the *Demo Client* options (**NOTE: through out the flow you will have to confirm SSL violations 3 times since 3 systems are simulated!**)
-	* The next screen displays a *Submit* button which initializes the authorization flow
-	* The following screen will display an image saying *FAKE* which is the demo provider. Just click it ...
-		* The demo takes you through the (simulated) typical authentication/ authorization flow
-	* On the *EMail* address screen type an email address
-	* On the *Password* screen type any sentence
-	* Confirm the consent screen
-	* The response at the end is completely fake but it represents the type of message structure that can be expected by your client
-
-That's it! In a real life scenario the *FAKE* image would be replaced by images of real providers!
-
-**Tip**: if you build docker images often, run this command from time to time to remove dangling images:
-- `docker rmi $(docker images -f "dangling=true" -q)`
-
-## Add your own OpenID Provider within minutes
-
-It's really simple to add a new OpenID Provider to Loginbuddy. 
-
-1. Sign up to the OpenID Provider you want to add (For example Google).
-	* Register an OAuth application using these details: `redirect_uri = https://local.loginbuddy.net/callback`
-	* Note these values that (google) generates:
-		* client_id
-		* client_secret
-2. Clone this project:  `git clone https://github.com/SaschaZeGerman/loginbuddy.git` 
-3. Configure Loginbuddy with client_id and client_secret of your OpenID Provider, grant Loginbuddy permissions to access the provider  
-4. Build the Loginbuddy containers - DONE!
-
-For more details see [WIKI - Quick Start](https://github.com/SaschaZeGerman/loginbuddy/wiki/Quick-Start)
-
-## Digging deeper 
-
-### Configuration
-
-Loginbuddy requires four items to be configured:
-
-- **OpenID Providers**: Providers that you want Loginbuddy to support
-- **Clients**: Clients of Loginbuddy (that would be your web application or single-page app (SPA))
-- **Permissions**: Endpoints you want Loginbuddy to connect to (this would be endpoints of supported providers) have to be registered (exception: dynamically registered providers)
-- **OpenID Connect Discovery**: Loginbuddy itself provides a `/.well-known/openid-configuration` endpoint and needs it for its own configuration (note: to get started no modifications are required)
-
-See more details on how to configure Loginbuddy on [WIKI - Configuration](https://github.com/SaschaZeGerman/loginbuddy/wiki/Configuration)
-
-### Deployments 
-
-The small footprint allows for flexible deployment options. See pros and cons of different options on [WIKI - Deployment](https://github.com/SaschaZeGerman/loginbuddy/wiki/Deployment)
-
-### API and Protocols 
+# API and Protocols 
 
 Loginbuddy is built to support OpenID Connect and OAuth 2.0 specifications:
 
@@ -158,18 +86,18 @@ Loginbuddy is built to support OpenID Connect and OAuth 2.0 specifications:
 
 For more details on the APIs supported see [WIKI - Protocols and APIs](https://github.com/SaschaZeGerman/loginbuddy/wiki/Protocols-and-APIs)
 
-### Other Resources
+# Other Resources
 
-The latest docker image is always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
+The latest docker images are always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
 
 To get a better idea how it works I have published a few videos about Loginbuddy on youtube: [Loginbuddy playlist](https://www.youtube.com/playlist?list=PLcX_9uDXp_CR5vXTT8lxI94x7Esl8O78E)
 
-# Acknowledgements
+# WIKI
 
-The development of Loginbuddy is greatly supported by Jetbrains [IntelliJ IDEA ![alt - IntelliJ IDEA](doc/intellij-logo.png)](https://www.jetbrains.com/?from=loginbuddy)
+All documentation for Loginbuddy can be found in the local [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/HOME)
 
 # License
 
-Copyright (c) 2021. All rights reserved.
+Copyright (c) 2022. All rights reserved.
 
 This software may be modified and distributed under the terms of the Apache License 2.0 license. See the [LICENSE](/LICENSE) file for details.
