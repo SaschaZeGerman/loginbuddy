@@ -10,9 +10,7 @@
         "server_dynamic"
       ],
       "accept_dynamic_provider": true,
-      "resign": [
-        "id_token"
-      ]
+      "on_behalf_of": ["id_token"]
     },
     {
       "client_id": "clientIdForTestingPurposesJwt",

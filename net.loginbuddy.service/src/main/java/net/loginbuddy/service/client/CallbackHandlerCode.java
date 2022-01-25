@@ -13,6 +13,8 @@ import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.config.properties.PropertiesUtil;
@@ -22,6 +24,8 @@ import org.json.simple.parser.JSONParser;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -82,6 +86,19 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                         MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
                         idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(),
                                 providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                        // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
+                        Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
+                        if (Arrays.stream(currentClient.getOnBehalfOf()).anyMatch(n -> n.equalsIgnoreCase("id_token"))) {
+                            JSONObject onBehalfOf = new JSONObject();
+                            onBehalfOf.put("iss", idTokenPayload.get("iss"));
+                            onBehalfOf.put("aud", idTokenPayload.get("aud"));
+                            onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
+                            idTokenPayload.put("on_behalf_of", onBehalfOf);
+                            idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
+                            idTokenPayload.put("aud", currentClient.getClientId());
+                            idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                            tokenResponseObject.put("id_token", Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization());
+                        }
                         eb.setIdTokenPayload(idTokenPayload);
                     } catch (Exception e) {
                         LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
