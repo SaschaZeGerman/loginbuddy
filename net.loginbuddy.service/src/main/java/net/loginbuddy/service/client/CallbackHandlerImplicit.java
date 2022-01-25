@@ -59,7 +59,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), jwks, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
             Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-            if (Arrays.stream(currentClient.getOnBehalfOf()).anyMatch(n -> n.equalsIgnoreCase("id_token"))) {
+            if (currentClient.getOnBehalfOf() != null && Arrays.stream(currentClient.getOnBehalfOf()).anyMatch(n -> n.equalsIgnoreCase("id_token"))) {
                 JSONObject onBehalfOf = new JSONObject();
                 onBehalfOf.put("iss", idTokenPayload.get("iss"));
                 onBehalfOf.put("aud", idTokenPayload.get("aud"));
