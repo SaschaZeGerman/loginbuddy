@@ -1,0 +1,38 @@
+#
+# This docker compose file is usable for demo purposes:
+#
+version: '3.4'
+services:
+
+  loginbuddy-demosetup:
+    image: saschazegerman/loginbuddy-demo:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "8000:8000"
+      - "9010:9010"
+      - "9011:9011"
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8000,suspend=n,server=y \
+        -Dcom.sun.management.jmxremote \
+        -Dcom.sun.management.jmxremote.authenticate=false \
+        -Dcom.sun.management.jmxremote.ssl=false \
+        -Dcom.sun.management.jmxremote.port=9010 \
+        -Djava.rmi.server.hostname=localhost \
+        -Dcom.sun.management.jmxremote.rmi.port=9011 \
+        -Dcom.sun.management.jmxremote.local.only=false"
+      - "SUPPORT_OIDCDR=true"
+      - "SCHEME_LOGINBUDDY_DEMOSERVER=http"
+      - "SCHEME_LOGINBUDDY_DEMOCLIENT=http"
+      - "HOSTNAME_LOGINBUDDY=localhost"
+    volumes:
+      - ./docker-build/add-ons/demosetup/http_demo/server_http.xml:/opt/docker/server_http.xml
+      - ./docker-build/add-ons/demosetup/http_demo/loginbuddy_http.sh:/opt/docker/loginbuddy.sh
+      - ./docker-build/add-ons/demosetup/http_demo/web_http.xml:/usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml
+      - ./docker-build/add-ons/demosetup/http_demo/config_http.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/config.json
+      - ./docker-build/add-ons/demosetup/http_demo/discovery_http.json:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/discovery.json
+      - ./docker-build/add-ons/demosetup/http_demo/spa-demo_http.js:/usr/local/tomcat/webapps/democlient/script/spa-demo.js
+
+  loginbuddy-oidcdr:
+    image: saschazegerman/loginbuddy-oidcdr:latest
+    restart: always

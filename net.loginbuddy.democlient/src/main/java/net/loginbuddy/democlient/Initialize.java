@@ -1,5 +1,6 @@
 package net.loginbuddy.democlient;
 
+import jakarta.servlet.ServletConfig;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class Initialize extends HttpServlet {
+public class Initialize extends LoginbuddyDemoclientCommon {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
 
@@ -61,7 +62,7 @@ public class Initialize extends HttpServlet {
     String clientResponseType = "code";
     sessionValues.put(Constants.CLIENT_RESPONSE_TYPE.getKey(), clientResponseType);
 
-    String clientRedirectUri = String.format("https://%s/callback", System.getenv("HOSTNAME_LOGINBUDDY_DEMOCLIENT"));
+    String clientRedirectUri = String.format("%s%s/callback", scheme, hostname);
     sessionValues.put(Constants.CLIENT_REDIRECT.getKey(), clientRedirectUri);
 
     String clientNonce = UUID.randomUUID().toString();
@@ -79,8 +80,8 @@ public class Initialize extends HttpServlet {
 
     // Create authorization URL
 
-    response.sendRedirect(String.format("https://%s/authorize?client_id=%s&response_type=%s&redirect_uri=%s&nonce=%s&state=%s&scope=%s&provider=%s&obfuscate_token=%b",
-        System.getenv("HOSTNAME_LOGINBUDDY"),
+    response.sendRedirect(String.format("%s%s/authorize?client_id=%s&response_type=%s&redirect_uri=%s&nonce=%s&state=%s&scope=%s&provider=%s&obfuscate_token=%b",
+        scheme, hostname_loginbuddy,
         URLEncoder.encode(clientId, "UTF-8"),
         URLEncoder.encode(clientResponseType, "UTF-8"),
         URLEncoder.encode(clientRedirectUri, "UTF-8"),

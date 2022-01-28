@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Callback extends HttpServlet {
+public class Callback extends LoginbuddyDemoclientCommon {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -46,7 +46,7 @@ public class Callback extends HttpServlet {
       formParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
 
       try {
-        HttpPost req = new HttpPost(String.format("https://%s/token", System.getenv("HOSTNAME_LOGINBUDDY")));
+        HttpPost req = new HttpPost(String.format("%s%s/token", scheme, hostname_loginbuddy));
 
         HttpClient httpClient = HttpClientBuilder.create().build();
         req.setEntity(new UrlEncodedFormEntity(formParameters));

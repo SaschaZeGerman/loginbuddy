@@ -1,0 +1,35 @@
+{
+  "clients": [
+    {
+      "client_id": "clientIdForTestingPurposes",
+      "client_type": "public",
+      "client_uri": "http://democlient.loginbuddy.net",
+      "redirect_uri": "http://democlient.loginbuddy.net/callback,http://democlient.loginbuddy.net/spa.html",
+      "accept_dynamic_provider": false,
+      "on_behalf_of": ["id_token"]
+    },
+    {
+      "client_id": "clientIdForTestingPurposesJwt",
+      "client_type": "public",
+      "client_uri": "http://democlient.loginbuddy.net",
+      "redirect_uri": "http://democlient.loginbuddy.net/callback",
+      "accept_dynamic_provider": false,
+      "signed_response_alg": "RS256"
+    }
+  ],
+  "providers": [
+    {
+      "provider": "server_loginbuddy",
+      "issuer": "http://demoserver.loginbuddy.net",
+      "client_id": "loginbuddy_demoId",
+      "client_secret": "loginbuddy_demoSecret",
+      "authorization_endpoint": "http://demoserver.loginbuddy.net/authorize",
+      "token_endpoint": "http://demoserver.loginbuddy.net/token",
+      "userinfo_endpoint": "http://demoserver.loginbuddy.net/userinfo",
+      "jwks_uri": "http://demoserver.loginbuddy.net/jwks",
+      "scope": "openid profile email",
+      "response_type": "code",
+      "redirect_uri": "http://localhost/callback"
+    }
+  ]
+}

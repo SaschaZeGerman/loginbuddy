@@ -25,7 +25,7 @@ import java.net.URLEncoder;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-public class LoginbuddyProviderAuthorize extends HttpServlet {
+public class LoginbuddyProviderAuthorize extends LoginbuddyProviderCommon {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyProviderAuthorize.class));
 
@@ -80,8 +80,8 @@ public class LoginbuddyProviderAuthorize extends HttpServlet {
 
       // TODO: Validate the redirect_uri to be one registered for the client_id.
       String redirectUri = request.getParameter(Constants.REDIRECT_URI.getKey());
-      if (redirectUri == null || redirectUri.trim().length() == 0 || redirectUri.startsWith("http://")) {
-        throw new IllegalArgumentException("The given redirect_uri is not valid. 'http' schema is not supported!");
+      if (redirectUri == null || redirectUri.trim().length() == 0 || !redirectUri.startsWith(scheme)) {
+        throw new IllegalArgumentException(String.format("The given redirect_uri is not valid. '%s' schema is not supported!", scheme));
       }
 
       // Need to remember all these values for the current session

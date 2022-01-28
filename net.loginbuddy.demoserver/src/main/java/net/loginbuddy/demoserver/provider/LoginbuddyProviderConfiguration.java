@@ -10,22 +10,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class LoginbuddyProviderConfiguration extends HttpServlet {
+public class LoginbuddyProviderConfiguration extends LoginbuddyProviderCommon {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setStatus(200);
         response.setContentType("application/json");
 
-        String hostname_loginbuddy_demoserver = System.getenv("HOSTNAME_LOGINBUDDY_DEMOSERVER");
-
         JSONObject obj = new JSONObject();
-        obj.put(Constants.ISSUER.getKey(), String.format("https://%s", hostname_loginbuddy_demoserver));
-        obj.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), String.format("https://%s/authorize", hostname_loginbuddy_demoserver));
-        obj.put(Constants.TOKEN_ENDPOINT.getKey(), String.format("https://%s/token", hostname_loginbuddy_demoserver));
-        obj.put(Constants.USERINFO_ENDPOINT.getKey(), String.format("https://%s/userinfo", hostname_loginbuddy_demoserver));
-        obj.put(Constants.JWKS_URI.getKey(), String.format("https://%s/jwks", hostname_loginbuddy_demoserver));
-        obj.put(Constants.REGISTRATION_ENDPOINT.getKey(), String.format("https://%s/register", hostname_loginbuddy_demoserver));
+        obj.put(Constants.ISSUER.getKey(), String.format("%s%s", scheme, hostname));
+        obj.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), String.format("%s%s/authorize", scheme, hostname));
+        obj.put(Constants.TOKEN_ENDPOINT.getKey(), String.format("%s%s/token", scheme, hostname));
+        obj.put(Constants.USERINFO_ENDPOINT.getKey(), String.format("%s%s/userinfo", scheme, hostname));
+        obj.put(Constants.JWKS_URI.getKey(), String.format("%s%s/jwks", scheme, hostname));
+        obj.put(Constants.REGISTRATION_ENDPOINT.getKey(), String.format("%s%s/register", scheme, hostname));
 
         JSONArray values = new JSONArray();
         values.add("openid");
