@@ -1,6 +1,6 @@
 # About Loginbuddy 
 
-**Latest update: 26. January 2022! See what has changed here: [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Latest-and-Greatest)**
+**Latest update: 28. January 2022! See what has changed here: [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Latest-and-Greatest)**
 
 This project is simplifying the job for developers who need social login for their applications. Social login has in recent years become the norm for many app developers as it provides a number of benefits to end users, developers and enterprises. Less passwords to remember (and manage), less fritction in user onboarding to app, and richer use data for app developers to use in app.
 
@@ -58,6 +58,7 @@ The instructions are made for Docker on a MacBook and may need to be adjusted fo
 
 - Add this line to your hosts file: **127.0.0.1 local.loginbuddy.net demoserver.loginbuddy.net democlient.loginbuddy.net**
   - for MacBooks this would be done at: `/etc/hosts`
+  - for Windows this would be done at: `C:\Windows\System32\drivers\etc\hosts`
 - Run `docker run --name loginbuddy-demo -p 80:80 -p 443:443 -d saschazegerman/loginbuddy-demo:latest`
   - this will pull the latest demo image from docker hub
   - this will use ports 80 (http) and 443 (https)
@@ -74,6 +75,12 @@ To stop the docker container when you are done, run the following:
 
 - `docker stop loginbuddy-demo`
 
+### Run the demosetup using http
+
+If your browser does not accept websites that use self-signed SSL certificates, try Safari!
+If that is not an option, please follow the guide for running the demosetup with http here:
+- [WIKI - Quick Start](https://github.com/SaschaZeGerman/loginbuddy/wiki/Quick-Start), look for **Using http**
+
 # API and Protocols 
 
 Loginbuddy is built to support OpenID Connect and OAuth 2.0 specifications:
@@ -88,9 +95,9 @@ For more details on the APIs supported see [WIKI - Protocols and APIs](https://g
 
 # Other Resources
 
-The latest docker images are always available at [docker hub](https://hub.docker.com/r/saschazegerman/loginbuddy/).
+The latest docker images are always available at [docker hub](https://hub.docker.com/search?q=loginbuddy&type=image).
 
-To get a better idea how it works I have published a few videos about Loginbuddy on youtube: [Loginbuddy playlist](https://www.youtube.com/playlist?list=PLcX_9uDXp_CR5vXTT8lxI94x7Esl8O78E)
+To get a better idea how it works I have published a few videos about Loginbuddy on YouTube: [Loginbuddy playlist](https://www.youtube.com/playlist?list=PLcX_9uDXp_CR5vXTT8lxI94x7Esl8O78E)
 
 # WIKI
 
