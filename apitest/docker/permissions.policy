@@ -28,5 +28,6 @@ grant codeBase "file:${catalina.home}/webapps/demoserver/-" {
     permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
     permission java.util.PropertyPermission "org.jose4j.jws.use-legacy-rsapss-alg-names", "read";
     permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY_DEMOSERVER", "read";
+    permission java.lang.RuntimePermission "getenv.SCHEME_LOGINBUDDY_DEMOSERVER", "read";
     permission java.lang.RuntimePermission "getenv.HAZELCAST";
 };
