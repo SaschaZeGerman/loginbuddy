@@ -10,7 +10,8 @@
         "self-issued",
         "server_dynamic"
       ],
-      "accept_dynamic_provider": true
+      "accept_dynamic_provider": true,
+      "on_behalf_of": [{"token_type":  "id_token"}]
     },
     {
       "client_id": "clientIdForTestingPurposesJwt",
@@ -35,7 +36,8 @@
         "server_loginbuddy",
         "not_for_public_client",
         "server_dynamic"
-      ]
+      ],
+      "on_behalf_of": [{"token_type":  "invalid"}]
     },
     {
       "client_id": "clientIdForTestingLoginbuddyManagement",

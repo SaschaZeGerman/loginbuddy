@@ -33,16 +33,12 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
     <script>
-        function selectClientId() {
-            var clientId = document.getElementById('client_id');
-            if(document.getElementById('idResponseAsJwt').checked) {
-                clientId.setAttribute('value', 'clientIdForTestingPurposesJwt');
-            } else {
-                clientId.setAttribute('value', 'clientIdForTestingPurposes');
-            }
+        function selectClientId(clientIdSelected) {
+            let clientId = document.getElementById('client_id');
+            clientId.setAttribute('value', clientIdSelected);
         }
         function obfuscateProviderToken() {
-            var obfuscate = document.getElementById('obfuscate_token');
+            let obfuscate = document.getElementById('obfuscate_token');
             if(document.getElementById('idObfuscateToken').checked) {
                 obfuscate.setAttribute('value', 'true');
             } else {
@@ -71,8 +67,11 @@
         <input type="hidden" name="provider_addition" value="">
         <button type="submit" class="btn btn-primary">Submit</button>
         <br/>
-        <input class="form-check-input" type="checkbox" value="" id="idResponseAsJwt" onclick="return selectClientId();">
-        <label class="form-check-label" for="idResponseAsJwt"> receive final response as signed JWT</label>
+        <input class="form-check-input" type="radio" value="" id="idResponseAsJwt" name="idSignAlg" onclick="return selectClientId('clientIdForTestingPurposesJwt');">
+        <label class="form-check-label" for="idResponseAsJwt"> receive final response as signed JWT (RS256)</label>
+        <br/>
+        <input class="form-check-input" type="radio" value="" id="idResponseAsJwtEs256" name="idSignAlg" onclick="return selectClientId('clientIdForTestingPurposesJwtEs256');">
+        <label class="form-check-label" for="idResponseAsJwtEs256"> receive final response as signed JWT (ES256)</label>
         <br/>
         <input class="form-check-input" type="checkbox" value="" id="idObfuscateToken" onclick="return obfuscateProviderToken();">
         <label class="form-check-label" for="idObfuscateToken"> obfuscate identity providers access_token and refresh_token</label>

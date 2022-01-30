@@ -7,16 +7,16 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.loginbuddy.Clients;
-import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
-import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.*;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
 import net.loginbuddy.sidecar.util.SessionContext;
 import org.json.simple.JSONObject;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -76,45 +76,35 @@ public class CallbackSelfissued extends CallbackParent {
 
             Providers providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
 
-            JSONObject idTokenPayload = null;
-            String idTokenForResponse = null;
+            // ***************************************************************
+            // ** In this flow there is no token response, we'll create it manually
+            // ***************************************************************
+            JSONObject tokenResponseObject = new JSONObject();
+            String id_token = idTokenResult.getValue();
             try {
-                idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), null, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                JSONObject idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, null, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                 // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
-                Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-                if (currentClient.getOnBehalfOf() != null && Arrays.stream(currentClient.getOnBehalfOf()).anyMatch(n -> n.equalsIgnoreCase("id_token"))) {
-                    JSONObject onBehalfOf = new JSONObject();
-                    onBehalfOf.put("iss", idTokenPayload.get("iss"));
-                    onBehalfOf.put("aud", idTokenPayload.get("aud"));
-                    onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
-                    idTokenPayload.put("on_behalf_of", onBehalfOf);
-                    idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
-                    idTokenPayload.put("aud", currentClient.getClientId());
-                    idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                    idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization();;
-                } else {
-                    idTokenForResponse = idTokenResult.getValue();
-                }
-                eb.setIdTokenPayload(idTokenPayload);
+                // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
+                OnBehalfOfResult resigningResult = OnBehalfOf.signOnBehalfOf(
+                        sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
+                        sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+                        Constants.ID_TOKEN.getKey(),
+                        idTokenPayload,
+                        id_token
+                );
+                tokenResponseObject.put(Constants.ID_TOKEN.getKey(), resigningResult.getIdToken());
+                eb.setIdTokenPayload(resigningResult.getIdTokenPayload());
             } catch (Exception e) {
                 LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
                 throw e;
             }
-
-// ***************************************************************
-// ** In this flow there is no token response, we'll create it manually
-// ***************************************************************
-
-            JSONObject tokenResponseObject = new JSONObject();
-            tokenResponseObject.put(Constants.ID_TOKEN.getKey(), idTokenForResponse);
             eb.setTokenResponse(tokenResponseObject);
-
 // ***************************************************************
 // ** Return the details to the client
 // ***************************************************************
 
             response.setStatus(200);
-            if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
+            if (!("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())))) {
                 response.setContentType("application/jwt");
                 response.getWriter().write(getSignedResponse(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())));
             } else {
@@ -122,8 +112,7 @@ public class CallbackSelfissued extends CallbackParent {
             }
 
         } catch (Exception e) {
-            LOGGER.warning("authorization request failed!");
-            e.printStackTrace();
+            LOGGER.warning(String.format("authorization request failed! %s", e.getMessage()));
             response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
         }
     }

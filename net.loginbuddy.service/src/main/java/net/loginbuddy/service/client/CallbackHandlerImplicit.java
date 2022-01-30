@@ -7,6 +7,7 @@ import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
@@ -14,7 +15,6 @@ import org.json.simple.JSONObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class CallbackHandlerImplicit extends Callback implements CallbackHandler {
@@ -59,17 +59,23 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), jwks, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
             Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-            if (currentClient.getOnBehalfOf() != null && Arrays.stream(currentClient.getOnBehalfOf()).anyMatch(n -> n.equalsIgnoreCase("id_token"))) {
-                JSONObject onBehalfOf = new JSONObject();
-                onBehalfOf.put("iss", idTokenPayload.get("iss"));
-                onBehalfOf.put("aud", idTokenPayload.get("aud"));
-                onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
-                idTokenPayload.put("on_behalf_of", onBehalfOf);
-                idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
-                idTokenPayload.put("aud", currentClient.getClientId());
-                idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization();;
-            } else {
+            if(currentClient.getOnBehalfOf() != null) {
+                for(OnBehalfOf obo : currentClient.getOnBehalfOf()) {
+                    if("id_token".equalsIgnoreCase(obo.getTokenType())) {
+                        JSONObject onBehalfOf = new JSONObject();
+                        onBehalfOf.put("iss", idTokenPayload.get("iss"));
+                        onBehalfOf.put("aud", idTokenPayload.get("aud"));
+                        onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
+                        idTokenPayload.put("on_behalf_of", onBehalfOf);
+                        idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
+                        idTokenPayload.put("aud", currentClient.getClientId());
+                        idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                        idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization();
+                        break;
+                    }
+                }
+            }
+            if(idTokenForResponse == null) {
                 idTokenForResponse = idTokenResult.getValue();
             }
             eb.setIdTokenPayload(idTokenPayload);

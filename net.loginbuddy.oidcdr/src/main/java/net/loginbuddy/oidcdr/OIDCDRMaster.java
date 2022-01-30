@@ -13,5 +13,4 @@ public class OIDCDRMaster extends HttpServlet {
       throw new IllegalAccessException(HttpHelper.getErrorAsJson("invalid_client", "connection not accepted").toJSONString());
     }
   }
-
 }

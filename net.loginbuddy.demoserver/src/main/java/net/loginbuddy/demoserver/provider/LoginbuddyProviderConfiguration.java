@@ -18,12 +18,12 @@ public class LoginbuddyProviderConfiguration extends LoginbuddyProviderCommon {
         response.setContentType("application/json");
 
         JSONObject obj = new JSONObject();
-        obj.put(Constants.ISSUER.getKey(), String.format("%s%s", scheme, hostname));
-        obj.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), String.format("%s%s/authorize", scheme, hostname));
-        obj.put(Constants.TOKEN_ENDPOINT.getKey(), String.format("%s%s/token", scheme, hostname));
-        obj.put(Constants.USERINFO_ENDPOINT.getKey(), String.format("%s%s/userinfo", scheme, hostname));
-        obj.put(Constants.JWKS_URI.getKey(), String.format("%s%s/jwks", scheme, hostname));
-        obj.put(Constants.REGISTRATION_ENDPOINT.getKey(), String.format("%s%s/register", scheme, hostname));
+        obj.put(Constants.ISSUER.getKey(), String.format("%s%s%s", scheme, hostname, port));
+        obj.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), String.format("%s%s%s/authorize", scheme, hostname, port));
+        obj.put(Constants.TOKEN_ENDPOINT.getKey(), String.format("%s%s%s/token", scheme, hostname, port));
+        obj.put(Constants.USERINFO_ENDPOINT.getKey(), String.format("%s%s%s/userinfo", scheme, hostname, port));
+        obj.put(Constants.JWKS_URI.getKey(), String.format("%s%s%s/jwks", scheme, hostname, port));
+        obj.put(Constants.REGISTRATION_ENDPOINT.getKey(), String.format("%s%s%s/register", scheme, hostname, port));
 
         JSONArray values = new JSONArray();
         values.add("openid");
@@ -46,6 +46,7 @@ public class LoginbuddyProviderConfiguration extends LoginbuddyProviderCommon {
 
         values = new JSONArray();
         values.add("RS256");
+        values.add("ES256");
         obj.put(Constants.ID_TOKEN_SIGNING_ALG_VALUES_SUPPORTED.getKey(), values);
 
         response.getWriter().print(obj.toJSONString());

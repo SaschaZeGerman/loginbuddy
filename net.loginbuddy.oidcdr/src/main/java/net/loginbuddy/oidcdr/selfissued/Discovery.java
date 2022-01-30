@@ -37,8 +37,8 @@ public class Discovery extends HttpServlet {
                 "\"scopes_supported\":[\"openid\", \"profile\", \"email\", \"address\", \"phone\"],\n" +
                 "\"response_types_supported\":[\"id_token\"],\n" +
                 "\"subject_types_supported\":[\"pairwise\"],\n" +
-                "\"id_token_signing_alg_values_supported\":[\"RS256\"],\n" +
-                "\"request_object_signing_alg_values_supported\":[\"none\", \"RS256\"],\n" +
+                "\"id_token_signing_alg_values_supported\":[\"RS256\", \"ES256\"],\n" +
+                "\"request_object_signing_alg_values_supported\":[\"none\", \"RS256\", \"ES256\"],\n" +
                 "\"registration_endpoint\": \"https://loginbuddy-oidcdr:445/selfissued/register?client_id=%s\"}", HttpHelper.urlEncode(clientId));
     }
 }
