@@ -14,6 +14,7 @@ public abstract class LoginbuddyProviderCommon extends HttpServlet {
 
     protected String scheme;
     protected String hostname;
+    protected String port;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -25,6 +26,23 @@ public abstract class LoginbuddyProviderCommon extends HttpServlet {
         } else {
             scheme = "https://";
         }
+        port = System.getenv("PORT_LOGINBUDDY_DEMOSERVER");
+        if(port != null) {
+            try {
+                int portInt = Integer.parseInt(port);
+                if(portInt == 80 || portInt == 443) {
+                    port = "";
+                } else {
+                    port = String.format(":%s", port);
+                }
+            } catch(Exception e) {
+                LOGGER.warning(String.format("Invalid port for demoserver. Ignoring given value: %s", port));
+                port = "";
+            }
+        } else {
+            port = "";
+        }
+        LOGGER.info(String.format("Loginbuddy Demoserver is listening on port %s", port));
         hostname = System.getenv("HOSTNAME_LOGINBUDDY_DEMOSERVER");
     }
 

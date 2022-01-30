@@ -8,174 +8,176 @@
 
 package net.loginbuddy.sidecar.server;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
 import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.sidecar.util.SessionContext;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.UUID;
 import java.util.logging.Logger;
 
-public class Callback  extends CallbackParent {
+public class Callback extends CallbackParent {
 
-  private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
 
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    doGet(req, resp);
-  }
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        doGet(req, resp);
+    }
 
-  @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-    try {
+        try {
 
-      SessionContext sessionCtx = checkForSessionAndErrors(request, response);
-      if (sessionCtx == null) {
-        return;
-      }
+            SessionContext sessionCtx = checkForSessionAndErrors(request, response);
+            if (sessionCtx == null) {
+                return;
+            }
 
 // ***************************************************************
 // ** If we did not get a valid code parameter we are done
 // ***************************************************************
-
-      ParameterValidatorResult codeResult = ParameterValidator
-              .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
-      if (!codeResult.getResult().equals(RESULT.VALID)) {
-        LOGGER.warning("Missing code parameter returned from provider!");
-        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "missing or invalid code parameter").toJSONString());
-        return;
-      }
+            ParameterValidatorResult codeResult = ParameterValidator
+                    .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
+            if (!codeResult.getResult().equals(RESULT.VALID)) {
+                LOGGER.warning("Missing code parameter returned from provider!");
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "missing or invalid code parameter").toJSONString());
+                return;
+            }
 
 // ***************************************************************
 // ** Find the chosen provider of this session and get a token. Also start preparing the response for the client
 // ***************************************************************
 
-      String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
+            String provider = sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey());
 
-      ExchangeBean eb = new ExchangeBean();
-      eb.setIss(DiscoveryUtil.UTIL.getIssuer());
-      eb.setIat(new Date().getTime() / 1000);
-      eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-      eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-      eb.setProvider(provider);
+            ExchangeBean eb = new ExchangeBean();
+            eb.setIss(DiscoveryUtil.UTIL.getIssuer());
+            eb.setIat(new Date().getTime() / 1000);
+            eb.setAud(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
+            eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+            eb.setProvider(provider);
 
-      Providers providers = null;
-      if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-        providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
-      } else {
-        // dynamically registered providers are in a separate container and not available here. Get details out of the session
-        providers = new Providers(
-                provider,
-                sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
-                sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()),
-                sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
-      }
+            Providers providers = null;
+            if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
+                providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
+            } else {
+                // dynamically registered providers are in a separate container and not available here. Get details out of the session
+                providers = new Providers(
+                        provider,
+                        sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
+                        sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()),
+                        sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
+            }
 
-      String access_token = null;
-      String id_token = null;
+            String access_token = null;
 
 // ***************************************************************
 // ** Exchange the code for a token response
 // ***************************************************************
 
-      MsgResponse tokenResponse = HttpHelper.postTokenExchange(providers.getClientId(), providers.getClientSecret(), providers.getRedirectUri(), codeResult.getValue(),
-          sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
-      JSONObject idTokenPayload = null;
-      if (tokenResponse != null) {
-        if (tokenResponse.getStatus() == 200) {
-          if (tokenResponse.getContentType().startsWith("application/json")) {
-            JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
-            LOGGER.fine(tokenResponseObject.toJSONString());
-            access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
-            eb.setTokenResponse(tokenResponseObject);
-            try {
-              id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
-              MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-              idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(),providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-              // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
-              Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-              if (currentClient.getOnBehalfOf() != null && Arrays.stream(currentClient.getOnBehalfOf()).anyMatch(n -> n.equalsIgnoreCase("id_token"))) {
-                JSONObject onBehalfOf = new JSONObject();
-                onBehalfOf.put("iss", idTokenPayload.get("iss"));
-                onBehalfOf.put("aud", idTokenPayload.get("aud"));
-                onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
-                idTokenPayload.put("on_behalf_of", onBehalfOf);
-                idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
-                idTokenPayload.put("aud", currentClient.getClientId());
-                idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                tokenResponseObject.put("id_token", Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization());
-              }
-              eb.setIdTokenPayload(idTokenPayload);
-            } catch (Exception e) {
-              LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
+            MsgResponse tokenResponse = HttpHelper.postTokenExchange(providers.getClientId(), providers.getClientSecret(), providers.getRedirectUri(), codeResult.getValue(),
+                    sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
+            if (tokenResponse != null) {
+                if (tokenResponse.getStatus() == 200) {
+                    if (tokenResponse.getContentType().startsWith("application/json")) {
+                        JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
+                        LOGGER.fine(tokenResponseObject.toJSONString());
+                        access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
+                    if (sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
+                        tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), UUID.randomUUID().toString().substring(0, 8));
+                        if (tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
+                            tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), UUID.randomUUID().toString().substring(0, 8));
+                        }
+                    }
+                        String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
+                        if (id_token != null) {
+                            try {
+                                MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
+                                JSONObject idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                                // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
+                                OnBehalfOfResult resigningResult = OnBehalfOf.signOnBehalfOf(
+                                        sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
+                                        sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+                                        "id_token",
+                                        idTokenPayload,
+                                        id_token
+                                );
+                                tokenResponseObject.put("id_token", resigningResult.getIdToken());
+                                eb.setIdTokenPayload(resigningResult.getIdTokenPayload());
+                            } catch (Exception e) {
+                                LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
+                            }
+                        } else {
+                            LOGGER.warning("No id_token was issued");
+                        }
+                        eb.setTokenResponse(tokenResponseObject);
+                    } else {
+                        response.getWriter()
+                                .write(HttpHelper.getErrorAsJson("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()))
+                                        .toJSONString());
+                        return;
+                    }
+                } else {
+                    // need to handle error cases
+                    if (tokenResponse.getContentType().startsWith("application/json")) {
+                        JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
+                        response.getWriter().write(HttpHelper.getErrorAsJson((String) err.get("error"), (String) err.get("error_description")).toJSONString());
+                        return;
+                    }
+                }
+            } else {
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the code exchange failed. An access_token could not be retrieved").toJSONString());
+                return;
             }
-          } else {
-            response.getWriter()
-                .write(HttpHelper.getErrorAsJson("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()))
-                    .toJSONString());
-            return;
-          }
-        } else {
-          // need to handle error cases
-          if (tokenResponse.getContentType().startsWith("application/json")) {
-            JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-            response.getWriter().write(HttpHelper.getErrorAsJson((String) err.get("error"), (String) err.get("error_description")).toJSONString());
-            return;
-          }
-        }
-      } else {
-        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the code exchange failed. An access_token could not be retrieved").toJSONString());
-        return;
-      }
 
 // ***************************************************************
 // ** Now, let's get the userinfo response
 // ***************************************************************
 
-      String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
-      if(userinfo != null) {
-        try {
-          MsgResponse userinfoResp = HttpHelper.getAPI(access_token, userinfo);
-          if (userinfoResp.getStatus() == 200) {
-            if (userinfoResp.getContentType().startsWith("application/json")) {
-              JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
-              eb.setUserinfo(userinfoRespObject);
+            String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
+            if (userinfo != null) {
+                try {
+                    MsgResponse userinfoResp = HttpHelper.getAPI(access_token, userinfo);
+                    if (userinfoResp.getStatus() == 200) {
+                        if (userinfoResp.getContentType().startsWith("application/json")) {
+                            JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
+                            eb.setUserinfo(userinfoRespObject);
+                        }
+                    } // TODO : handle non 200 response
+                } catch (Exception e) {
+                    LOGGER.warning("Retrieving userinfo failed!");
+                }
             }
-          } // TODO : handle non 200 response
-        } catch (Exception e) {
-          LOGGER.warning("Retrieving userinfo failed!");
-        }
-      }
-      eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
-
+            eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
 // ***************************************************************
 // ** Return the details to the client
 // ***************************************************************
 
-      response.setStatus(200);
-      if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
-        response.setContentType("application/jwt");
-        response.getWriter().write(getSignedResponse(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())));
-      } else {
-        response.getWriter().write(eb.toString());
-      }
+            response.setStatus(200);
+            if (!("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())))) {
+                response.setContentType("application/jwt");
+                response.getWriter().write(getSignedResponse(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())));
+            } else {
+                response.getWriter().write(eb.toString());
+            }
 
-    } catch (Exception e) {
-      LOGGER.warning("authorization request failed!");
-      e.printStackTrace();
-      response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
+        } catch (Exception e) {
+            LOGGER.warning(String.format("authorization request failed: %s", e.getMessage()));
+            response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
+        }
     }
-  }
 }

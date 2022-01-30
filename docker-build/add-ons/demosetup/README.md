@@ -19,6 +19,6 @@ This setup combines the democlient, demoserver and Loginbuddy. The goal is to pr
 
 All these files are used with:
 
-- **/Dockerfile_demoserver**
+- **/Dockerfile_demosetup**
 - **/docker-compose-demosetup.yml**
 - **/docker-compose-demosetup-http.yml**

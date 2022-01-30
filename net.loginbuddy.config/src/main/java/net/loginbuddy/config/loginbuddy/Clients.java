@@ -11,6 +11,7 @@ package net.loginbuddy.config.loginbuddy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -46,7 +47,7 @@ public class Clients implements Serializable {
     private String signedResponseAlg;
 
     @JsonProperty("on_behalf_of")
-    private String[] onBehalfOf;
+    private OnBehalfOf[] onBehalfOf;
 
     public Clients() {
         acceptDynamicProvider = false;
@@ -89,7 +90,7 @@ public class Clients implements Serializable {
         return signedResponseAlg;
     }
 
-    public String[] getOnBehalfOf() {
+    public OnBehalfOf[] getOnBehalfOf() {
         return onBehalfOf;
     }
 
@@ -125,7 +126,7 @@ public class Clients implements Serializable {
         this.signedResponseAlg = signedResponseAlg;
     }
 
-    public void setOnBehalfOf(String[] onBehalfOf) {
+    public void setOnBehalfOf(OnBehalfOf[] onBehalfOf) {
         this.onBehalfOf = onBehalfOf;
     }
 

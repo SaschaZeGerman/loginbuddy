@@ -15,6 +15,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
@@ -87,7 +88,7 @@ public class Callback extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         // either a invalid request ... or an implicit flow ...
-        if (request.getParameterMap().get("state") == null && request.getParameterMap().get("handled") == null ) {
+        if (request.getParameterMap().get("state") == null && request.getParameterMap().get("handled") == null) {
             // TODO: prevent endless back and forth (handled enough?)
             StringBuilder sb = new StringBuilder();
             sb.append("<html><header><script>");

@@ -6,7 +6,7 @@
       "client_uri": "http://democlient.loginbuddy.net",
       "redirect_uri": "http://democlient.loginbuddy.net/callback,http://democlient.loginbuddy.net/spa.html",
       "accept_dynamic_provider": false,
-      "on_behalf_of": ["id_token"]
+      "on_behalf_of": [{"token_type":"id_token", "alg": "ES256"}]
     },
     {
       "client_id": "clientIdForTestingPurposesJwt",
@@ -15,6 +15,17 @@
       "redirect_uri": "http://democlient.loginbuddy.net/callback",
       "accept_dynamic_provider": false,
       "signed_response_alg": "RS256"
+    },
+    {
+      "client_id": "clientIdForTestingPurposesJwtEs256",
+      "client_type": "public",
+      "client_uri": "http://democlient.loginbuddy.net",
+      "redirect_uri": "http://democlient.loginbuddy.net/callback",
+      "providers": [
+        "server_loginbuddy",
+        "server_dynamic"
+      ],
+      "signed_response_alg": "ES256"
     }
   ],
   "providers": [

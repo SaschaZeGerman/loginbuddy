@@ -62,6 +62,7 @@ grant codeBase "file:${catalina.home}/webapps/demoserver/-" {
     permission java.util.PropertyPermission "org.jose4j.jws.default-allow-none", "read";
     permission java.lang.RuntimePermission "getenv.HOSTNAME_LOGINBUDDY_DEMOSERVER";
     permission java.lang.RuntimePermission "getenv.SCHEME_LOGINBUDDY_DEMOSERVER";
+    permission java.lang.RuntimePermission "getenv.PORT_LOGINBUDDY_DEMOSERVER";
     permission java.net.SocketPermission "hazelcast1", "connect,resolve";
     permission java.net.SocketPermission "hazelcast2", "connect,resolve";
 
