@@ -76,7 +76,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                             tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), UUID.randomUUID().toString().substring(0, 8));
                         }
                     }
-                    String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()).toString();
+                    String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()) == null ? null : (String)tokenResponseObject.get(Constants.ID_TOKEN.getKey());
                     if (id_token != null) {
                         try {
                             MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
