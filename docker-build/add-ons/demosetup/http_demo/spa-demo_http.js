@@ -49,10 +49,19 @@ if (window.location.search.length > 0) {
     let title = '';
     let output = '';
 
+    let hasError;
+    let hasCode;
+
     for (let i = 0; i < params.length; i++) {
         let key = params[i].split('=')[0];
         let value = decodeURI(params[i].split('=')[1]);
         output = output + '<strong>' + key + '</strong>: ' + value + '</br>';
+        if(!hasError) {
+            hasError = key === 'error';
+        }
+        if(!hasCode) {
+            hasCode = key === 'code';
+        }
     }
 
     /*
@@ -60,11 +69,11 @@ if (window.location.search.length > 0) {
      */
 
     // error: (state & error & error_description)
-    if (params.length === 3) {
+    if (hasError) {
         title = 'Error!';
     }
     // success: code response (state & code)
-    else if (params.length === 2) {
+    else if (hasCode) {
         title = 'Success!<br/>An authorization_code was received!<br/><small>(shown only for demo purposes!)</small>';
         output = output + '<button type="submit" class="btn btn-primary" onclick="return exchangeCode(\'' + params[0] + '\',\'' + params[1] + '\');">Exchange code for token response</button>';
     } else {
