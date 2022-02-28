@@ -43,7 +43,7 @@
             <input type="hidden" name="session" value="<%=request.getParameter("session")%>">
             <input type="hidden" name="action" value="login">
             <label for="email">Email address</label>
-            <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter an email address" required>
+            <input type="email" class="form-control" name="email" value="<%=request.getParameter("login_hint") == null ? "" : request.getParameter("login_hint")%>" id="email" aria-describedby="emailHelp" placeholder="Enter an email address" required>
             <small id="emailHelp" class="form-text text-muted">Any (fake) email, it is not used, just for demo purposes.</small>
         </div>
         <button type="submit" class="btn btn-primary">Next</button>

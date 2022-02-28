@@ -12,6 +12,7 @@
 <%@ page import="net.loginbuddy.service.util.SessionContext" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.logging.Logger" %>
+<%@ page import="jakarta.servlet.http.HttpServletRequest" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!

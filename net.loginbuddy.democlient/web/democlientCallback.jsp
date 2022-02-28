@@ -32,21 +32,20 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
     <script src="js/prism.js"></script>
+
+    <script src="script/webapp.js"></script>
 </head>
-<body onload="Prism.highlightAll(false, null);">
+<body onload="printLoginbuddyResponse();">
 
 <div class="container" id="content">
 
     <h1>Welcome back to Loginbuddy-Democlient!</h1>
     <hr/>
-    <h2>Provider response</h2>
-    <p>Below are the values returned by the social platform which the user has chosen. Since the window is pretty small (for now), copy the content and paste it into a JSON capable editor. Or at jsonlint.com.</p>
-    <hr/>
+    <h3>Success!<br/>This is the token response including Loginbuddy specific details:</h3>
     <%
         String result = "{\"error\":\"session_expired\"}";
 
-        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.CACHE
-                .remove(request.getParameter("state"));
+        Map<String, Object> sessionValues = (Map<String, Object>) LoginbuddyCache.CACHE.remove(request.getParameter("state"));
 
         String error = request.getParameter(Constants.ERROR.getKey());
         String error_description = request.getParameter(Constants.ERROR_DESCRIPTION.getKey());
@@ -58,12 +57,15 @@
             if(msgResp.getContentType().startsWith("application/json")) {
                 result = ((JSONObject) new JSONParser().parse(msgResp.getMsg())).toJSONString();
             } else {
-                result = msgResp.getMsg(); // jwt
+                // jwt
+                JSONObject jwtResponse = new JSONObject();
+                jwtResponse.put("jwt", msgResp.getMsg());
+                result = jwtResponse.toJSONString();
             }
         }
     %>
     <div>
-        <pre><code class="language-json" id="idProviderResponse"><%=result%></code></pre>
+        <pre id="idLoginbuddyResponse"><%=result%></pre>
     </div>
     <p>In addition to values of the social platform, Loginbuddy has added the following:</p>
     <ol>
@@ -72,7 +74,7 @@
         <li><strong>details_normalized: </strong>a normalized version of the userinfo response. Your application could use that and would not have to worry about potential differences</li>
     </ol>
     <hr/>
-    <p>Try again! <a href="democlientApp.jsp"><strong>Web Application!</strong></a>, <a href="spa.html"><strong>SPA!</strong></a></p>
+    <p><a href="index.jsp"><strong>Try again!</strong></a></p>
 
 </div>
 </body>

@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -84,6 +85,13 @@ public class LoginbuddyProviderAuthorize extends LoginbuddyProviderCommon {
         throw new IllegalArgumentException(String.format("The given redirect_uri is not valid. '%s' schema is not supported!", scheme));
       }
 
+      String loginHint = request.getParameter(Constants.LOGIN_HINT.getKey());
+      if (loginHint != null && loginHint.trim().length() <= 24 && !loginHint.equalsIgnoreCase("null")) {
+        loginHint = String.format("&login_hint=%s", URLEncoder.encode(loginHint, StandardCharsets.UTF_8));
+      } else {
+        loginHint = "";
+      }
+
       // Need to remember all these values for the current session
       SessionContext sessionContext = new SessionContext();
       sessionContext.sessionInit(
@@ -98,7 +106,7 @@ public class LoginbuddyProviderAuthorize extends LoginbuddyProviderCommon {
       LoginbuddyCache.CACHE.put(sessionContext.getId(), sessionContext);
 
       // forward to a fake login page
-      request.getRequestDispatcher("demoserverUsername.jsp?session=" + sessionContext.getId()).forward(request, response);
+      request.getRequestDispatcher(String.format("demoserverUsername.jsp?session=%s%s", sessionContext.getId(), loginHint)).forward(request, response);
     } catch (Exception e) {
       LOGGER.warning("The authorization request was invalid");
       e.printStackTrace();
