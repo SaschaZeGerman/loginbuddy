@@ -126,7 +126,7 @@
     <h3>Choose your provider</h3>
     <p>The images below represent configured and supported providers one can choose from.</p>
     <p><strong>FAKE</strong> is simulating a 'real' provider. Clicking it will result in an example response how it would look.</p>
-    <p><strong>FAKE, DynamicRegistrationDemo</strong> is the same as FAKE but Loginbuddy registered itself at the provider using <strong>OpenID Dynamic Registration</strong>.</p>
+    <p><strong>FAKE, DynamicRegistrationDemo (with https demo only)</strong> is the same as FAKE but Loginbuddy registered itself at the provider using <strong>OpenID Dynamic Registration</strong>.</p>
 
     <%=
     createProvidersTable(request)
