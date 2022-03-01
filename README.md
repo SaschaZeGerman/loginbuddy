@@ -1,6 +1,6 @@
 # About Loginbuddy 
 
-**Latest update: 30. January 2022! See what has changed here: [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Latest-and-Greatest)**
+**Latest update: 28. February 2022! See what has changed here: [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Latest-and-Greatest)**
 
 This project is simplifying the job for developers who need social login for their applications. Social login has in recent years become the norm for many app developers as it provides a number of benefits to end users, developers and enterprises. Less passwords to remember (and manage), less fritction in user onboarding to app, and richer use data for app developers to use in app.
 
