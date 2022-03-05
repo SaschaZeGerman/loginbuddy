@@ -172,9 +172,9 @@ public class HeadOfInitialize {
 // ***************************************************************
 
     // do not include empty parameters. Some providers will fail the request if included
-    String cp = "".equals(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey())) ? "" : "&" + Constants.PROMPT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_PROMPT.getKey());
-    String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey());
-    String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey());
+    String cp = "".equals(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey())) ? "" : "&" + Constants.PROMPT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()));
+    String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()));
+    String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()));
 
     authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId())).
         append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getResponseType()))
