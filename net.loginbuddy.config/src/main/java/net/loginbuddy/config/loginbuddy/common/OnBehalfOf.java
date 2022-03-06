@@ -23,6 +23,14 @@ public class OnBehalfOf {
         alg = AlgorithmIdentifiers.RSA_USING_SHA256;
     }
 
+    public OnBehalfOf(String tokenType, String alg) {
+        this();
+        if(alg != null) {
+            this.alg = alg;
+        }
+        this.tokenType = tokenType;
+    }
+
     public String getTokenType() {
         return tokenType;
     }
@@ -53,21 +61,19 @@ public class OnBehalfOf {
         OnBehalfOfResult result = new OnBehalfOfResult(idToken, idTokenPayload);
 
         Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(clientId);
-        if (currentClient.getOnBehalfOf() != null) {
-            for (OnBehalfOf obo : currentClient.getOnBehalfOf()) {
-                if (obo.getTokenType().equalsIgnoreCase(tokenType)) {
-                    JSONObject onBehalfOf = new JSONObject();
-                    onBehalfOf.put("iss", idTokenPayload.get("iss"));
-                    onBehalfOf.put("aud", idTokenPayload.get("aud"));
-                    onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
-                    idTokenPayload.put("on_behalf_of", onBehalfOf);
-                    idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
-                    idTokenPayload.put("aud", currentClient.getClientId());
-                    idTokenPayload.put("nonce", clientNonce);
-                    result.setIdToken(Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization());
-                    result.setIdTokenPayload(idTokenPayload);
-                    break;
-                }
+        for (OnBehalfOf obo : currentClient.getOnBehalfOf()) {
+            if (obo.getTokenType().equalsIgnoreCase(tokenType)) {
+                JSONObject onBehalfOf = new JSONObject();
+                onBehalfOf.put("iss", idTokenPayload.get("iss"));
+                onBehalfOf.put("aud", idTokenPayload.get("aud"));
+                onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
+                idTokenPayload.put("on_behalf_of", onBehalfOf);
+                idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
+                idTokenPayload.put("aud", currentClient.getClientId());
+                idTokenPayload.put("nonce", clientNonce);
+                result.setIdToken(Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization());
+                result.setIdTokenPayload(idTokenPayload);
+                break;
             }
         }
         return result;

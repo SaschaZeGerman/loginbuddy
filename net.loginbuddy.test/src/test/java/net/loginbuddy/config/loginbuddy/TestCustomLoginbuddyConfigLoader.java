@@ -32,10 +32,10 @@ public class TestCustomLoginbuddyConfigLoader {
     public void TestSaveClients() {
         try {
             LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json");
-            List<Clients> clients = Arrays.asList(new ObjectMapper().readValue(new File("src/test/resources/clients.json"), Clients[].class));
+            List<Clients> clients = new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clients.json"));
             ll.save(clients);
             assertEquals(1, ll.getLoginbuddy().getClients().size());
-            assertEquals("https://localhost/custom/loader", ll.getLoginbuddy().getClients().get(0).getRedirectUri());
+            assertTrue(ll.getLoginbuddy().getClients().get(0).isRegisteredRedirectUri("https://localhost/custom/loader"));
             assertEquals(5, ll.getLoginbuddy().getProviders().size());
         } catch (Exception e) {
             fail(e.getMessage());
@@ -46,7 +46,7 @@ public class TestCustomLoginbuddyConfigLoader {
     public void TestUpdateClients() {
         try {
             LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json");
-            List<Clients> clients = Arrays.asList(new ObjectMapper().readValue(new File("src/test/resources/clientsUpdate.json"), Clients[].class));
+            List<Clients> clients = new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clientsUpdate.json"));
             ll.update(clients);
             assertEquals(4, ll.getLoginbuddy().getClients().size());
             boolean gotUpdated = false;
@@ -76,6 +76,17 @@ public class TestCustomLoginbuddyConfigLoader {
             assertEquals(false, ll.getLoginbuddy().getProviders().get(4).getPkce());
         } catch (Exception e) {
             fail(e.getMessage());
+        }
+    }
+
+
+    @Test
+    public void TestMissingClientSecret() {
+        try {
+            new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clientsUpdateMissingSecret.json"));
+            fail("confidential client misses a required client_secret");
+        } catch (Exception e) {
+            assertTrue(true);
         }
     }
 }

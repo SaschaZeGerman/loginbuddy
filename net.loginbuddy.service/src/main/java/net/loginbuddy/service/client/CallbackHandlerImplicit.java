@@ -59,20 +59,18 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
             idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), jwks, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
             // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
             Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-            if(currentClient.getOnBehalfOf() != null) {
-                for(OnBehalfOf obo : currentClient.getOnBehalfOf()) {
-                    if("id_token".equalsIgnoreCase(obo.getTokenType())) {
-                        JSONObject onBehalfOf = new JSONObject();
-                        onBehalfOf.put("iss", idTokenPayload.get("iss"));
-                        onBehalfOf.put("aud", idTokenPayload.get("aud"));
-                        onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
-                        idTokenPayload.put("on_behalf_of", onBehalfOf);
-                        idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
-                        idTokenPayload.put("aud", currentClient.getClientId());
-                        idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                        idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization();
-                        break;
-                    }
+            for (OnBehalfOf obo : currentClient.getOnBehalfOf()) {
+                if ("id_token".equalsIgnoreCase(obo.getTokenType())) {
+                    JSONObject onBehalfOf = new JSONObject();
+                    onBehalfOf.put("iss", idTokenPayload.get("iss"));
+                    onBehalfOf.put("aud", idTokenPayload.get("aud"));
+                    onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
+                    idTokenPayload.put("on_behalf_of", onBehalfOf);
+                    idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
+                    idTokenPayload.put("aud", currentClient.getClientId());
+                    idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+                    idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization();
+                    break;
                 }
             }
             if(idTokenForResponse == null) {
@@ -88,8 +86,6 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
 // ***************************************************************
 // ** In this flow there is no token response, we'll create it manually
 // ***************************************************************
-
-
 
         JSONObject tokenResponseObject = new JSONObject();
         tokenResponseObject.put(Constants.ID_TOKEN.getKey(), idTokenForResponse);

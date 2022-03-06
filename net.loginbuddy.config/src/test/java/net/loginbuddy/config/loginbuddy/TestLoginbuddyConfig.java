@@ -44,6 +44,20 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
+    public void testLoadClientOnBehalfOf() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigOnBehalfOf.json"))));
+            Loginbuddy config = new LoginbuddyObjectMapper().readLoginbuddy((JSONObject)new JSONParser().parse(newConfig));
+            assertEquals("RS256", config.getClients().get(0).getOnBehalfOf().get(0).getAlg());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testLoadProvider() {
         assertEquals("loginbuddy_demoId", LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").getClientId());
         try {
@@ -99,7 +113,7 @@ public class TestLoginbuddyConfig {
             for(Clients next : replaced) {
                 if("clientIdNotToBeLost".equals(next.getClientId())) {
                     containsClientId = true;
-                    return;
+                    break;
                 }
             }
             assertTrue(containsClientId);
@@ -183,14 +197,14 @@ public class TestLoginbuddyConfig {
         private List<Providers> myProviders;
 
         private Loginbuddy lb;
-        private ObjectMapper mapper;
+        private LoginbuddyObjectMapper mapper;
 
         private String dbLocation;
 
         public CustomLoginbuddyLoader() {
             this.myClients = new ArrayList<>();
             this.myProviders = new ArrayList<>();
-            mapper = new ObjectMapper();
+            mapper = new LoginbuddyObjectMapper();
             dbLocation = "src/test/resources/testCustomLoginbuddyConfig.json";
             load();
         }
@@ -198,9 +212,9 @@ public class TestLoginbuddyConfig {
         @Override
         public void load() {
             try {
-                lb = mapper.readValue(new File(dbLocation), Loginbuddy.class);
-                LOGGER.info(String.format("Loading custom test loginbuddy configuration: '%s'", dbLocation));
-            } catch (IOException e) {
+                lb = mapper.readLoginbuddy(new File(dbLocation));
+                LOGGER.info(String.format("Loading custom test Loginbuddy configuration: '%s'", dbLocation));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

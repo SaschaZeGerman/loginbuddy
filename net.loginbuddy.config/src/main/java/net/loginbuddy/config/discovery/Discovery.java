@@ -139,14 +139,6 @@ public class Discovery implements Bootstrap {
         return management;
     }
 
-    public String getRedirectUri() {
-        return getRedirectUri("/callback");
-    }
-
-    public String getRedirectUri(String path) {
-        return getIssuer() + path;
-    }
-
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }

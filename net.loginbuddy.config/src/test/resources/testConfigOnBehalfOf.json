@@ -1,0 +1,22 @@
+{
+  "clients": [
+    {
+      "client_id": "clientIdForTestingPurposes",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback",
+      "on_behalf_of": [
+        {"token_type": "id_token", "alg": "RS256"}
+      ]
+    }
+  ],
+  "providers": [
+    {
+      "provider": "server_loginbuddy",
+      "template": "server_loginbuddy",
+      "client_id": "loginbuddy_demoId",
+      "client_secret": "loginbuddy_demoSecret",
+      "redirect_uri": "https://local.loginbuddy.net/callback"
+    }
+  ]
+}

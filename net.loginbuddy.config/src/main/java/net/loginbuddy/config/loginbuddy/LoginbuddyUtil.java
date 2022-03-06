@@ -29,7 +29,7 @@ public enum LoginbuddyUtil implements Bootstrap {
     private Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyUtil.class));
 
     private LoginbuddyLoader loader;
-    private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
+    private LoginbuddyObjectMapper MAPPER = new LoginbuddyObjectMapper();
 
     LoginbuddyUtil() {
         try {
@@ -97,10 +97,10 @@ public enum LoginbuddyUtil implements Bootstrap {
     // TODO make this thing more efficient
     public List<Providers> getProviders(String clientId) throws Exception {
         Clients cc = getClientConfigByClientId(clientId);
-        if (cc.getClientProviders() != null && cc.getClientProviders().length > 0) {
+        if (cc.getClientProviders().size() > 0) {
             List<Providers> result = new ArrayList<>();
             for (Providers pc : getProviders()) {
-                if (Arrays.asList(cc.getClientProviders()).contains(pc.getProvider())) {
+                if (cc.getClientProviders().contains(pc.getProvider())) {
                     result.add(pc);
                 }
             }
@@ -169,9 +169,9 @@ public enum LoginbuddyUtil implements Bootstrap {
         try {
             List<Clients> newClients = new ArrayList<>();
             if(clientsAsJsonString.startsWith("[")) {
-                newClients.addAll(Arrays.asList(MAPPER.readValue(clientsAsJsonString, Clients[].class)));
+                newClients.addAll(MAPPER.readClients(clientsAsJsonString));
             } else {
-                newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
+                newClients.add(MAPPER.readClient(clientsAsJsonString));
             }
             if(requestingClientId != null) {
                 if (getClientConfigByClientId(newClients, requestingClientId) == null) {
@@ -200,9 +200,9 @@ public enum LoginbuddyUtil implements Bootstrap {
         try {
             List<Clients> newClients = new ArrayList<>();
             if(clientsAsJsonString.startsWith("[")) {
-                newClients.addAll(Arrays.asList(MAPPER.readValue(clientsAsJsonString, Clients[].class)));
+                newClients.addAll(MAPPER.readClients(clientsAsJsonString));
             } else {
-                newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
+                newClients.add(MAPPER.readClient(clientsAsJsonString));
             }
             return loader.update(newClients);
         } catch(Exception e) {

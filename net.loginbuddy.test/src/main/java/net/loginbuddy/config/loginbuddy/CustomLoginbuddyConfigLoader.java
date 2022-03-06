@@ -32,7 +32,7 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
     private Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyConfigLoader.class));
 
     private Loginbuddy lb, lbProviderTemplates;
-    private ObjectMapper mapper;
+    private LoginbuddyObjectMapper mapper;
 
     private String dbLocation, providerTemplateLocation;
 
@@ -49,7 +49,7 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
     }
 
     public CustomLoginbuddyConfigLoader(String dbLocation, String providerTemplates) {
-        mapper = new ObjectMapper();
+        mapper = new LoginbuddyObjectMapper();
         this.dbLocation = dbLocation;
         this.providerTemplateLocation = providerTemplates;
         try {
@@ -61,15 +61,13 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
 
     @Override
     public void load() throws Exception {
-        JSONObject configJson = (JSONObject)new JSONParser().parse(new FileReader(new File(dbLocation)));
+        File configTemplateFile = null;
         if(providerTemplateLocation != null) {
             LOGGER.info(String.format("Loading template configuration: '%s'", providerTemplateLocation));
-            JSONObject configTemplateJson = (JSONObject)new JSONParser().parse(new FileReader(new File(providerTemplateLocation)));
-            lb = mapper.readValue(Factory.getMergedConfigObject(configJson, configTemplateJson).toJSONString(), Loginbuddy.class);
-            LOGGER.info(String.format("Loaded custom test loginbuddy configuration with template. Config: '%s', template: '%s'", dbLocation, providerTemplateLocation));
-        } else {
-            lb = mapper.readValue(configJson.toJSONString(), Loginbuddy.class);
+            configTemplateFile = new File(providerTemplateLocation);
+            LOGGER.info("Merged custom config with custom templates!");
         }
+        lb = mapper.readLoginbuddy(new File(dbLocation), configTemplateFile);
         LOGGER.info(String.format("Loaded custom test loginbuddy configuration: '%s'", dbLocation));
     }
 

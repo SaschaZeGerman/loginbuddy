@@ -5,6 +5,10 @@
       "client_type": "public",
       "client_uri": "https://democlient.loginbuddy.net",
       "redirect_uri": "https://democlient.loginbuddy.net/callback,https://democlient.loginbuddy.net/spa.html",
+      "redirect_uris": [
+        "https://democlient.loginbuddy.net/callback",
+        "https://democlient.loginbuddy.net/spa.html"
+      ],
       "providers": [
         "server_loginbuddy",
         "server_dynamic"
