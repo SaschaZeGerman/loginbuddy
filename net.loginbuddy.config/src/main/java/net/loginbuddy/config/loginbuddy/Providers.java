@@ -77,7 +77,7 @@ public class Providers implements Serializable {
     private boolean pkce;
 
     @JsonProperty("mappings")
-    private JsonNode mappings;
+    private JSONObject mappings;
 
     public Providers() {
         this.pkce = true;
@@ -182,7 +182,7 @@ public class Providers implements Serializable {
         }
     }
 
-    public JsonNode mappingsAsJsonNode() {
+    public JSONObject mappingsAsJsonNode() {
         return mappings;
     }
 
@@ -242,7 +242,7 @@ public class Providers implements Serializable {
         this.pkce = pkce;
     }
 
-    public void setMappings(JsonNode mappings) {
+    public void setMappings(JSONObject mappings) {
         this.mappings = mappings;
     }
 

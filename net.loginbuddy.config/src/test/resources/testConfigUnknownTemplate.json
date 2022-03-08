@@ -1,0 +1,18 @@
+{
+  "clients": [
+    {
+      "client_id": "clientIdForTestingPurposes",
+      "client_type": "public",
+      "client_uri": "https://democlient.loginbuddy.net",
+      "redirect_uri": "https://democlient.loginbuddy.net/callback"
+    }
+  ],
+  "providers": [
+    {
+      "provider": "googleUnknown",
+      "template": "unKnownTemplate",
+      "client_id": "loginbuddy_google_client_id",
+      "client_secret": "loginbuddy_google_client_secret_02"
+    }
+  ]
+}

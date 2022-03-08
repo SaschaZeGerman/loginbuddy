@@ -13,10 +13,10 @@
   "providers": [
     {
       "provider": "server_loginbuddy",
-      "template": "server_loginbuddy",
       "client_id": "loginbuddy_demoId",
-      "client_secret": "loginbuddy_demoSecret",
       "redirect_uri": "https://local.loginbuddy.net/callback"
+      "authorization_endpoint": "https://local.loginbuddy.net/callback"
+      "token_endpoint": "https://local.loginbuddy.net/callback"
     }
   ]
 }

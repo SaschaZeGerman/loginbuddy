@@ -4,7 +4,6 @@
       "client_id": "clientIdForTestingPurposes",
       "client_type": "public",
       "client_uri": "https://democlient.loginbuddy.net",
-      "redirect_uri": "https://democlient.loginbuddy.net/callback,https://democlient.loginbuddy.net/spa.html",
       "redirect_uris": [
         "https://democlient.loginbuddy.net/callback",
         "https://democlient.loginbuddy.net/spa.html"
@@ -20,7 +19,7 @@
       "client_id": "clientIdForTestingPurposesJwt",
       "client_type": "public",
       "client_uri": "https://democlient.loginbuddy.net",
-      "redirect_uri": "https://democlient.loginbuddy.net/callback",
+      "redirect_uris": ["https://democlient.loginbuddy.net/callback"],
       "providers": [
         "server_loginbuddy",
         "server_dynamic"
@@ -32,7 +31,7 @@
       "client_id": "clientIdForTestingPurposesJwtEs256",
       "client_type": "public",
       "client_uri": "https://democlient.loginbuddy.net",
-      "redirect_uri": "https://democlient.loginbuddy.net/callback",
+      "redirect_uris": ["https://democlient.loginbuddy.net/callback"],
       "providers": [
         "server_loginbuddy",
         "server_dynamic"

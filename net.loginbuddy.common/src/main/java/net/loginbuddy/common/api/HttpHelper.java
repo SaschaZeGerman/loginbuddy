@@ -196,7 +196,7 @@ public class HttpHelper {
     }
   }
 
-   public static String getErrorForRedirect(String redirectUri, String error, String errorDescription) {
+  public static String getErrorForRedirect(String redirectUri, String error, String errorDescription) {
     if ("".equals(errorDescription)) {
       errorDescription = "An error without any description, sorry";
     }
@@ -278,7 +278,10 @@ public class HttpHelper {
     if (updateProvider) {
       config.put("provider", oidcConfig.get(Constants.ISSUER.getKey()));
     }
-    config.put("response_type", "code");
+    String responseType =
+            ((JSONArray) oidcConfig.get(Constants.RESPONSE_TYPES_SUPPORTED.getKey())).contains("code") ? "code" :
+            ((JSONArray) oidcConfig.get(Constants.RESPONSE_TYPES_SUPPORTED.getKey())).contains("id_token") ? "id_token" : "unsupported";
+    config.put("response_type", responseType);
     return config;
   }
 

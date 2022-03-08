@@ -58,6 +58,20 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
+    public void testDynamic() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigDynamic.json"))));
+            Loginbuddy config = new LoginbuddyObjectMapper().readLoginbuddy((JSONObject)new JSONParser().parse(newConfig));
+            assertEquals("server_dynamic", config.getProviders().get(0).getProvider());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testLoadProvider() {
         assertEquals("loginbuddy_demoId", LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").getClientId());
         try {
@@ -87,6 +101,45 @@ public class TestLoginbuddyConfig {
          assertNotEquals("loginbuddy_google_client_secret_02", c.getClientSecret());
 
          assertNull(LoginbuddyUtil.UTIL.getProviderConfigByProvider("googleUnknown"));
+    }
+
+    @Test
+    public void testUnknownTemplates() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigUnknownTemplate.json"))));
+            String newTemplate = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigTemplates.json"))));
+
+            new LoginbuddyObjectMapper().readLoginbuddy(
+                    (JSONObject) new JSONParser().parse(newConfig),
+                    (JSONObject) new JSONParser().parse(newTemplate)
+            );
+        } catch(IllegalArgumentException e) {
+            assertEquals("The referenced template: 'unKnownTemplate' is unknown for provider configuration: 'googleUnknown'", e.getMessage());
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMissingTemplates() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigUnknownTemplate.json"))));
+
+            new LoginbuddyObjectMapper().readLoginbuddy((JSONObject) new JSONParser().parse(newConfig));
+        } catch(IllegalArgumentException e) {
+            assertEquals("At least one provider references a template but no templates were given! Provider: 'googleUnknown'", e.getMessage());
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
