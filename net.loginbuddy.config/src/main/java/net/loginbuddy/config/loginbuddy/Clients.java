@@ -50,7 +50,8 @@ public class Clients implements Serializable {
     private OnBehalfOf[] onBehalfOf;
 
     public Clients() {
-        acceptDynamicProvider = false;
+        this.acceptDynamicProvider = false;
+        this.onBehalfOf = new OnBehalfOf[0];
     }
 
     public Clients(String clientId, String clientType) {

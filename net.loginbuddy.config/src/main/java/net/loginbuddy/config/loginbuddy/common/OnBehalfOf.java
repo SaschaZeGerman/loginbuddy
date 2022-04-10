@@ -53,7 +53,7 @@ public class OnBehalfOf {
         OnBehalfOfResult result = new OnBehalfOfResult(idToken, idTokenPayload);
 
         Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(clientId);
-        if (currentClient.getOnBehalfOf() != null) {
+        if (currentClient != null) {
             for (OnBehalfOf obo : currentClient.getOnBehalfOf()) {
                 if (obo.getTokenType().equalsIgnoreCase(tokenType)) {
                     JSONObject onBehalfOf = new JSONObject();
