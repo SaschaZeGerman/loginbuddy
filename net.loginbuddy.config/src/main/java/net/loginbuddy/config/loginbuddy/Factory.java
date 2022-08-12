@@ -33,7 +33,7 @@ public class Factory implements ObjectFactory {
             }
         }
 
-        LOGGER.info(String.format("Loaded Loginbuddy configuration: '%s'", path));
+        LOGGER.info(String.format("Loaded Loginbuddy configuration file: '%s'", path));
         return new LoginbuddyObjectMapper().readLoginbuddy(configJson, configTemplateJson);
     }
 }

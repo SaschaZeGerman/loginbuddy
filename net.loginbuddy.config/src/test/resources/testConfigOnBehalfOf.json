@@ -13,6 +13,7 @@
   "providers": [
     {
       "provider": "server_loginbuddy",
+      "issuer": "https://local.loginbuddy.net",
       "client_id": "loginbuddy_demoId",
       "redirect_uri": "https://local.loginbuddy.net/callback"
       "authorization_endpoint": "https://local.loginbuddy.net/callback"

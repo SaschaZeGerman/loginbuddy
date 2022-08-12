@@ -185,4 +185,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
 
     // required as of upgrade to tomcat with jdk11
     permission java.net.NetPermission "specifyStreamHandler";
+
+    // required since Loginbuddy loads configuration at startup
+    permission java.lang.RuntimePermission "accessClassInPackage.org.apache.catalina.webresources";
 };

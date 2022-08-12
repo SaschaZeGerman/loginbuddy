@@ -8,6 +8,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -70,8 +71,16 @@ public class HttpHelper {
   }
 
   public static MsgResponse getAPI(String targetApi) throws IOException {
+
+    RequestConfig.Builder requestBuilder = RequestConfig.custom();
+    requestBuilder.setConnectTimeout(5000);
+    requestBuilder.setConnectionRequestTimeout(5000);
+
+    HttpClientBuilder builder = HttpClientBuilder.create();
+    builder.setDefaultRequestConfig(requestBuilder.build());
+
     HttpGet req = new HttpGet(targetApi);
-    HttpClient httpClient = HttpClientBuilder.create().build();
+    HttpClient httpClient = builder.build();
 
     HttpResponse response = httpClient.execute(req);
     return new MsgResponse(getHeader(response, "content-type", "application/json"),
@@ -190,8 +199,10 @@ public class HttpHelper {
         return getErrorAsJson("invalid_server", "OpenID Providers using a self-signed SSL certificate are not supported");
       }  else if(e.getMessage().contains("failed to respond")) {
         return getErrorAsJson("invalid_server", "OpenID Provider did not respond. Need to use HTTPS?");
+      }  else if(e.getMessage().contains("Read timed out")) {
+        return getErrorAsJson("invalid_server", "OpenID Provider connection timed out");
       } else {
-        return getErrorAsJson("invalid_server", "no idea what went wrong");
+        return getErrorAsJson("invalid_server", String.format("no idea what went wrong. Exception: %s", e.getMessage()));
       }
     }
   }

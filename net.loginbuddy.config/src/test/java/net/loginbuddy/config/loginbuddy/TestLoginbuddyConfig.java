@@ -60,10 +60,33 @@ public class TestLoginbuddyConfig {
     @Test
     public void testDynamic() {
         try {
-            String newConfig = HttpHelper.readMessageBody(
-                    new BufferedReader(
-                            new FileReader(
-                                    new File("src/test/resources/testConfigDynamic.json"))));
+            String newConfig = "{\n" +
+                    "  \"clients\": [],\n" +
+                    "  \"providers\": [\n" +
+                    "    {\n" +
+                    "      \"provider\": \"server_dynamic\",\n" +
+                    "      \"issuer\": \"https://server.loginbuddy.net\",\n" +
+                    "      \"openid_configuration_uri\": \"https://server.loginbuddy.net/.well-known/openid-configuration\"\n" +
+                    "    },    {\n" +
+                    "      \"provider\": \"server_loginbuddy\",\n" +
+                    "      \"issuer\": \"https://demoserver.loginbuddy.net\",\n" +
+                    "      \"client_id\": \"loginbuddy_demoId\",\n" +
+                    "      \"client_secret\": \"loginbuddy_demoSecret\",\n" +
+                    "      \"authorization_endpoint\": \"https://demoserver.loginbuddy.net/authorize\",\n" +
+                    "      \"token_endpoint\": \"https://demoserver.loginbuddy.net/token\",\n" +
+                    "      \"userinfo_endpoint\": \"https://demoserver.loginbuddy.net/userinfo\",\n" +
+                    "      \"jwks_uri\": \"https://demoserver.loginbuddy.net/jwks\",\n" +
+                    "      \"scope\": \"openid profile email\",\n" +
+                    "      \"response_type\": \"code\",\n" +
+                    "      \"redirect_uri\": \"https://local.loginbuddy.net/callback\",\n" +
+                    "      \"mappings\": {\n" +
+                    "        \"key1\": \"value1\",\n" +
+                    "        \"key2\": \"value2\",\n" +
+                    "        \"key3\": \"value3\"\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
             Loginbuddy config = new LoginbuddyObjectMapper().readLoginbuddy((JSONObject)new JSONParser().parse(newConfig));
             assertEquals("server_dynamic", config.getProviders().get(0).getProvider());
         } catch (Exception e) {
