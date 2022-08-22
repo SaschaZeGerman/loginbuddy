@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -45,6 +46,10 @@ public class Providers implements Serializable {
     @JsonProperty("client_secret")
     @JsonIgnore(false)
     private String clientSecret;
+
+    @JsonProperty("_meta")
+    @JsonIgnore(false)
+    private Meta meta;
 
     @JsonProperty("response_type")
     private String responseType;
@@ -83,6 +88,7 @@ public class Providers implements Serializable {
         this.pkce = true;
         this.scope = Constants.OPENID_SCOPE.getKey();
         this.responseType = Constants.CODE.getKey();
+        this.meta = new Meta();
     }
 
     public Providers(String issuer, String clientId, String redirectUri) {
@@ -128,6 +134,10 @@ public class Providers implements Serializable {
 
     public String getClientSecret() {
         return clientSecret;
+    }
+
+    public Meta getMeta() {
+        return meta;
     }
 
     public String getRedirectUri() {
@@ -182,6 +192,7 @@ public class Providers implements Serializable {
         }
     }
 
+    @Deprecated
     public JSONObject mappingsAsJsonNode() {
         return mappings;
     }
@@ -204,6 +215,10 @@ public class Providers implements Serializable {
 
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+
+    public void setMeta(Meta meta) {
+        this.meta = meta;
     }
 
     public void setResponseType(String responseType) {
@@ -252,6 +267,11 @@ public class Providers implements Serializable {
 
     public void setTemplate(String template) {
         this.template = template;
+    }
+
+    @JsonIgnore()
+    public boolean isUsable() {
+        return meta.getStatus().size() == 0;
     }
 
     @Override

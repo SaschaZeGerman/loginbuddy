@@ -59,12 +59,13 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     public List<Providers> getProviders() {
-        // need it from cache for provider configurations that used dynamic registrations. Otherwise we register again and again
+        // need it from cache for provider configurations that used dynamic registrations. Otherwise, we register again and again
         List<Providers> providers = (List<Providers>) LoginbuddyCache.CACHE.get("providers");
         try {
             if (providers == null) {
                 providers = loader.getLoginbuddy().getProviders();
                 for (Providers next : providers) {
+                    // dynamic registration is done at boot time. However, if that fails this section will try again
                     if (getProviderType(next).equals(ProviderConfigType.MINIMAL)) {
                         JSONObject retrieveAndRegister = HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),DiscoveryUtil.UTIL.getRedirectUri());
                         if(retrieveAndRegister.get("error") == null) {

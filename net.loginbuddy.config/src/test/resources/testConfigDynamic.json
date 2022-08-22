@@ -5,6 +5,11 @@
       "provider": "server_dynamic",
       "issuer": "https://server.loginbuddy.net",
       "openid_configuration_uri": "https://server.loginbuddy.net/.well-known/openid-configuration"
+    },
+    {
+      "provider": "server_dynamic_unknown",
+      "issuer": "https://unknown.loginbuddy.net",
+      "openid_configuration_uri": "https://unknown.loginbuddy.net/.well-known/openid-configuration"
     }
   ]
 }

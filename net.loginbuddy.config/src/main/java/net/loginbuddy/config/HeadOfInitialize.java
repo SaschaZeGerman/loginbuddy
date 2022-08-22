@@ -69,7 +69,7 @@ public class HeadOfInitialize {
       }
 
       // TODO if above if statement would be 'true' but accept_dynamic is false something is wrong ...
-      if (providers == null) {
+      if (providers == null || !providers.isUsable()) {
         LOGGER.warning("The given provider is unknown or invalid");
         return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "The given provider is unknown or invalid");
       } else {

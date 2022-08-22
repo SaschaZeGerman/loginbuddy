@@ -14,6 +14,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.config.loginbuddy.exception.DynamicProviderRegistrationException;
 import net.loginbuddy.config.loginbuddy.exception.RequiredConfigurationException;
@@ -144,131 +145,127 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
     @Override
     public Providers deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
 
+        ObjectCodec codec = jsonParser.getCodec();
+        JsonNode node = codec.readTree(jsonParser);
+
+        Providers providers = new Providers();
+
+        JSONObject currentProvider = null;
         try {
-            ObjectCodec codec = jsonParser.getCodec();
-            JsonNode node = codec.readTree(jsonParser);
-
-            JSONObject currentProvider = (JSONObject) new JSONParser().parse(node.toString());
-
-            Providers providers = new Providers();
-
-            // required configuration
-            if (currentProvider.get(Constants.PROVIDER.getKey()) == null || currentProvider.get(Constants.ISSUER.getKey()) == null) {
-                throw new RequiredConfigurationException("provider and issuer are required provider configuration values!");
-            }
-            providers.setProvider((String) currentProvider.get(Constants.PROVIDER.getKey()));
-            providers.setIssuer((String) currentProvider.get(Constants.ISSUER.getKey()));
-
-            // Figure out what type of configuration we have
-            ProviderConfigType providerType = ProviderConfigType.FULL;
-            if (currentProvider.size() == 3 && currentProvider.get("openid_configuration_uri") != null) {
-                    providerType = ProviderConfigType.MINIMAL;
-            } else if (currentProvider.get("openid_configuration_uri") != null) {
-                providerType = ProviderConfigType.DEFAULT;
-            }
-            providers.setOpenidConfigurationUri((String) currentProvider.get("openid_configuration_uri"));
-
-            // MINIMUM configuration, configured for dynamic registration
-            if (ProviderConfigType.MINIMAL.equals(providerType)) {
-                LOGGER.info(String.format("Registering for provider: '%s'", providers.getProvider()));
-                try {
-                    currentProvider = HttpHelper.retrieveAndRegister((String)currentProvider.get("openid_configuration_uri"), DiscoveryUtil.UTIL.getRedirectUri());
-                    if (currentProvider.get("error") == null) {
-                        currentProvider.put(Constants.PROVIDER.getKey(), Objects.requireNonNullElse((String)currentProvider.get(Constants.PROVIDER.getKey()), providers.getProvider()));
-                        currentProvider.put(Constants.ISSUER.getKey(), Objects.requireNonNullElse((String)currentProvider.get(Constants.ISSUER.getKey()), providers.getIssuer()));
-                        LOGGER.info(String.format("Successfully registered with: %s!", currentProvider.get(Constants.PROVIDER.getKey())));
-                    } else {
-                        throw new DynamicProviderRegistrationException((String) currentProvider.get("error_description"));
-                    }
-                } catch (Exception e) {
-                    LOGGER.warning(e.getMessage());
-                    ctxt.handleInstantiationProblem(JSONObject.class, currentProvider, new DynamicProviderRegistrationException(String.format("Dynamic registration for provider: '%s' failed: %s", currentProvider.get(Constants.PROVIDER.getKey()), e.getMessage())));
-                }
-            }
-
-            // DEFAULT, using OIDC configuration endpoint to get authorization server details
-            if (ProviderConfigType.DEFAULT.equals(providerType)) {
-                try {
-                    JSONObject retrieveOidcConfig = retrieveOidcConfig((String) currentProvider.get("openid_configuration_uri"));
-                    currentProvider.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
-                    currentProvider.put(Constants.TOKEN_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
-                    currentProvider.put(Constants.USERINFO_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
-                    currentProvider.put(Constants.JWKS_URI.getKey(), retrieveOidcConfig.get(Constants.JWKS_URI.getKey()));
-                } catch (Exception e) {
-                    LOGGER.warning(e.getMessage());
-                    ctxt.handleInstantiationProblem(JSONObject.class, currentProvider, new DynamicProviderRegistrationException(String.format("Retrieving OIDC configuration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage())));
-                }
-            }
-
-            // FULL configuration as of here, check for required values
-            if(currentProvider.get(Constants.CLIENT_ID.getKey()) == null ||
-                    currentProvider.get(Constants.REDIRECT_URI.getKey()) == null ||
-                    currentProvider.get(Constants.AUTHORIZATION_ENDPOINT.getKey()) == null ) {
-                throw new RequiredConfigurationException(String.format("provider %s is misconfigured: client_id, redirect_uri and authorization_endpoint are required provider configuration values!", providers.getProvider()));
-            }
-
-            providers.setClientId((String) currentProvider.get(Constants.CLIENT_ID.getKey()));
-            providers.setRedirectUri((String) currentProvider.get(Constants.REDIRECT_URI.getKey()));
-            providers.setAuthorizationEndpoint((String) currentProvider.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
-
-            // Optional, with defaults
-            providers.setScope(Objects.requireNonNullElse((String)currentProvider.get(Constants.SCOPE.getKey()), "openid"));
-            providers.setPkce(currentProvider.get("pkce") == null || (Boolean) currentProvider.get("pkce"));
-
-            String responseType = (String) currentProvider.get(Constants.RESPONSE_TYPE.getKey());
-            if (responseType == null) {
-                providers.setResponseType(Constants.CODE.getKey());
-            } else if (Constants.ID_TOKEN.getKey().equalsIgnoreCase(responseType) || Constants.CODE.getKey().equalsIgnoreCase(responseType)) {
-                providers.setResponseType(responseType);
-            } else {
-                throw new IllegalArgumentException(String.format("Unsupported response_type configured: '%s'", responseType));
-            }
-
-            if(Constants.CODE.getKey().equalsIgnoreCase(responseType) && currentProvider.get(Constants.TOKEN_ENDPOINT.getKey()) == null) {
-                throw new RequiredConfigurationException("token_endpoint is required with response_type=code for provider configuration values!");
-            }
-            if(currentProvider.get(Constants.TOKEN_ENDPOINT.getKey()) != null) {
-                providers.setTokenEndpoint((String)currentProvider.get(Constants.TOKEN_ENDPOINT.getKey()));
-            }
-
-            String responseMode = (String) currentProvider.get("response_mode");
-            if (responseMode == null) {
-                providers.setResponseMode(Constants.RESPONSE_MODE_QUERY.getKey());
-            } else if (Constants.RESPONSE_MODE_QUERY.getKey().equalsIgnoreCase(responseMode) || Constants.RESPONSE_MODE_FORM_POST.getKey().equalsIgnoreCase(responseMode)) {
-                providers.setResponseMode(responseMode);
-            } else {
-                throw new IllegalArgumentException(String.format("Unsupported response_mode configured: '%s'", responseMode));
-            }
-
-            // other values
-            if (currentProvider.get("userinfo_endpoint") != null) {
-                providers.setUserinfoEndpoint((String) currentProvider.get("userinfo_endpoint"));
-            }
-
-            if (currentProvider.get("client_secret") != null) {
-                providers.setClientSecret((String) currentProvider.get("client_secret"));
-            }
-
-            if (currentProvider.get("jwks_uri") != null) {
-                providers.setJwksUri((String) currentProvider.get("jwks_uri"));
-            } else {
-                LOGGER.warning("jwks_uri is not configured! No id_token validation possible!");
-            }
-
-            if (currentProvider.get("mappings") != null) {
-                providers.setMappings((JSONObject) currentProvider.get("mappings"));
-            }
-
-            // keep the reference to a template if one was used
-            if(currentProvider.get("template") != null) {
-                providers.setTemplate((String)currentProvider.get("template"));
-            }
-
-            return providers;
-
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            currentProvider = (JSONObject) new JSONParser().parse(node.toString());
+        } catch (ParseException e) {
+            LOGGER.severe(String.format("This should never happen: %s", e.getMessage()));
+            throw new IllegalArgumentException("Provider could not be loaded due to an invalid JSON format!");
         }
+
+        // required configuration
+        if (currentProvider.get(Constants.PROVIDER.getKey()) == null || currentProvider.get(Constants.ISSUER.getKey()) == null) {
+            providers.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "provider and issuer are required provider configuration values!");
+        }
+        providers.setProvider((String) currentProvider.get(Constants.PROVIDER.getKey()));
+        providers.setIssuer((String) currentProvider.get(Constants.ISSUER.getKey()));
+        providers.setOpenidConfigurationUri((String) currentProvider.get("openid_configuration_uri"));
+
+        // Figure out what type of configuration we have (the same check as in LoginbuddyUtil)
+        ProviderConfigType providerType = currentProvider.get(Constants.CLIENT_ID.getKey()) == null ? ProviderConfigType.MINIMAL : providers.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
+
+        // DEFAULT, using OIDC configuration endpoint to get authorization server details
+        if (ProviderConfigType.DEFAULT.equals(providerType)) {
+            try {
+                JSONObject retrieveOidcConfig = retrieveOidcConfig(providers.getOpenidConfigurationUri());
+                currentProvider.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
+                currentProvider.put(Constants.TOKEN_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
+                currentProvider.put(Constants.USERINFO_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
+                currentProvider.put(Constants.JWKS_URI.getKey(), retrieveOidcConfig.get(Constants.JWKS_URI.getKey()));
+            } catch (Exception e) {
+                LOGGER.warning(e.getMessage());
+                providers.getMeta().addStatus(Meta.STATUS_OIDC_CONFIG_ERROR, String.format("Retrieving OIDC configuration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage()));
+            }
+        } // MINIMUM configuration, configured for dynamic registration
+        else if (ProviderConfigType.MINIMAL.equals(providerType)) {
+            LOGGER.info(String.format("Registering for provider: '%s'", providers.getProvider()));
+            try {
+                currentProvider = HttpHelper.retrieveAndRegister(providers.getOpenidConfigurationUri(), DiscoveryUtil.UTIL.getRedirectUri());
+                if (currentProvider.get("error") == null) {
+                    currentProvider.put(Constants.PROVIDER.getKey(), Objects.requireNonNullElse((String) currentProvider.get(Constants.PROVIDER.getKey()), providers.getProvider()));
+                    currentProvider.put(Constants.ISSUER.getKey(), Objects.requireNonNullElse((String) currentProvider.get(Constants.ISSUER.getKey()), providers.getIssuer()));
+                    LOGGER.info(String.format("Successfully registered with: %s!", currentProvider.get(Constants.PROVIDER.getKey())));
+                } else {
+                    throw new DynamicProviderRegistrationException((String) currentProvider.get("error_description"));
+                }
+            } catch (Exception e) {
+                LOGGER.warning(e.getMessage());
+                providers.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("Dynamic registration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage()));
+            }
+        }
+
+        // FULL configuration as of here, check for required values
+        if (currentProvider.get(Constants.CLIENT_ID.getKey()) == null ||
+                currentProvider.get(Constants.REDIRECT_URI.getKey()) == null ||
+                currentProvider.get(Constants.AUTHORIZATION_ENDPOINT.getKey()) == null) {
+            providers.getMeta().addStatus(Meta.STATUS_INCOMPLETE, String.format("provider %s is misconfigured: client_id, redirect_uri and authorization_endpoint are required provider configuration values!", providers.getProvider()));
+        }
+
+        providers.setClientId((String) currentProvider.get(Constants.CLIENT_ID.getKey()));
+        providers.setRedirectUri((String) currentProvider.get(Constants.REDIRECT_URI.getKey()));
+        providers.setAuthorizationEndpoint((String) currentProvider.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
+
+        // Optional, with defaults
+        providers.setScope(Objects.requireNonNullElse((String) currentProvider.get(Constants.SCOPE.getKey()), "openid"));
+        providers.setPkce(currentProvider.get("pkce") == null || (Boolean) currentProvider.get("pkce"));
+
+        String responseType = (String) currentProvider.get(Constants.RESPONSE_TYPE.getKey());
+        if (responseType == null) {
+            providers.setResponseType(Constants.CODE.getKey());
+        } else if (Constants.ID_TOKEN.getKey().equalsIgnoreCase(responseType) || Constants.CODE.getKey().equalsIgnoreCase(responseType)) {
+            providers.setResponseType(responseType);
+        } else {
+            providers.getMeta().addStatus(Meta.STATUS_UNSUPPORTED, String.format("Unsupported response_type configured: '%s'", responseType));
+        }
+
+        if (Constants.CODE.getKey().equalsIgnoreCase(responseType) && currentProvider.get(Constants.TOKEN_ENDPOINT.getKey()) == null) {
+            providers.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "token_endpoint is required with response_type=code for provider configuration values!");
+        }
+        if (currentProvider.get(Constants.TOKEN_ENDPOINT.getKey()) != null) {
+            providers.setTokenEndpoint((String) currentProvider.get(Constants.TOKEN_ENDPOINT.getKey()));
+        }
+
+        String responseMode = (String) currentProvider.get("response_mode");
+        if (responseMode == null) {
+            providers.setResponseMode(Constants.RESPONSE_MODE_QUERY.getKey());
+        } else if (Constants.RESPONSE_MODE_QUERY.getKey().equalsIgnoreCase(responseMode) || Constants.RESPONSE_MODE_FORM_POST.getKey().equalsIgnoreCase(responseMode)) {
+            providers.setResponseMode(responseMode);
+        } else {
+            providers.getMeta().addStatus(Meta.STATUS_UNSUPPORTED, String.format("Unsupported response_mode configured: '%s'", responseMode));
+        }
+
+        // other values
+        if (currentProvider.get("userinfo_endpoint") != null) {
+            providers.setUserinfoEndpoint((String) currentProvider.get("userinfo_endpoint"));
+        } else {
+            LOGGER.warning("userinfo_endpoint is not configured! No userinfo will be retrieved!");
+        }
+
+        if (currentProvider.get("client_secret") != null) {
+            providers.setClientSecret((String) currentProvider.get("client_secret"));
+        }
+
+        if (currentProvider.get("jwks_uri") != null) {
+            providers.setJwksUri((String) currentProvider.get("jwks_uri"));
+        } else {
+            LOGGER.warning("jwks_uri is not configured! No id_token validation possible!");
+        }
+
+        if (currentProvider.get("mappings") != null) {
+            providers.setMappings((JSONObject) currentProvider.get("mappings"));
+        }
+
+        // keep the reference to a template if one was used
+        if (currentProvider.get("template") != null) {
+            providers.setTemplate((String) currentProvider.get("template"));
+        }
+
+        return providers;
     }
 
     private JSONObject retrieveOidcConfig(String oidcConfigUrl) throws IOException, ParseException {
