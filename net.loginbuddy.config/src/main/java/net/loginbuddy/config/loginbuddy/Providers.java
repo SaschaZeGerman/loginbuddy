@@ -85,10 +85,10 @@ public class Providers implements Serializable {
     private JSONObject mappings;
 
     public Providers() {
-        this.pkce = true;
-        this.scope = Constants.OPENID_SCOPE.getKey();
-        this.responseType = Constants.CODE.getKey();
-        this.meta = new Meta();
+        pkce = true;
+        scope = Constants.OPENID_SCOPE.getKey();
+        responseType = Constants.CODE.getKey();
+        meta = new Meta();
     }
 
     public Providers(String issuer, String clientId, String redirectUri) {

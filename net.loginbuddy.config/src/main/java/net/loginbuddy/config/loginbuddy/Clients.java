@@ -11,6 +11,7 @@ package net.loginbuddy.config.loginbuddy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 
 import java.io.Serializable;
@@ -18,10 +19,6 @@ import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Clients implements Serializable {
-
-//    @Deprecated
-//    @JsonProperty("redirect_uri")
-//    private String redirectUri;
 
     @JsonProperty("client_id")
     @JsonIgnore(false)
@@ -68,12 +65,17 @@ public class Clients implements Serializable {
     @JsonIgnore(false)
     private Set<String> redirectUris;
 
+    @JsonProperty("_meta")
+    @JsonIgnore(false)
+    private Meta meta;
+
     public Clients() {
         acceptDynamicProvider = false;
         clientContacts = new HashSet<>();
         redirectUris = new HashSet<>();
         clientProviders = new ArrayList<>();
         onBehalfOf = new ArrayList<>();
+        meta = new Meta();
     }
 
     public Clients(String clientId, String clientType) {
@@ -115,6 +117,10 @@ public class Clients implements Serializable {
 
     public List<OnBehalfOf> getOnBehalfOf() {
         return onBehalfOf;
+    }
+
+    public Meta getMeta() {
+        return meta;
     }
 
     public void setRedirectUri(String redirectUri) {
@@ -189,6 +195,11 @@ public class Clients implements Serializable {
         return clientContacts;
     }
 
+    @JsonIgnore
+    public String getClientContactsAsString() {
+        return String.join(",", clientContacts);
+    }
+
     public void setClientContacts(Set<String> clientContacts) {
         this.clientContacts = clientContacts;
     }
@@ -209,6 +220,10 @@ public class Clients implements Serializable {
         this.redirectUris = redirectUris;
     }
 
+    public void setMeta(Meta meta) {
+        this.meta = meta;
+    }
+
     public boolean addRedirectUri(String redirectUri) {
         return redirectUris.add(redirectUri);
     }
@@ -225,6 +240,11 @@ public class Clients implements Serializable {
     @JsonIgnore()
     public boolean isRegisteredRedirectUri(String redirectUri) {
         return redirectUris.contains(redirectUri);
+    }
+
+    @JsonIgnore()
+    public boolean isUsable() {
+        return meta.getStatus().size() == 0;
     }
 
     @Override

@@ -17,7 +17,6 @@ import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.common.Meta;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.config.loginbuddy.exception.DynamicProviderRegistrationException;
-import net.loginbuddy.config.loginbuddy.exception.RequiredConfigurationException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -296,114 +295,118 @@ class ClientObjectDeserializer extends StdDeserializer<Clients> {
     @Override
     public Clients deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
 
+        ObjectCodec codec = jsonParser.getCodec();
+        JsonNode node = codec.readTree(jsonParser);
+
+        Clients clients = new Clients();
+
+        JSONObject currentClient = null;
         try {
-            ObjectCodec codec = jsonParser.getCodec();
-            JsonNode node = codec.readTree(jsonParser);
-
-            JSONObject obj = (JSONObject) new JSONParser().parse(node.toString());
-
-            Clients result = new Clients();
-
-            Set<String> redirectUris = new HashSet<>();
-            if (obj.get("redirect_uris") != null) {
-                for (Object redirectUri : ((JSONArray) obj.get("redirect_uris"))) {
-                    redirectUris.add((String) redirectUri);
-                }
-            }
-            result.setRedirectUris(redirectUris);
-
-            // merge redirect_uri into redirect_uris. redirect_uri is valid for older configurations
-            if (obj.get("redirect_uri") != null) {
-                redirectUris.addAll(Arrays.asList(((String) obj.get("redirect_uri")).split("[;, ]")));
-            }
-
-            if (result.getRedirectUrisCount() == 0) {
-                throw new IllegalArgumentException("Missing redirect_uri, at least one must be defined");
-            }
-
-            if (obj.get("client_id") != null) {
-                result.setClientId((String) obj.get("client_id"));
-            } else {
-                throw new IllegalArgumentException("Missing client_id");
-            }
-
-            if (
-                    Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equalsIgnoreCase((String) obj.get("client_type")) ||
-                            Constants.CLIENT_TYPE_PUBLIC.getKey().equalsIgnoreCase((String) obj.get("client_type"))) {
-                result.setClientType((String) obj.get("client_type"));
-            } else {
-                throw new IllegalArgumentException("Missing or invalid client_type");
-            }
-
-            if (obj.get("client_uri") != null) {
-                result.setClientUri((String) obj.get("client_uri"));
-            }
-
-            if (obj.get("client_secret") != null) {
-                result.setClientSecret((String) obj.get("client_secret"));
-            } else if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(result.getClientType())) {
-                throw new IllegalArgumentException("Missing client_secret");
-            }
-
-            List<String> providers = new ArrayList<>();
-            if (obj.get("providers") != null) {
-                for (Object provider : ((JSONArray) obj.get("providers"))) {
-                    providers.add((String) provider);
-                }
-            }
-            result.setClientProviders(providers);
-
-            result.setAcceptDynamicProvider(
-                    obj.get("accept_dynamic_provider") != null &&
-                            (Boolean) obj.get("accept_dynamic_provider"));
-
-            String signAlg = (String) obj.get("signed_response_alg");
-            if (signAlg != null) {
-                if (("ES256".equalsIgnoreCase(signAlg) || "RS256".equalsIgnoreCase(signAlg))) {
-                    result.setSignedResponseAlg(signAlg);
-                } else {
-                    throw new IllegalArgumentException(String.format("Unsupported signed_response_alg configured: '%s'", signAlg));
-                }
-            }
-
-            List<OnBehalfOf> onBehalfOfs = new ArrayList<>();
-            if (obj.get("on_behalf_of") != null) {
-                for (Object onBehalfOf : ((JSONArray) obj.get("on_behalf_of"))) {
-                    String tokenType = (String) ((JSONObject) onBehalfOf).get("token_type");
-                    String alg = (String) ((JSONObject) onBehalfOf).get("alg");
-                    onBehalfOfs.add(new OnBehalfOf(tokenType, alg));
-                }
-            }
-            result.setOnBehalfOf(onBehalfOfs);
-
-            if (obj.get("client_name") != null) {
-                result.setClientName((String) obj.get("client_name"));
-            } else {
-                result.setClientName((String) obj.get("client_id"));
-            }
-            if (obj.get("tos_uri") != null) {
-                result.setClientTosUri((String) obj.get("tos_uri"));
-            }
-            if (obj.get("policy_uri") != null) {
-                result.setClientPolicyUri((String) obj.get("policy_uri"));
-            }
-            if (obj.get("logo_uri") != null) {
-                result.setClientLogoUri((String) obj.get("logo_uri"));
-            }
-
-            Set<String> contacts = new HashSet<>();
-            if (obj.get("contacts") != null) {
-                for (Object contact : ((JSONArray) obj.get("contacts"))) {
-                    contacts.add((String) contact);
-                }
-            }
-            result.setClientContacts(contacts);
-
-            return result;
-
-        } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            currentClient = (JSONObject) new JSONParser().parse(node.toString());
+        } catch (ParseException e) {
+            LOGGER.severe(String.format("This should never happen: %s", e.getMessage()));
+            throw new IllegalArgumentException("Client could not be loaded due to an invalid JSON format!");
         }
+
+        // required configuration
+        Set<String> redirectUris = new HashSet<>();
+        if (currentClient.get("redirect_uris") != null) {
+            for (Object redirectUri : ((JSONArray) currentClient.get("redirect_uris"))) {
+                redirectUris.add((String) redirectUri);
+            }
+        }
+        clients.setRedirectUris(redirectUris);
+
+        // merge redirect_uri into redirect_uris. redirect_uri is valid for older configurations
+        if (currentClient.get("redirect_uri") != null) {
+            redirectUris.addAll(Arrays.asList(((String) currentClient.get("redirect_uri")).split("[;, ]")));
+        }
+
+        if (clients.getRedirectUrisCount() == 0) {
+            clients.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "Missing redirect_uri, at least one must be defined");
+        }
+
+        if (currentClient.get("client_id") != null) {
+            clients.setClientId((String) currentClient.get("client_id"));
+        } else {
+            clients.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "Missing client_id");
+        }
+
+        if (
+                Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equalsIgnoreCase((String) currentClient.get("client_type")) ||
+                        Constants.CLIENT_TYPE_PUBLIC.getKey().equalsIgnoreCase((String) currentClient.get("client_type"))) {
+            clients.setClientType((String) currentClient.get("client_type"));
+        } else {
+            LOGGER.warning(String.format("Missing or invalid client_type: '%s'", currentClient.get("client_type")));
+            clients.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "Missing or invalid client_type");
+        }
+
+        if (currentClient.get("client_uri") != null) {
+            clients.setClientUri((String) currentClient.get("client_uri"));
+        }
+
+        if (currentClient.get("client_secret") != null) {
+            clients.setClientSecret((String) currentClient.get("client_secret"));
+        } else if (Constants.CLIENT_TYPE_CONFIDENTIAL.getKey().equals(clients.getClientType())) {
+            clients.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "Missing client_secret");
+        }
+
+        List<String> providers = new ArrayList<>();
+        if (currentClient.get("providers") != null) {
+            for (Object provider : ((JSONArray) currentClient.get("providers"))) {
+                providers.add((String) provider);
+            }
+        }
+        clients.setClientProviders(providers);
+
+        clients.setAcceptDynamicProvider(
+                currentClient.get("accept_dynamic_provider") != null &&
+                        (Boolean) currentClient.get("accept_dynamic_provider"));
+
+        String signAlg = (String) currentClient.get("signed_response_alg");
+        if (signAlg != null) {
+            if (("ES256".equalsIgnoreCase(signAlg) || "RS256".equalsIgnoreCase(signAlg))) {
+                clients.setSignedResponseAlg(signAlg);
+            } else {
+                LOGGER.warning(String.format("Unsupported signed_response_alg configured: '%s'", signAlg));
+                clients.getMeta().addStatus(Meta.STATUS_INCOMPLETE, "Unsupported signed_response_alg configured!");
+            }
+        }
+
+        List<OnBehalfOf> onBehalfOfs = new ArrayList<>();
+        if (currentClient.get("on_behalf_of") != null) {
+            for (Object onBehalfOf : ((JSONArray) currentClient.get("on_behalf_of"))) {
+                String tokenType = (String) ((JSONObject) onBehalfOf).get("token_type");
+                String alg = (String) ((JSONObject) onBehalfOf).get("alg");
+                onBehalfOfs.add(new OnBehalfOf(tokenType, alg));
+            }
+        }
+        clients.setOnBehalfOf(onBehalfOfs);
+
+        if (currentClient.get("client_name") != null) {
+            clients.setClientName((String) currentClient.get("client_name"));
+        } else {
+            clients.setClientName((String) currentClient.get("client_id"));
+        }
+        if (currentClient.get("tos_uri") != null) {
+            clients.setClientTosUri((String) currentClient.get("tos_uri"));
+        }
+        if (currentClient.get("policy_uri") != null) {
+            clients.setClientPolicyUri((String) currentClient.get("policy_uri"));
+        }
+        if (currentClient.get("logo_uri") != null) {
+            clients.setClientLogoUri((String) currentClient.get("logo_uri"));
+        }
+
+        Set<String> contacts = new HashSet<>();
+        if (currentClient.get("contacts") != null) {
+            for (Object contact : ((JSONArray) currentClient.get("contacts"))) {
+                contacts.add((String) contact);
+            }
+        }
+        clients.setClientContacts(contacts);
+
+        return clients;
     }
 }
 

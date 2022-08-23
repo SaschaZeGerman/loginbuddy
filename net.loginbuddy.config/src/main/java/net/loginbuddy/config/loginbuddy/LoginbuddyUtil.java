@@ -14,6 +14,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.config.Bootstrap;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
@@ -71,8 +72,10 @@ public enum LoginbuddyUtil implements Bootstrap {
                         if(retrieveAndRegister.get("error") == null) {
                             Providers readValue = MAPPER.readValue(retrieveAndRegister.toJSONString(), Providers.class);
                             next.enhanceToFull(readValue);
+                            next.setMeta(new Meta());
                         } else {
                             LOGGER.warning(String.format("Could not register: '%s'", retrieveAndRegister.get("error_description")));
+                            next.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, (String)retrieveAndRegister.get("error_description"));
                         }
                     }
                 }

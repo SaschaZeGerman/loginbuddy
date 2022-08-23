@@ -13,7 +13,12 @@
         "server_dynamic"
       ],
       "accept_dynamic_provider": true,
-      "on_behalf_of": [{"token_type":"id_token", "alg": "RS256"}]
+      "on_behalf_of": [{"token_type":"id_token", "alg": "RS256"}],
+      "client_name" : "Democlient",
+      "tos_uri": "https://example.com/termsofservice",
+      "policy_uri": "https://example.com/privacy",
+      "logo_uri": "https://example.com/logo",
+      "contacts": ["Sascha"]
     },
     {
       "client_id": "clientIdForTestingPurposesJwt",

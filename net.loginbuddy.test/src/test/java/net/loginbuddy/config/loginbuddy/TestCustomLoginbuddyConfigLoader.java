@@ -1,6 +1,7 @@
 package net.loginbuddy.config.loginbuddy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -86,10 +87,13 @@ public class TestCustomLoginbuddyConfigLoader {
     @Test
     public void TestMissingClientSecret() {
         try {
-            new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clientsUpdateMissingSecret.json"));
-            fail("confidential client misses a required client_secret");
+            List<Clients> clients = new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clientsUpdateMissingSecret.json"));
+            assertTrue(clients.size() == 2);
+            assertTrue(clients.get(0).getMeta().getStatus().size() == 0);
+            assertTrue(clients.get(1).getMeta().getStatus().size() == 1);
+            assertTrue(clients.get(1).getMeta().getStatus().containsKey(Meta.STATUS_INCOMPLETE));
         } catch (Exception e) {
-            assertTrue(true);
+            fail(e.getMessage());
         }
     }
 
