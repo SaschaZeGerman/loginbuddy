@@ -231,7 +231,7 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
 
         String responseMode = (String) currentProvider.get("response_mode");
         if (responseMode == null) {
-            providers.setResponseMode(Constants.RESPONSE_MODE_QUERY.getKey());
+            LOGGER.info("response_mode was not configured and is not set!");
         } else if (Constants.RESPONSE_MODE_QUERY.getKey().equalsIgnoreCase(responseMode) || Constants.RESPONSE_MODE_FORM_POST.getKey().equalsIgnoreCase(responseMode)) {
             providers.setResponseMode(responseMode);
         } else {
