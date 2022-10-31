@@ -44,6 +44,57 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
+    public void testLoadClientOnBehalfOf() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigOnBehalfOf.json"))));
+            Loginbuddy config = new LoginbuddyObjectMapper().readLoginbuddy((JSONObject)new JSONParser().parse(newConfig));
+            assertEquals("RS256", config.getClients().get(0).getOnBehalfOf().get(0).getAlg());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testDynamic() {
+        try {
+            String newConfig = "{\n" +
+                    "  \"clients\": [],\n" +
+                    "  \"providers\": [\n" +
+                    "    {\n" +
+                    "      \"provider\": \"server_dynamic\",\n" +
+                    "      \"issuer\": \"https://server.loginbuddy.net\",\n" +
+                    "      \"openid_configuration_uri\": \"https://server.loginbuddy.net/.well-known/openid-configuration\"\n" +
+                    "    },    {\n" +
+                    "      \"provider\": \"server_loginbuddy\",\n" +
+                    "      \"issuer\": \"https://demoserver.loginbuddy.net\",\n" +
+                    "      \"client_id\": \"loginbuddy_demoId\",\n" +
+                    "      \"client_secret\": \"loginbuddy_demoSecret\",\n" +
+                    "      \"authorization_endpoint\": \"https://demoserver.loginbuddy.net/authorize\",\n" +
+                    "      \"token_endpoint\": \"https://demoserver.loginbuddy.net/token\",\n" +
+                    "      \"userinfo_endpoint\": \"https://demoserver.loginbuddy.net/userinfo\",\n" +
+                    "      \"jwks_uri\": \"https://demoserver.loginbuddy.net/jwks\",\n" +
+                    "      \"scope\": \"openid profile email\",\n" +
+                    "      \"response_type\": \"code\",\n" +
+                    "      \"redirect_uri\": \"https://local.loginbuddy.net/callback\",\n" +
+                    "      \"mappings\": {\n" +
+                    "        \"key1\": \"value1\",\n" +
+                    "        \"key2\": \"value2\",\n" +
+                    "        \"key3\": \"value3\"\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+            Loginbuddy config = new LoginbuddyObjectMapper().readLoginbuddy((JSONObject)new JSONParser().parse(newConfig));
+            assertEquals("server_dynamic", config.getProviders().get(0).getProvider());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testLoadProvider() {
         assertEquals("loginbuddy_demoId", LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").getClientId());
         try {
@@ -76,6 +127,45 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
+    public void testUnknownTemplates() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigUnknownTemplate.json"))));
+            String newTemplate = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigTemplates.json"))));
+
+            new LoginbuddyObjectMapper().readLoginbuddy(
+                    (JSONObject) new JSONParser().parse(newConfig),
+                    (JSONObject) new JSONParser().parse(newTemplate)
+            );
+        } catch(IllegalArgumentException e) {
+            assertEquals("The referenced template: 'unKnownTemplate' is unknown for provider configuration: 'googleUnknown'", e.getMessage());
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testMissingTemplates() {
+        try {
+            String newConfig = HttpHelper.readMessageBody(
+                    new BufferedReader(
+                            new FileReader(
+                                    new File("src/test/resources/testConfigUnknownTemplate.json"))));
+
+            new LoginbuddyObjectMapper().readLoginbuddy((JSONObject) new JSONParser().parse(newConfig));
+        } catch(IllegalArgumentException e) {
+            assertEquals("At least one provider references a template but no templates were given! Provider: 'googleUnknown'", e.getMessage());
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testReplaceClientsWithCustomLoader() {
         try {
 
@@ -99,7 +189,7 @@ public class TestLoginbuddyConfig {
             for(Clients next : replaced) {
                 if("clientIdNotToBeLost".equals(next.getClientId())) {
                     containsClientId = true;
-                    return;
+                    break;
                 }
             }
             assertTrue(containsClientId);
@@ -183,14 +273,14 @@ public class TestLoginbuddyConfig {
         private List<Providers> myProviders;
 
         private Loginbuddy lb;
-        private ObjectMapper mapper;
+        private LoginbuddyObjectMapper mapper;
 
         private String dbLocation;
 
         public CustomLoginbuddyLoader() {
             this.myClients = new ArrayList<>();
             this.myProviders = new ArrayList<>();
-            mapper = new ObjectMapper();
+            mapper = new LoginbuddyObjectMapper();
             dbLocation = "src/test/resources/testCustomLoginbuddyConfig.json";
             load();
         }
@@ -198,9 +288,9 @@ public class TestLoginbuddyConfig {
         @Override
         public void load() {
             try {
-                lb = mapper.readValue(new File(dbLocation), Loginbuddy.class);
-                LOGGER.info(String.format("Loading custom test loginbuddy configuration: '%s'", dbLocation));
-            } catch (IOException e) {
+                lb = mapper.readLoginbuddy(new File(dbLocation));
+                LOGGER.info(String.format("Loading custom test Loginbuddy configuration: '%s'", dbLocation));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

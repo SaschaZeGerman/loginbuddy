@@ -1,6 +1,7 @@
 package net.loginbuddy.config.loginbuddy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,12 +32,14 @@ public class TestCustomLoginbuddyConfigLoader {
     @Test
     public void TestSaveClients() {
         try {
-            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json");
-            List<Clients> clients = Arrays.asList(new ObjectMapper().readValue(new File("src/test/resources/clients.json"), Clients[].class));
+            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader(
+                    "src/test/resources/config.json",
+                    "src/test/resources/configTemplates.json");
+            List<Clients> clients = new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clients.json"));
             ll.save(clients);
             assertEquals(1, ll.getLoginbuddy().getClients().size());
-            assertEquals("https://localhost/custom/loader", ll.getLoginbuddy().getClients().get(0).getRedirectUri());
-            assertEquals(5, ll.getLoginbuddy().getProviders().size());
+            assertTrue(ll.getLoginbuddy().getClients().get(0).isRegisteredRedirectUri("https://localhost/custom/loader"));
+            assertEquals(4, ll.getLoginbuddy().getProviders().size());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -45,8 +48,10 @@ public class TestCustomLoginbuddyConfigLoader {
     @Test
     public void TestUpdateClients() {
         try {
-            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json");
-            List<Clients> clients = Arrays.asList(new ObjectMapper().readValue(new File("src/test/resources/clientsUpdate.json"), Clients[].class));
+            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader(
+                    "src/test/resources/config.json",
+                    "src/test/resources/configTemplates.json");
+            List<Clients> clients = new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clientsUpdate.json"));
             ll.update(clients);
             assertEquals(4, ll.getLoginbuddy().getClients().size());
             boolean gotUpdated = false;
@@ -56,7 +61,7 @@ public class TestCustomLoginbuddyConfigLoader {
                 }
             }
             assertTrue(gotUpdated);
-            assertEquals(5, ll.getLoginbuddy().getProviders().size());
+            assertEquals(4, ll.getLoginbuddy().getProviders().size());
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -69,13 +74,36 @@ public class TestCustomLoginbuddyConfigLoader {
                     "src/test/resources/config.json",
                     "src/test/resources/configTemplates.json");
             List<Providers> providers = ll.getLoginbuddy().getProviders();
-            assertEquals("replacedClientId", providers.get(4).getClientId());
-            assertEquals("https://template.loginbuddy.net/authorize", providers.get(4).getAuthorizationEndpoint());
-            assertEquals(5, ll.getLoginbuddy().getProviders().size());
-            assertEquals("server_scope", ll.getLoginbuddy().getProviders().get(4).getScope());
-            assertEquals(false, ll.getLoginbuddy().getProviders().get(4).getPkce());
+            assertEquals("replacedClientId", providers.get(3).getClientId());
+            assertEquals("https://template.loginbuddy.net/authorize", providers.get(3).getAuthorizationEndpoint());
+            assertEquals(4, ll.getLoginbuddy().getProviders().size());
+            assertEquals("server_scope", ll.getLoginbuddy().getProviders().get(3).getScope());
+            assertFalse(ll.getLoginbuddy().getProviders().get(3).getPkce());
         } catch (Exception e) {
             fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void TestMissingClientSecret() {
+        try {
+            List<Clients> clients = new LoginbuddyObjectMapper().readClients(new File("src/test/resources/clientsUpdateMissingSecret.json"));
+            assertTrue(clients.size() == 2);
+            assertTrue(clients.get(0).getMeta().getStatus().size() == 0);
+            assertTrue(clients.get(1).getMeta().getStatus().size() == 1);
+            assertTrue(clients.get(1).getMeta().getStatus().containsKey(Meta.STATUS_INCOMPLETE));
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void TestMissingTemplates() {
+        try {
+            LoginbuddyLoader ll = new CustomLoginbuddyConfigLoader("src/test/resources/config.json");
+            fail("a template is referenced but not provided");
+        } catch (Exception e) {
+            assertEquals("At least one provider references a template but no templates were given! Provider: 'server_templated'", e.getMessage());
         }
     }
 }

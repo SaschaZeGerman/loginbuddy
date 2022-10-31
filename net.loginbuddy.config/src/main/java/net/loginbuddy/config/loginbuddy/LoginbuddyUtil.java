@@ -14,6 +14,7 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.config.Bootstrap;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public enum LoginbuddyUtil implements Bootstrap {
     private Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyUtil.class));
 
     private LoginbuddyLoader loader;
-    private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
+    private LoginbuddyObjectMapper MAPPER = new LoginbuddyObjectMapper();
 
     LoginbuddyUtil() {
         try {
@@ -59,19 +60,22 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     public List<Providers> getProviders() {
-        // need it from cache for provider configurations that used dynamic registrations. Otherwise we register again and again
+        // need it from cache for provider configurations that used dynamic registrations. Otherwise, we register again and again
         List<Providers> providers = (List<Providers>) LoginbuddyCache.CACHE.get("providers");
         try {
             if (providers == null) {
                 providers = loader.getLoginbuddy().getProviders();
                 for (Providers next : providers) {
+                    // dynamic registration is done at boot time. However, if that fails this section will try again
                     if (getProviderType(next).equals(ProviderConfigType.MINIMAL)) {
                         JSONObject retrieveAndRegister = HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(),DiscoveryUtil.UTIL.getRedirectUri());
                         if(retrieveAndRegister.get("error") == null) {
                             Providers readValue = MAPPER.readValue(retrieveAndRegister.toJSONString(), Providers.class);
                             next.enhanceToFull(readValue);
+                            next.setMeta(new Meta());
                         } else {
                             LOGGER.warning(String.format("Could not register: '%s'", retrieveAndRegister.get("error_description")));
+                            next.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, (String)retrieveAndRegister.get("error_description"));
                         }
                     }
                 }
@@ -97,10 +101,10 @@ public enum LoginbuddyUtil implements Bootstrap {
     // TODO make this thing more efficient
     public List<Providers> getProviders(String clientId) throws Exception {
         Clients cc = getClientConfigByClientId(clientId);
-        if (cc.getClientProviders() != null && cc.getClientProviders().length > 0) {
+        if (cc.getClientProviders().size() > 0) {
             List<Providers> result = new ArrayList<>();
             for (Providers pc : getProviders()) {
-                if (Arrays.asList(cc.getClientProviders()).contains(pc.getProvider())) {
+                if (cc.getClientProviders().contains(pc.getProvider())) {
                     result.add(pc);
                 }
             }
@@ -169,9 +173,9 @@ public enum LoginbuddyUtil implements Bootstrap {
         try {
             List<Clients> newClients = new ArrayList<>();
             if(clientsAsJsonString.startsWith("[")) {
-                newClients.addAll(Arrays.asList(MAPPER.readValue(clientsAsJsonString, Clients[].class)));
+                newClients.addAll(MAPPER.readClients(clientsAsJsonString));
             } else {
-                newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
+                newClients.add(MAPPER.readClient(clientsAsJsonString));
             }
             if(requestingClientId != null) {
                 if (getClientConfigByClientId(newClients, requestingClientId) == null) {
@@ -200,9 +204,9 @@ public enum LoginbuddyUtil implements Bootstrap {
         try {
             List<Clients> newClients = new ArrayList<>();
             if(clientsAsJsonString.startsWith("[")) {
-                newClients.addAll(Arrays.asList(MAPPER.readValue(clientsAsJsonString, Clients[].class)));
+                newClients.addAll(MAPPER.readClients(clientsAsJsonString));
             } else {
-                newClients.add(MAPPER.readValue(clientsAsJsonString, Clients.class));
+                newClients.add(MAPPER.readClient(clientsAsJsonString));
             }
             return loader.update(newClients);
         } catch(Exception e) {
@@ -251,7 +255,6 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     private ProviderConfigType getProviderType(Providers p) {
-        return p.getClientId() == null ? ProviderConfigType.MINIMAL
-                : p.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
+        return p.getClientId() == null ? ProviderConfigType.MINIMAL : p.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
     }
 }

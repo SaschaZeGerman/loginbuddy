@@ -128,7 +128,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 LOGGER.warning("Missing redirect_uri parameter!");
                 handleError(400, "Missing redirect_uri parameter!", response);
                 return;
-            } else if (cc.getRedirectUri().split("[,; ]").length != 1) {
+            } else if (cc.getRedirectUrisCount() != 1) {
                 LOGGER.warning("Missing redirect_uri parameter!");
                 handleError(400, "Missing redirect_uri parameter!", response);
                 return;
@@ -138,7 +138,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 checkRedirectUri = false; // it was not given, so no need to check for it at the token endpoint
             }
         }
-        if (Stream.of(cc.getRedirectUri().split("[,; ]")).noneMatch(clientRedirectUri::equals)) {
+        if (!cc.isRegisteredRedirectUri(clientRedirectUri)) {
             LOGGER.warning(String.format("Invalid redirect_uri: %s", clientRedirectUri));
             handleError(400, String.format("Invalid redirect_uri: %s", Sanetizer.checkForUrlPattern(clientRedirectUri, 256)), response);
             return;

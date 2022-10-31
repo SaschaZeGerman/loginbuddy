@@ -18,13 +18,13 @@ import java.util.logging.Logger;
 /**
  * This is a simple example of a custom loader. It enables updates of configurations at runtime which is not supported by default!
  * It leverages a simple file as its 'configuration database'. As a developer you may connect to a database if you wish.
- *
+ * <p>
  * This specific class is used with JUnit tests but also with the api test suite.
- *
+ * <p>
  * The class name is specified here: {loginbuddy}/apitest/docker/loginbuddy.properties
- *
+ * <p>
  * When the test suite launches the class 'net.loginbuddy.service.server.Overlord' instantiate this class.
- *
+ * <p>
  * For more details see {loginbuddy}/apitest/README.md
  */
 public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
@@ -32,11 +32,11 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
     private Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyConfigLoader.class));
 
     private Loginbuddy lb, lbProviderTemplates;
-    private ObjectMapper mapper;
+    private LoginbuddyObjectMapper mapper;
 
     private String dbLocation, providerTemplateLocation;
 
-    public CustomLoginbuddyConfigLoader() {
+    public CustomLoginbuddyConfigLoader() throws Exception {
         // this file location is used with Loginbuddys api tests ({loginbuddy}/apitest/docker)
         this(
                 "/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/testCustomLoginbuddyConfig.json",
@@ -44,32 +44,24 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
         );
     }
 
-    public CustomLoginbuddyConfigLoader(String dbLocation) {
+    public CustomLoginbuddyConfigLoader(String dbLocation) throws Exception {
         this(dbLocation, null);
     }
 
-    public CustomLoginbuddyConfigLoader(String dbLocation, String providerTemplates) {
-        mapper = new ObjectMapper();
+    public CustomLoginbuddyConfigLoader(String dbLocation, String providerTemplates) throws Exception {
+        mapper = new LoginbuddyObjectMapper();
         this.dbLocation = dbLocation;
         this.providerTemplateLocation = providerTemplates;
-        try {
-            load();
-        } catch (Exception e) {
-            LOGGER.severe(String.format("Custom loader could not be initialized! Error: '%s'", e.getMessage()));
-        }
+        load();
     }
 
     @Override
     public void load() throws Exception {
-        JSONObject configJson = (JSONObject)new JSONParser().parse(new FileReader(new File(dbLocation)));
-        if(providerTemplateLocation != null) {
-            LOGGER.info(String.format("Loading template configuration: '%s'", providerTemplateLocation));
-            JSONObject configTemplateJson = (JSONObject)new JSONParser().parse(new FileReader(new File(providerTemplateLocation)));
-            lb = mapper.readValue(Factory.getMergedConfigObject(configJson, configTemplateJson).toJSONString(), Loginbuddy.class);
-            LOGGER.info(String.format("Loaded custom test loginbuddy configuration with template. Config: '%s', template: '%s'", dbLocation, providerTemplateLocation));
-        } else {
-            lb = mapper.readValue(configJson.toJSONString(), Loginbuddy.class);
+        File configTemplateFile = null;
+        if (providerTemplateLocation != null) {
+            configTemplateFile = new File(providerTemplateLocation);
         }
+        lb = mapper.readLoginbuddy(new File(dbLocation), configTemplateFile);
         LOGGER.info(String.format("Loaded custom test loginbuddy configuration: '%s'", dbLocation));
     }
 
@@ -96,20 +88,20 @@ public class CustomLoginbuddyConfigLoader implements LoginbuddyLoader {
         if (configuration instanceof List && ((List) configuration).size() > 0) {
             if (((List) configuration).get(0) instanceof Clients) {
                 Set<Clients> all = new HashSet<>();
-                all.addAll((List<Clients>)configuration);
+                all.addAll((List<Clients>) configuration);
                 all.retainAll(lb.getClients());
                 all.addAll(lb.getClients());
                 lb.setClients(new ArrayList<>(all));
                 updateDbFileAndLoad();
-                return (T)lb.getClients();
+                return (T) lb.getClients();
             } else if (((List) configuration).get(0) instanceof Providers) {
                 Set<Providers> all = new HashSet<>();
-                all.addAll((List<Providers>)configuration);
+                all.addAll((List<Providers>) configuration);
                 all.retainAll(lb.getProviders());
                 all.addAll(lb.getProviders());
                 lb.setProviders(new ArrayList<>(all));
                 updateDbFileAndLoad();
-                return (T)lb.getProviders();
+                return (T) lb.getProviders();
             }
         }
         return configuration;

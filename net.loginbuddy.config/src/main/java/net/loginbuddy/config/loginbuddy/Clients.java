@@ -11,17 +11,14 @@ package net.loginbuddy.config.loginbuddy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.loginbuddy.config.loginbuddy.common.Meta;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Clients implements Serializable {
-
-    @JsonProperty("redirect_uri")
-    @JsonIgnore(false)
-    private String redirectUri;
 
     @JsonProperty("client_id")
     @JsonIgnore(false)
@@ -38,7 +35,7 @@ public class Clients implements Serializable {
     private String clientSecret;
 
     @JsonProperty("providers")
-    private String[] clientProviders;
+    private List<String> clientProviders;
 
     @JsonProperty("accept_dynamic_provider")
     private boolean acceptDynamicProvider;
@@ -47,11 +44,38 @@ public class Clients implements Serializable {
     private String signedResponseAlg;
 
     @JsonProperty("on_behalf_of")
-    private OnBehalfOf[] onBehalfOf;
+    private List<OnBehalfOf> onBehalfOf;
+
+    @JsonProperty("client_name")
+    private String clientName;
+
+    @JsonProperty("tos_uri")
+    private String clientTosUri;
+
+    @JsonProperty("policy_uri")
+    private String clientPolicyUri;
+
+    @JsonProperty("logo_uri")
+    private String clientLogoUri;
+
+    @JsonProperty("contacts")
+    private Set<String> clientContacts;
+
+    @JsonProperty("redirect_uris")
+    @JsonIgnore(false)
+    private Set<String> redirectUris;
+
+    @JsonProperty("_meta")
+    @JsonIgnore(false)
+    private Meta meta;
 
     public Clients() {
-        this.acceptDynamicProvider = false;
-        this.onBehalfOf = new OnBehalfOf[0];
+        acceptDynamicProvider = false;
+        clientContacts = new HashSet<>();
+        redirectUris = new HashSet<>();
+        clientProviders = new ArrayList<>();
+        onBehalfOf = new ArrayList<>();
+        meta = new Meta();
     }
 
     public Clients(String clientId, String clientType) {
@@ -61,7 +85,7 @@ public class Clients implements Serializable {
     }
 
     public String getRedirectUri() {
-        return redirectUri;
+        return (String)redirectUris.toArray()[0];
     }
 
     public String getClientUri() {
@@ -78,7 +102,7 @@ public class Clients implements Serializable {
         return clientType;
     }
 
-    public String[] getClientProviders() {
+    public List<String> getClientProviders() {
         return clientProviders;
     }
 
@@ -91,12 +115,16 @@ public class Clients implements Serializable {
         return signedResponseAlg;
     }
 
-    public OnBehalfOf[] getOnBehalfOf() {
+    public List<OnBehalfOf> getOnBehalfOf() {
         return onBehalfOf;
     }
 
+    public Meta getMeta() {
+        return meta;
+    }
+
     public void setRedirectUri(String redirectUri) {
-        this.redirectUri = redirectUri;
+        redirectUris.addAll(Arrays.asList(redirectUri.split("[,; ]")));
     }
 
     public void setClientId(String clientId) {
@@ -115,7 +143,7 @@ public class Clients implements Serializable {
         this.clientSecret = clientSecret;
     }
 
-    public void setClientProviders(String[] clientProviders) {
+    public void setClientProviders(List<String> clientProviders) {
         this.clientProviders = clientProviders;
     }
 
@@ -127,8 +155,96 @@ public class Clients implements Serializable {
         this.signedResponseAlg = signedResponseAlg;
     }
 
-    public void setOnBehalfOf(OnBehalfOf[] onBehalfOf) {
+    public void setOnBehalfOf(List<OnBehalfOf> onBehalfOf) {
         this.onBehalfOf = onBehalfOf;
+    }
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public void setClientName(String clientName) {
+        this.clientName = clientName;
+    }
+
+    public String getClientTosUri() {
+        return clientTosUri;
+    }
+
+    public void setClientTosUri(String clientTosUri) {
+        this.clientTosUri = clientTosUri;
+    }
+
+    public String getClientPolicyUri() {
+        return clientPolicyUri;
+    }
+
+    public void setClientPolicyUri(String clientPolicyUri) {
+        this.clientPolicyUri = clientPolicyUri;
+    }
+
+    public String getClientLogoUri() {
+        return clientLogoUri;
+    }
+
+    public void setClientLogoUri(String clientLogoUri) {
+        this.clientLogoUri = clientLogoUri;
+    }
+
+    public Set<String> getClientContacts() {
+        return clientContacts;
+    }
+
+    @JsonIgnore
+    public String getClientContactsAsString() {
+        return String.join(",", clientContacts);
+    }
+
+    public void setClientContacts(Set<String> clientContacts) {
+        this.clientContacts = clientContacts;
+    }
+
+    public boolean addContact(String contact) {
+        return clientContacts.add(contact);
+    }
+
+    public boolean removeContact(String contact) {
+        return clientContacts.remove(contact);
+    }
+
+    public Set<String> getRedirectUris() {
+        return redirectUris;
+    }
+
+    public void setRedirectUris(Set<String> redirectUris) {
+        this.redirectUris = redirectUris;
+    }
+
+    public void setMeta(Meta meta) {
+        this.meta = meta;
+    }
+
+    public boolean addRedirectUri(String redirectUri) {
+        return redirectUris.add(redirectUri);
+    }
+
+    public boolean removeRedirectUri(String redirectUri) {
+        return redirectUris.remove(redirectUri);
+    }
+
+    @JsonIgnore()
+    public int getRedirectUrisCount() {
+        return redirectUris.size();
+    }
+
+    @JsonIgnore()
+    public boolean isRegisteredRedirectUri(String redirectUri) {
+        return redirectUris.contains(redirectUri);
+    }
+
+    @JsonIgnore()
+    public boolean isUsable() {
+        return meta.getStatus().size() == 0;
     }
 
     @Override

@@ -23,6 +23,14 @@ public class OnBehalfOf {
         alg = AlgorithmIdentifiers.RSA_USING_SHA256;
     }
 
+    public OnBehalfOf(String tokenType, String alg) {
+        this();
+        if(alg != null) {
+            this.alg = alg;
+        }
+        this.tokenType = tokenType;
+    }
+
     public String getTokenType() {
         return tokenType;
     }

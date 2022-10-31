@@ -13,6 +13,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.logging.Logger" %>
 <%@ page import="jakarta.servlet.http.HttpServletRequest" %>
+<%@ page import="net.loginbuddy.config.loginbuddy.Clients" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%!
@@ -33,7 +34,7 @@
         try {
             providerConfigs = LoginbuddyUtil.UTIL.getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
         } catch (Exception e) {
-          e.printStackTrace();
+            e.printStackTrace();
             // should never occur, this would have been caught in Providers
             LOGGER.severe("The system has not been configured yet!");
             throw new IllegalStateException("The system has not been configured yet!");
@@ -87,6 +88,39 @@
 
         return providers.toString();
     }
+
+    private String createClientDetails(HttpServletRequest request) {
+
+        if (request.getParameter("session") == null || request.getParameterValues("session").length > 1 || request
+                .getParameter("session").equals(request.getSession().getId())) {
+            LOGGER.warning("The current session is invalid or it has expired!");
+            throw new IllegalStateException("The current session is invalid or it has expired!");
+        }
+        String sessionId = request.getParameter("session");
+
+        SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(sessionId);
+        Clients client = null;
+        try {
+            client = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // should never occur, this would have been caught in Providers
+            LOGGER.severe("The system has not been configured yet!");
+            throw new IllegalStateException("The system has not been configured yet!");
+        }
+
+        StringBuilder clientDetails = new StringBuilder();
+        clientDetails.append("<ul class=\"list-group\">");
+        clientDetails.append("<li class=\"list-group-item\"><strong>Client Name:</strong> ").append(client.getClientName()).append("</li>");
+        clientDetails.append("<li class=\"list-group-item\"><strong>Client URL:</strong> ").append(client.getClientUri()).append("</li>");
+        clientDetails.append("<li class=\"list-group-item\"><strong>Terms of Service URL:</strong> ").append(client.getClientTosUri()).append("</li>");
+        clientDetails.append("<li class=\"list-group-item\"><strong>Privacy Policy URL:</strong> ").append(client.getClientPolicyUri()).append("</li>");
+        clientDetails.append("<li class=\"list-group-item\"><strong>Logo URL:</strong> ").append(client.getClientLogoUri()).append("</li>");
+        clientDetails.append("<li class=\"list-group-item\"><strong>Contacts:</strong>  ").append(client.getClientContactsAsString()).append("</li>");
+        clientDetails.append("</ul>");
+
+        return clientDetails.toString();
+    }
 %>
 
 <html>
@@ -121,12 +155,22 @@
     <h1>Welcome to Loginbuddy!<br/><small>Provider Selection Page</small></h1>
     <hr/>
     <h3>What do I see here?</h3>
-    <p>In a real world scenario your application would host this page, making it look nicer. If not, Loginbuddy will generate this page, displaying all social providers that have been configured.</p>
+    <p>In a real world scenario your application would host this page, making it look nicer. If not, Loginbuddy will generate this page, displaying all social
+        providers that have been configured.</p>
     <p><strong>Note: </strong>This page only appears if no pre-selection of a provider has been made (via parameter 'provider').</p>
+    <h3>Details about the client application</h3>
+    <p>Loginbuddy supports multiple clients and for each one supported providers can be configured. The current client has the following details:</p>
+
+    <%=
+    createClientDetails(request)
+    %>
+    <p>After a provider is chosen, the authentication result is returned to this client.</p>
+
     <h3>Choose your provider</h3>
-    <p>The images below represent configured and supported providers one can choose from.</p>
+    <p>The images below represent configured and supported providers one can choose from. They are specific to the client application that is used.</p>
     <p><strong>FAKE</strong> is simulating a 'real' provider. Clicking it will result in an example response how it would look.</p>
-    <p><strong>FAKE, DynamicRegistrationDemo (with https demo only)</strong> is the same as FAKE but Loginbuddy registered itself at the provider using <strong>OpenID Dynamic Registration</strong>.</p>
+    <p><strong>FAKE, DynamicRegistrationDemo (with https demo only)</strong> is the same as FAKE but Loginbuddy registered itself at the provider using <strong>OpenID
+        Dynamic Registration</strong>.</p>
 
     <%=
     createProvidersTable(request)

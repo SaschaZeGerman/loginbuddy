@@ -31,6 +31,7 @@ apitest/soapui/testresults/*
 apitest/tempfiles/*
 net.loginbuddy.test/src/test/resources/config.json
 apitest/docker/testCustomLoginbuddyConfig.json
+apitest/docker/test-classes/
 
 # files for local development
 dev

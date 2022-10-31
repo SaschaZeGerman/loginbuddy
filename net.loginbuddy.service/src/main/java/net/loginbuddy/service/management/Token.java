@@ -53,8 +53,8 @@ public class Token extends HttpServlet {
             return;
         }
 
-        if(clientCredentialsResult.getClients().getClientProviders().length == 1 &&
-                clientCredentialsResult.getClients().getClientProviders()[0].equalsIgnoreCase("loginbuddy") &&
+        if(clientCredentialsResult.getClients().getClientProviders().size() == 1 &&
+                clientCredentialsResult.getClients().getClientProviders().get(0).equalsIgnoreCase("loginbuddy") &&
                 clientCredentialsResult.getClients().getClientType().equalsIgnoreCase(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey()) &&
                 Constants.GRANT_TYPE_CLIENT_CREDENTIALS.getKey().equalsIgnoreCase(grantTypeResult.getValue())) {
 
