@@ -18,7 +18,6 @@
         <module>net.loginbuddy.oidcdr</module>
         <module>net.loginbuddy.demoserver</module>
         <module>net.loginbuddy.democlient</module>
-        <module>net.loginbuddy.test</module>
     </modules>
 
     <properties>

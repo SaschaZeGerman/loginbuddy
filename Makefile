@@ -4,7 +4,6 @@ build_all:
 	docker build --no-cache --tag saschazegerman/loginbuddy-demo:latest -f Dockerfile_demosetup .
 	docker build --no-cache --tag saschazegerman/loginbuddy-sidecar:latest -f Dockerfile_sidecar .
 	docker build --no-cache --tag saschazegerman/loginbuddy-oidcdr:latest -f Dockerfile_oidcdr .
-	docker build --no-cache --tag saschazegerman/loginbuddy-test:latest -f Dockerfile_test .
 	docker build --no-cache --tag saschazegerman/loginbuddy-demoserver:latest -f Dockerfile_demoserver .
 
 docker_run_demo:
