@@ -10,7 +10,7 @@ The high level design looks like this:
 
 # Getting started 
 
-To get started, checkout the [https://github.com/SaschaZeGerman/loginbuddy-samples](samples project) or visit the online version at [https://loginbuddy.net](https://loginbuddy.net).
+To get started, checkout the [samples project](https://github.com/SaschaZeGerman/loginbuddy-samples) or visit the online version at [https://loginbuddy.net](https://loginbuddy.net).
 
 Loginbuddy includes configuration templates for common OpenID providers which simplifies the configuration effort:
 
