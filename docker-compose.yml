@@ -1,27 +1,62 @@
-#
-# This docker compose file is an example. To make it work do the following:
-#
-# - create the referenced 'logibbuddy.p12' file BEFORE you use loginbuddy
-# - have the key signed by a public CA (i.e.: Let's Encrypt)
-# - update the 'volumes' section to map the correct p12 keystore location
-#
-# As long as you are in development mode, use 'docker-compose-demosetup.yml' instead. It takes care of
-# creating and updating temporary keystore files.
-#
-# The loginbuddy wiki has instructions on how to leverage 'Let's Encrypt' for signing purposes!
-#
-#version: '3.4'
-#services:
-#  loginbuddy:
-#    image: saschazegerman/loginbuddy:latest
+version: '3.4'
+services:
+
+  # This is an example for a simple loginbuddy configuration.
+  # The referenced file './dev/loginbuddy.p12' and 'SSL_PWD' are available after executing 'sh initialize-dev-environment.sh'.
+  # Before running 'docker-compose up' update these files:
+  # - ./net.loginbuddy.service/src/main/resources/config.json : add any client and provider configuration to your needs
+  # - ./net.loginbuddy.service/src/main/resources/discovery.json : replace {your-domain} with your hostname (i.e.: local.loginbuddy.net)
+  # - ./net.loginbuddy.service/src/main/resources/permissions.policy : add any domain that Loginbuddy should connect to.
+  # - View this project to find an example: https://github.com/SaschaZeGerman/loginbuddy-samples/tree/master/docker-build/add-ons/loginbuddy
+  # After updating those files run 'make build_all'.
+  # - Alternatively, mount those files as volumes. Here are examples: https://github.com/SaschaZeGerman/loginbuddy-samples/blob/master/docker-compose.yml
+  # INFO: The 'depends_on' and 'environment: SUPPORT_OIDCDR=true' configuration is only required if OpenID Connect Dynamic Registrations should be supported
+  #
+  loginbuddy:
+    image: saschazegerman/loginbuddy:latest
+    container_name: loginbuddy
+    restart: always
+    hostname: local.loginbuddy.net
+#    depends_on:
+#      - loginbuddy-oidcdr
+    ports:
+      - "443:443"
+    volumes:
+      - ./dev/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
+    environment:
+      - "SSL_PWD=${SSL_PWD}"
+#      - "SUPPORT_OIDCDR=true"
+
+  # This image can be configured in the same way as loginbuddy.
+  # IMPORTANT: do not expose ports, this image should only be accessible within the closed docker network!
+  # This image can be used instead of loginbuddy as a side-car to application containers
+  # Applications can connect via: https://loginbuddy-sidecar:444 or http://loginbuddy-sidecar:8044
+  # Before running 'docker-compose up' update these files:
+  # - ./net.loginbuddy.sidecar/src/main/resources/config.json : add any provider configuration to your needs (clients are not needed)
+  # - ./net.loginbuddy.sidecar/src/main/resources/discovery.json : replace {your-domain} with your application hostname (as configured for OAuth redirect_uri)
+  # - ./net.loginbuddy.sidecar/src/main/resources/permissions.policy : add any domain that Loginbuddy should connect to.
+  # - View this project to find an example: https://github.com/SaschaZeGerman/loginbuddy-samples/tree/master/docker-build/add-ons/loginbuddy
+  # After updating those files run 'make build_all'.
+  # - Alternatively, mount those files as volumes. Here are examples: https://github.com/SaschaZeGerman/loginbuddy-samples/blob/master/docker-compose.yml
+  # INFO: The 'depends_on' and 'environment' configuration is only required if OpenID Connect Dynamic Registrations should be supported
+  #
+#  loginbuddy-sidecar:
+#    image: saschazegerman/loginbuddy-sidecar:latest
+#    container_name: loginbuddy-sidecar
 #    restart: always
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - /opt/loginbuddy/permissions.policy:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/permissions.policy
-#      - /opt/loginbuddy/config.json:/usr/local/tomcat/webapps/ROOT/classes/config.json
-#      - /opt/loginbuddy/discovery.json:/usr/local/tomcat/webapps/ROOT/classes/discovery.json
-#      - /opt/certs/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
+#    hostname: loginbuddy-sidecar
+#    depends_on:
+#      - loginbuddy-oidcdr
 #    environment:
-#      - "SSL_PWD=thepasswordfortheprivatekeythatwasmappedasvolume"
+#      - "SUPPORT_OIDCDR=true"
+
+  # There is nothing more to configure for this image.
+  # IMPORTANT: do not expose ports, this image should only be accessible within the closed docker network!
+  # This image will handle OpenID Connect Dynamic Registrations and should be used with loginbuddy or loginbuddy-sidecar.
+  # loginbuddy and loginbuddy-sidecar will connect via: https://loginbuddy-oidcdr:445
+  #
+#  loginbuddy-oidcdr:
+#    image: saschazegerman/loginbuddy-oidcdr:latest
+#    container_name: loginbuddy-oidcdr
+#    restart: always
+#    hostname: loginbuddy-oidcdr
