@@ -44,10 +44,12 @@ public enum Jwt {
             RsaJsonWebKey rsaJwk = RsaJwkGenerator.generateJwk(2048);
             rsaJwk.setKeyId(UUID.randomUUID().toString());
             rsaJwk.setUse("sig");
+            rsaJwk.setAlgorithm(AlgorithmIdentifiers.RSA_USING_SHA256);
 
             EllipticCurveJsonWebKey ecJwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
             ecJwk.setKeyId(UUID.randomUUID().toString());
             ecJwk.setUse("sig");
+            ecJwk.setAlgorithm(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
 
             jwks = new JsonWebKeySet();
             jwks.addJsonWebKey(rsaJwk);
