@@ -1,9 +1,7 @@
 #
-# NOTE: The file .env will be replaced whenever the script gets executed again!
-#
 # DO NOT MODIFY THIS FILE, MODIFY .env ONCE IT WAS CREATED!
 #
-# The assumption is that 'initialize-dev-environment.sh' gets executed only once.
+# The assumption is that 'initialize-dev-environment.sh' gets executed only once nd generates .env.
 #
 
 # This hostname is used to generate the keypair for SSL/TLS connections during development
