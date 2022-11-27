@@ -19,9 +19,9 @@ public class Sanetizer {
             return "";
         }
         String result = input
+                .replaceAll("&", "&amp;")
                 .replaceAll("<","&lt;")
                 .replaceAll(">","&gt;")
-                .replaceAll("&", "&amp;")
                 .replaceAll("\"","&quot;")
                 .replaceAll("'", "&#x27;")
                 .replaceAll("/", "&#x2F;");
