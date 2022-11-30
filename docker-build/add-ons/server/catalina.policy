@@ -188,4 +188,8 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
 
     // required since Loginbuddy loads configuration at startup
     permission java.lang.RuntimePermission "accessClassInPackage.org.apache.catalina.webresources";
+
+    // required since Loginbuddy now has a feature to load certificates as a built in feature
+    permission java.lang.RuntimePermission "getenv.SSL_TRUSTED_SERVER";
+    permission java.io.FilePermission "/usr/local/openjdk-11/lib/security/cacerts", "read,write";
 };

@@ -11,7 +11,6 @@ COPY docker-build/add-ons/templates/configTemplates.json /usr/local/tomcat/webap
 COPY docker-build/add-ons/templates/hazelcastPermissions.policy /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/hazelcastPermissions.policy
 
 COPY docker-build/add-ons/server/catalina.policy /usr/local/tomcat/conf/catalina.policy
-COPY docker-build/add-ons/server/loginbuddy_oidcdr_import.sh /opt/docker/loginbuddy_oidcdr_import.sh
 
 # Create directory for holding SSL keys
 #

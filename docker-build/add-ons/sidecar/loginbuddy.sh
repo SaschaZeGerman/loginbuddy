@@ -43,10 +43,6 @@ sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@httpport@@"/${HTTP_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 
-# check if dynamic registration should be supported
-#
-sh /opt/docker/loginbuddy_oidcdr_import.sh
-
 # overwrite the variables since they are not needed anywhere anymore
 #
 export HOSTNAME_LOGINBUDDY=
