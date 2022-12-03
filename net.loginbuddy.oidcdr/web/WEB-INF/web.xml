@@ -21,6 +21,13 @@
                       http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
+    <!-- Load the configuration. No servlet-mapping required -->
+    <servlet>
+        <servlet-name>Bootstrap</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.server.Overlord</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
     <servlet>
         <servlet-name>OidcDrRegistation</servlet-name>
         <servlet-class>net.loginbuddy.oidcdr.oidc.Registration</servlet-class>

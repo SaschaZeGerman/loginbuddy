@@ -1,34 +1,45 @@
 package net.loginbuddy.oidcdr.oidc;
 
+import jakarta.servlet.http.HttpServlet;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.oidcdr.OIDCDRMaster;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class JwksUri  extends OIDCDRMaster {
+public class JwksUri extends HttpServlet {
 
-  private static Logger LOGGER = Logger.getLogger(String.valueOf(JwksUri.class));
+    private static Logger LOGGER = Logger.getLogger(String.valueOf(JwksUri.class));
 
-  @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-    ParameterValidatorResult targetEndpointResult = ParameterValidator
-        .getSingleValue(request.getParameterValues(Constants.TARGET_PROVIDER.getKey()));
+        try {
+            OIDCDRMaster.checkClientConnection(request);
+        } catch (IllegalAccessException e) {
+            LOGGER.warning(e.getMessage());
+            response.setStatus(400);
+            response.setContentType("application/json");
+            response.getWriter().write(e.getMessage());
+            return;
+        }
 
-    MsgResponse msg= HttpHelper.getAPI(targetEndpointResult.getValue());
+        ParameterValidatorResult targetEndpointResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.TARGET_PROVIDER.getKey()));
 
-    // TODO: validate msg as good as possible
-    response.setStatus(msg.getStatus());
-    response.setContentType(msg.getContentType());
-    response.getWriter().write(msg.getMsg());
+        MsgResponse msg = HttpHelper.getAPI(targetEndpointResult.getValue());
 
-  }
+        // TODO: validate msg as good as possible
+        response.setStatus(msg.getStatus());
+        response.setContentType(msg.getContentType());
+        response.getWriter().write(msg.getMsg());
+
+    }
 
 }
