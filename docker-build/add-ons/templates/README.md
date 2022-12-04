@@ -8,5 +8,3 @@
   - this file is also part of **saschazegerman/loginbuddy:latest** and **saschazegerman/loginbuddy-sidecar:latest**
 - **permissionsTemplate.policy**
   - this file contains the permissions that may be added to support a templated provider
-- **hazelcastPermissions.policy**
-  - this file contains the permissions that need to be added when using hazelcast as a remote cache provider

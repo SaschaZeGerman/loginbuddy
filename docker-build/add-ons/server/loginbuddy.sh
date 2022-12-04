@@ -71,9 +71,9 @@ sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
 
 # overwrite the variables since they are not needed anywhere anymore
 #
-export HOSTNAME_LOGINBUDDY=
-export SSL_PORT=
-export UUID=
+unset HOSTNAME_LOGINBUDDY=
+unset SSL_PORT=
+unset UUID=
 
 # run the original tomcat entry point command as specified in tomcat's Dockerfile
 #

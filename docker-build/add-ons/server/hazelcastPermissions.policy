@@ -22,4 +22,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
     permission java.util.PropertyPermission "user.dir", "read";
     permission java.lang.RuntimePermission "accessDeclaredMembers";
+
+    // required since hazelcast 5.2.1
+    permission java.lang.RuntimePermission "createClassLoader";
 };

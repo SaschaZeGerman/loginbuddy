@@ -32,12 +32,14 @@ public enum LoginbuddyCache {
             if(System.getenv("HAZELCAST") != null) {
                 try {
                     cache = new RemoteCache(System.getenv("HAZELCAST"));
+                    LOGGER.info("Connected to hazelcast server(s) as session and cache store");
                 } catch(Exception e) {
-                    LOGGER.severe(String.format("Hazelcast cluster cannot be reached. Fallback to local cache. Error: %s", e.getMessage()));
+                    LOGGER.warning(String.format("Hazelcast cluster cannot be reached. Fallback to local cache. Error: %s", e.getMessage()));
                     cache = (Cache) envCtx.lookup("bean/CacheFactory");
                 }
             } else {
                 cache = (Cache) envCtx.lookup("bean/CacheFactory");
+                LOGGER.info("Connected to local session and cache store");
             }
             removeExpiredEntries();
         } catch (Exception e) {
