@@ -29,11 +29,7 @@ public class Overlord extends HttpServlet {
     public void init() throws ServletException {
         super.init();
 
-        try {
-            loadTrustedServers();
-        } catch (Exception e) {
-            LOGGER.warning( String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
-        }
+        HttpHelper.loadTrustedServers();
 
         // initialize the configuration. If this fails, there is no reason to continue
 
@@ -69,29 +65,6 @@ public class Overlord extends HttpServlet {
         } else {
             LOGGER.severe("Stopping Loginbuddy since its configuration could not be loaded! Fix that first!");
             System.exit(0);
-        }
-    }
-
-    private void loadTrustedServers() throws IOException, NoSuchAlgorithmException, KeyManagementException, CertificateException, KeyStoreException {
-
-        String servers = System.getenv("SSL_TRUSTED_SERVER");
-        if (servers != null && servers.trim().length() > 0) {
-            LOGGER.info("Connecting to trusted servers!");
-            CertificateManager cm = new CertificateManager();
-            for (String server : servers.split(",")) {
-                List<Certificate> certificates = cm.retrieveTrustedCert(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
-                cm.addToTruststore(certificates);
-            }
-        }
-
-        String oidcdr = System.getenv("SUPPORT_OIDCDR");
-        if (Boolean.parseBoolean(oidcdr)) {
-            LOGGER.info("connecting to loginbuddy-oidcdr");
-            CertificateManager cm = new CertificateManager();
-            List<Certificate> certificates = cm.retrieveTrustedCert("loginbuddy-oidcdr", 445);
-            cm.addToTruststore(certificates);
-        } else {
-            LOGGER.info("loginbuddy-oidcdr was not requested");
         }
     }
 

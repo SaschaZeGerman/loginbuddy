@@ -1,6 +1,7 @@
 package net.loginbuddy.common.api;
 
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.CertificateManager;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
@@ -26,6 +27,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -327,4 +333,41 @@ public class HttpHelper {
     }
     return result;
   }
+
+
+  /**
+   * Tries to connect to servers to import self-signed SSL certificates as trusted certificates. Intended for development purposes. The list of server is provided via env variable SSL_TRUSTED_SERVER
+   */
+  public static void loadTrustedServers() {
+    String servers = null;
+    try {
+      servers = System.getenv("SSL_TRUSTED_SERVER");
+    } catch (Exception e) {
+      LOGGER.warning(String.format("Variable SSL_TRUSTED_SERVER is not accessible and therefore no self-signed certs are imported: %s", e.getMessage()));
+    }
+    servers = servers == null ? "" : servers;
+    try {
+      String oidcdr = System.getenv("SUPPORT_OIDCDR");
+      if (Boolean.parseBoolean(oidcdr)) {
+        servers = "loginbuddy-oidcdr:445,".concat(servers);
+      } else {
+        LOGGER.info("loginbuddy-oidcdr was not requested");
+      }
+    } catch (Exception e) {
+      LOGGER.warning(String.format("Variable SUPPORT_OIDCDR is not accessible and therefore its certificate is not imported: %s", e.getMessage()));
+    }
+    try {
+      if (servers.trim().length() > 0) {
+        LOGGER.info("Connecting to trusted servers!");
+        CertificateManager cm = new CertificateManager();
+        for (String server : servers.split(",")) {
+          List<Certificate> certificates = cm.retrieveTrustedCert(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
+          cm.addToTruststore(certificates);
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.warning(String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
+    }
+  }
+
 }
