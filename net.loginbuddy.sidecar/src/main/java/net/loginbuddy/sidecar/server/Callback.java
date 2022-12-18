@@ -47,6 +47,11 @@ public class Callback extends CallbackParent {
                 return;
             }
 
+            if(sessionCtx.getString(Constants.CLIENT_STATE.getKey())!= null) {
+                response.setHeader("X-State", sessionCtx.getString(Constants.CLIENT_STATE.getKey()));
+            }
+            response.setContentType("application/json");
+
 // ***************************************************************
 // ** If we did not get a valid code parameter we are done
 // ***************************************************************
@@ -177,6 +182,7 @@ public class Callback extends CallbackParent {
 
         } catch (Exception e) {
             LOGGER.warning(String.format("authorization request failed: %s", e.getMessage()));
+            response.setStatus(400);
             response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "authorization request failed").toJSONString());
         }
     }
