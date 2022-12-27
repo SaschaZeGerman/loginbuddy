@@ -43,3 +43,5 @@ dev
 !net.loginbuddy.service/web/images/*.png
 !docker-build/add-ons/demosetup/*.png
 !doc/intellij-logo.png
+
+hsperfdata_root
