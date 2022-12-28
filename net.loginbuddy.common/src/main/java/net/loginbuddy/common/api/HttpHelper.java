@@ -21,17 +21,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -368,6 +362,19 @@ public class HttpHelper {
     } catch (Exception e) {
       LOGGER.warning(String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
     }
+  }
+
+  public static String createJsonErrorResponse(String value) {
+    return createJsonErrorResponse(value, "");
+  }
+
+  public static String createJsonErrorResponse(String value, String toLogger) {
+    if (toLogger != null && toLogger.trim().length() > 0) {
+      LOGGER.warning(value.concat(": ").concat(toLogger));
+    } else {
+      LOGGER.warning(value);
+    }
+    return HttpHelper.getErrorAsJson("invalid_request", value).toJSONString();
   }
 
 }

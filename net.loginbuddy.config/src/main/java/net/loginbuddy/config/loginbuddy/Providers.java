@@ -11,7 +11,6 @@ package net.loginbuddy.config.loginbuddy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.json.simple.JSONObject;

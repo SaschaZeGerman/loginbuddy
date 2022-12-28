@@ -1,5 +1,7 @@
 package net.loginbuddy.sidecar.server;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ExchangeBean;
@@ -7,14 +9,12 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.loginbuddy.*;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
 import net.loginbuddy.sidecar.util.SessionContext;
 import org.json.simple.JSONObject;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Date;

@@ -1,14 +1,14 @@
 package net.loginbuddy.service.management;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.management.AccessToken;
 import net.loginbuddy.config.management.AccessTokenLocation;
 import net.loginbuddy.config.management.ConfigurationTypes;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

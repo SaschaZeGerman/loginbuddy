@@ -1,11 +1,11 @@
 package net.loginbuddy.service.server;
 
-import net.loginbuddy.config.discovery.DiscoveryUtil;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
+
 import java.io.IOException;
 
 public class Discovery extends HttpServlet {

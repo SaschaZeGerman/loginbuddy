@@ -1,5 +1,7 @@
 package net.loginbuddy.service.client;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
@@ -7,13 +9,10 @@ import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
-import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.logging.Logger;
 

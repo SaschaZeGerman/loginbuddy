@@ -1,12 +1,13 @@
 package net.loginbuddy.service.server;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AuthorizePar extends AuthorizationHandler {
@@ -21,7 +22,7 @@ public class AuthorizePar extends AuthorizationHandler {
         response.setContentType("application/json");
         response.addHeader("Cache-Control", "no-store");
         response.addHeader("Pragma", "no-cache");
-        response.getWriter().write(Overlord.createJsonErrorResponse(errorMsg));
+        response.getWriter().write(HttpHelper.createJsonErrorResponse(errorMsg));
     }
 
     @Override

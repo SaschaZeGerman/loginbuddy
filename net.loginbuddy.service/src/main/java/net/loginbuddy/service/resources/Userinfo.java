@@ -1,5 +1,8 @@
 package net.loginbuddy.service.resources;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
@@ -9,9 +12,6 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.service.server.Overlord;
 import org.json.simple.JSONObject;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class Userinfo extends Overlord {

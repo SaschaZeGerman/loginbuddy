@@ -3,7 +3,6 @@ package net.loginbuddy.service.util;
 import net.loginbuddy.common.cache.LoginbuddyContext;
 import net.loginbuddy.common.config.Constants;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 public class SessionContext extends LoginbuddyContext {

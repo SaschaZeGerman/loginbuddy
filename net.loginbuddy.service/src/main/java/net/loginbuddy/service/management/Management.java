@@ -1,8 +1,7 @@
 package net.loginbuddy.service.management;
 
-import net.loginbuddy.config.discovery.DiscoveryUtil;
-
 import jakarta.servlet.http.HttpServlet;
+import net.loginbuddy.config.discovery.DiscoveryUtil;
 
 public abstract class Management extends HttpServlet {
 

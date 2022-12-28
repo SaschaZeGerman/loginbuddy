@@ -1,6 +1,5 @@
 package net.loginbuddy.config.loginbuddy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import hthurow.tomcatjndi.TomcatJNDI;
 import net.loginbuddy.common.api.HttpHelper;
 import org.apache.http.MethodNotSupportedException;
@@ -10,7 +9,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;

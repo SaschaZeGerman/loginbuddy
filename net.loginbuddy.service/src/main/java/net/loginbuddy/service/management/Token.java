@@ -1,5 +1,9 @@
 package net.loginbuddy.service.management;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Jwt;
@@ -10,10 +14,6 @@ import net.loginbuddy.config.scope.LoginbuddyScope;
 import net.loginbuddy.service.server.ClientAuthenticator;
 import org.json.simple.JSONObject;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

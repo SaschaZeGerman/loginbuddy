@@ -1,9 +1,8 @@
 package net.loginbuddy.sidecar.server;
 
-import net.loginbuddy.common.api.HttpHelper;
-
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
+import net.loginbuddy.common.api.HttpHelper;
 
 public class SidecarMaster extends HttpServlet {
 

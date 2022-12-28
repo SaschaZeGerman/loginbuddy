@@ -1,11 +1,11 @@
 package net.loginbuddy.service.server;
 
-import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.common.util.Jwt;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
+import net.loginbuddy.common.util.Jwt;
+
 import java.io.IOException;
 
 public class Jwks extends Overlord {

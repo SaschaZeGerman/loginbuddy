@@ -1,5 +1,6 @@
 package net.loginbuddy.config.management;
 
+import jakarta.servlet.http.HttpServletRequest;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
@@ -13,7 +14,6 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.keys.resolvers.JwksVerificationKeyResolver;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.logging.Logger;
 
 public class AccessToken {
