@@ -269,7 +269,7 @@ public class TestLoginbuddyConfig {
 
     class CustomLoginbuddyLoader implements LoginbuddyLoader {
 
-        private Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyLoader.class));
+        private final Logger LOGGER = Logger.getLogger(String.valueOf(CustomLoginbuddyLoader.class));
 
         private List<Clients> myClients;
         private List<Providers> myProviders;

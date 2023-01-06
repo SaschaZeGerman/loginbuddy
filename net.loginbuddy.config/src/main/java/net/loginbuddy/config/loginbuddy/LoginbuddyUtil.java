@@ -26,7 +26,7 @@ public enum LoginbuddyUtil implements Bootstrap {
 
     UTIL;
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyUtil.class));
+    private final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyUtil.class));
 
     private LoginbuddyLoader loader;
     private LoginbuddyObjectMapper MAPPER = new LoginbuddyObjectMapper();

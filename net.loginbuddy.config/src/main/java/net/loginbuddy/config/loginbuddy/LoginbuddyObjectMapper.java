@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 public class LoginbuddyObjectMapper extends ObjectMapper {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyObjectMapper.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(LoginbuddyObjectMapper.class));
 
     public LoginbuddyObjectMapper() {
         SimpleModule moduleClientsObjectDeserializer = new SimpleModule("ClientsObjectDeserializer", new Version(1, 0, 0, null, null, null));
@@ -131,7 +131,7 @@ public class LoginbuddyObjectMapper extends ObjectMapper {
 
 class ProviderObjectDeserializer extends StdDeserializer<Providers> {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(ProviderObjectDeserializer.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ProviderObjectDeserializer.class));
 
     public ProviderObjectDeserializer() {
         this(null);
@@ -282,7 +282,7 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
 
 class ClientObjectDeserializer extends StdDeserializer<Clients> {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(ClientObjectDeserializer.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(ClientObjectDeserializer.class));
 
     public ClientObjectDeserializer() {
         this(null);

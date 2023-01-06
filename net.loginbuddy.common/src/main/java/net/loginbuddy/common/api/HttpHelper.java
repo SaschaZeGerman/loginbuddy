@@ -37,7 +37,7 @@ public class HttpHelper {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(HttpHelper.class));
 
-  private static Pattern urlPattern = Pattern.compile("^http[s]?://[a-zA-Z0-9.\\-:/]{1,92}");
+  private static final Pattern urlPattern = Pattern.compile("^http[s]?://[a-zA-Z0-9.\\-:/]{1,92}");
 
   public HttpHelper() {
   }

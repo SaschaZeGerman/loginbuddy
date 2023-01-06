@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Discovery implements Bootstrap {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(Discovery.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Discovery.class));
 
     private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 

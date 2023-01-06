@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 public class CertificateManager {
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(CertificateManager.class));
+    private static final Logger LOGGER = Logger.getLogger(String.valueOf(CertificateManager.class));
 
     /**
      * Connect to a host that uses a self-signed (untrusted) certificate

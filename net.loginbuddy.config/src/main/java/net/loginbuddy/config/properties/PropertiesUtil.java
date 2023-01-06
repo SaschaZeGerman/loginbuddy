@@ -10,7 +10,7 @@ public enum PropertiesUtil implements Bootstrap {
 
     UTIL;
 
-    private Logger LOGGER = Logger.getLogger(String.valueOf(PropertiesUtil.class));
+    private final Logger LOGGER = Logger.getLogger(String.valueOf(PropertiesUtil.class));
 
     private PropertyLoader loader;
 
