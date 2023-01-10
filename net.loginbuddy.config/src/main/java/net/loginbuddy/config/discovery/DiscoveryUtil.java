@@ -19,10 +19,10 @@ public enum DiscoveryUtil implements Bootstrap {
 
     UTIL;
 
-    private final Logger LOGGER = Logger.getLogger(String.valueOf(DiscoveryUtil.class));
+    private final Logger LOGGER = Logger.getLogger(DiscoveryUtil.class.getName());
 
     private DiscoveryLoader loader;
-    private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
+    private final com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
     DiscoveryUtil() {
         try {

@@ -19,9 +19,9 @@ import java.util.logging.Logger;
  */
 public class Factory implements ObjectFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Factory.class));
+    private static final Logger LOGGER = Logger.getLogger(Factory.class.getName());
 
-    private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
+    private final com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
     private String path;
 

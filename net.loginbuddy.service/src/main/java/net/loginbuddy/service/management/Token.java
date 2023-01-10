@@ -68,10 +68,16 @@ public class Token extends HttpServlet {
             if(resourceResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
                 if(resourceResult.getValue().equals(DiscoveryUtil.UTIL.getManagement().getConfigurationEndpoint())) {
                     claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
-                    grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
+                    grantedScopes = LoginbuddyScope.Management.grantScopeAsString(scopeResult.getValue());
+                    if("".equals(grantedScopes)) {
+                        grantedScopes = LoginbuddyScope.Configuration.grantScopeAsString(scopeResult.getValue());
+                    }
                 } else if(resourceResult.getValue().equals(DiscoveryUtil.UTIL.getManagement().getRuntimeEndpoint())) {
                     claims.put(Constants.RESOURCE.getKey(), resourceResult.getValue());
-                    grantedScopes = LoginbuddyScope.Runtime.grantScopeAsString(scopeResult.getValue());
+                    grantedScopes = LoginbuddyScope.Management.grantScopeAsString(scopeResult.getValue());
+                    if("".equals(grantedScopes)) {
+                        grantedScopes = LoginbuddyScope.Runtime.grantScopeAsString(scopeResult.getValue());
+                    }
                 } else {
                     response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "requested resource is not supported").toJSONString());
                     return;

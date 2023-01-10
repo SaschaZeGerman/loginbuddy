@@ -3,11 +3,8 @@ package net.loginbuddy.config.discovery;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.config.Bootstrap;
-
-import java.util.logging.Logger;
 
 /**
  * Values to access the discovery document.
@@ -15,10 +12,6 @@ import java.util.logging.Logger;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Discovery implements Bootstrap {
-
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Discovery.class));
-
-    private com.fasterxml.jackson.databind.ObjectMapper MAPPER = new ObjectMapper();
 
     @JsonIgnore(false)
     private String issuer;

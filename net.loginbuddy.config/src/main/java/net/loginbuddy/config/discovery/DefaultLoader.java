@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public class DefaultLoader implements DiscoveryLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(DefaultLoader.class));
+    private static final Logger LOGGER = Logger.getLogger(DefaultLoader.class.getName());
 
     private Discovery config;
 

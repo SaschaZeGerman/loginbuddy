@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class Normalizer {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Normalizer.class));
+    private static final Logger LOGGER = Logger.getLogger(Normalizer.class.getName());
 
     private static final String MAPPING_OIDC = "{" +
             "\"sub\":\"$.details_provider.userinfo.sub\", " +
@@ -63,7 +63,7 @@ public class Normalizer {
                         String resource = (String) jo.get("resource");
                         String resource_type = (String) jo.get("resource_type");
                         if(resource == null || resource.trim().length() == 0) {
-                            throw new IllegalArgumentException(String.format("Missing resource for mapping!"));
+                            throw new IllegalArgumentException("Missing resource for mapping!");
                         }
                         if ("protected".equalsIgnoreCase(resource_type)) {
                             msg = HttpHelper.getAPI(access_token, resource);
