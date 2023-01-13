@@ -13,7 +13,6 @@ public class OverlordMaster {
 
     public void initializeConfiguration() {
         if (LoginbuddyUtil.UTIL.isConfigured() && PropertiesUtil.UTIL.isConfigured() && DiscoveryUtil.UTIL.isConfigured()) {
-            LOGGER.info("Loginbuddy successfully started!");
             String customLoader = PropertiesUtil.UTIL.getStringProperty("config.loginbuddy.loader.default");
             if (!(customLoader == null || "null".equalsIgnoreCase(customLoader))) {
                 try {
@@ -41,6 +40,7 @@ public class OverlordMaster {
             } else {
                 LOGGER.info("No custom LoginbuddyLoader was configured! Using the default loader");
             }
+            LOGGER.info("Loginbuddy successfully started!");
         } else {
             LOGGER.severe("Stopping Loginbuddy since its configuration could not be loaded! Fix that first!");
             System.exit(0);

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -17,6 +18,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -28,9 +30,34 @@ public class CertificateManager {
      * Connect to a host that uses a self-signed (untrusted) certificate
      */
     public final List<Certificate> retrieveTrustedCert(String host, int port) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-        SSLSocket socket = (SSLSocket) getOpenSslContext().getSocketFactory().createSocket(host, port);
-        socket.startHandshake();
-        List<Certificate> certs = new ArrayList<>(Arrays.asList(socket.getSession().getPeerCertificates()));
+        // TODO turn this method into good code
+        List<Certificate> certs = new ArrayList<>();
+        Certificate[] peerCertificates = null;
+        int count = 1;
+        int wait = 5000;
+        int i = 5;
+        while (i >= count) {
+            try {
+                SSLSocket socket = (SSLSocket) getOpenSslContext().getSocketFactory().createSocket(host, port);
+                socket.startHandshake();
+                peerCertificates = socket.getSession().getPeerCertificates();
+                socket.close();
+                certs = new ArrayList<>(Arrays.asList(peerCertificates));
+                break;
+            } catch (ConnectException e) {
+                if(e.getMessage().contains("refused")) {
+                    LOGGER.info(String.format("Target server could not be reached: '%s:%d'. Attempt: %d%s", host, port, count, count == i ? ", giving up" : ""));
+                    try {
+                        Thread.sleep(wait);
+                    } catch (InterruptedException e1) {
+                        // should never occur
+                    }
+                } else {
+                    throw e;
+                }
+            }
+            count++;
+        }
         return certs;
     }
 
@@ -40,15 +67,17 @@ public class CertificateManager {
     public final void addToTruststore(List<Certificate> certs)
             throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         // TODO extract hardcoded values
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        String ksLocation = "/usr/local/openjdk-11/lib/security/cacerts";
         char[] pwdArray = "changeit".toCharArray();
-        ks.load(new FileInputStream("/usr/local/openjdk-11/lib/security/cacerts"), pwdArray);
+        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        ks.load(new FileInputStream(ksLocation), pwdArray);
         for (Certificate cert : certs) {
             String certDn = ((X509Certificate) cert).getSubjectX500Principal().getName();
+            Collection<List<?>> subjectAlternativeNames = ((X509Certificate) cert).getSubjectAlternativeNames();
             ks.setCertificateEntry(certDn, cert);
-            LOGGER.info(String.format("Accepted certificate with DN: %s", certDn));
+            LOGGER.info(String.format("Accepted certificate with DN: %s, SAN: %s", certDn, subjectAlternativeNames == null ? "no san available" : subjectAlternativeNames.toString()));
         }
-        File f = new File("/usr/local/openjdk-11/lib/security/cacerts");
+        File f = new File(ksLocation);
         FileOutputStream fos = new FileOutputStream(f);
         ks.store(fos, pwdArray);
         fos.close();
