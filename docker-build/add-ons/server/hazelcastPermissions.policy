@@ -25,4 +25,8 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
 
     // required since hazelcast 5.2.1
     permission java.lang.RuntimePermission "createClassLoader";
+
+    // Unfortunately, this requires a wildcard ...
+    permission javax.management.MBeanPermission "*", "registerMBean";
+    permission javax.management.MBeanTrustPermission "register";
 };
