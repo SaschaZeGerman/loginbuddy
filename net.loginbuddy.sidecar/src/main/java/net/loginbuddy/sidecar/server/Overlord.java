@@ -10,7 +10,6 @@ public class Overlord extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        HttpHelper.loadTrustedServers();
         new OverlordMaster().initializeConfiguration();
     }
 }

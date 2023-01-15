@@ -165,6 +165,16 @@
         <servlet-class>net.loginbuddy.service.management.Runtime</servlet-class>
     </servlet>
 
+    <!-- health checks -->
+    <servlet>
+        <servlet-name>Liveness</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.HealthCheck</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Health</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.HealthCheck</servlet-class>
+    </servlet>
+
     <!-- The mapping for the default servlet -->
     <servlet-mapping>
         <servlet-name>default</servlet-name>
@@ -234,6 +244,16 @@
     <servlet-mapping>
         <servlet-name>Runtime</servlet-name>
         <url-pattern>/management/runtime/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Health checks -->
+    <servlet-mapping>
+        <servlet-name>Liveness</servlet-name>
+        <url-pattern>/status/liveness</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Health</servlet-name>
+        <url-pattern>/status/health</url-pattern>
     </servlet-mapping>
 
     <error-page>
