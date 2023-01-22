@@ -9,6 +9,8 @@
 package net.loginbuddy.common.util;
 
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.config.JwsAlgorithm;
+import net.loginbuddy.common.storage.LoginbuddyStorage;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.*;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -27,49 +29,28 @@ import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * Implementation details taken from {@link "https://bitbucket.org/b_c/jose4j/wiki/Home"}
+ * Implementation details taken from {@link "<a href="https://bitbucket.org/b_c/jose4j/wiki/Home">https://bitbucket.org/b_c/jose4j/wiki/Home</a>"}
  */
 public enum Jwt {
 
     DEFAULT;
 
-    private final Logger LOGGER = Logger.getLogger(String.valueOf(Jwt.class));
-
-    private JsonWebKeySet jwks;
-    private Map<String, JsonWebKey> typedJwks;
+    private final Logger LOGGER = Logger.getLogger(Jwt.class.getName());
 
     Jwt() {
-        // Generate an RSA/ EC key pair, which will be used for signing and verification of Loginbuddy JWTs, wrapped in a JWK
-        try {
-            RsaJsonWebKey rsaJwk = RsaJwkGenerator.generateJwk(2048);
-            rsaJwk.setKeyId(UUID.randomUUID().toString());
-            rsaJwk.setUse("sig");
-            rsaJwk.setAlgorithm(AlgorithmIdentifiers.RSA_USING_SHA256);
-
-            EllipticCurveJsonWebKey ecJwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
-            ecJwk.setKeyId(UUID.randomUUID().toString());
-            ecJwk.setUse("sig");
-            ecJwk.setAlgorithm(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
-
-            jwks = new JsonWebKeySet();
-            jwks.addJsonWebKey(rsaJwk);
-            jwks.addJsonWebKey(ecJwk);
-
-            typedJwks = new HashMap<>();
-            typedJwks.put(AlgorithmIdentifiers.RSA_USING_SHA256, rsaJwk);
-            typedJwks.put(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256, ecJwk);
-
-        } catch (JoseException e) {
-            LOGGER.warning(String.format("Should never happen! Error: '%s'", e.getMessage()));
-        }
     }
 
     /**
      * Loginbuddys keys
+     *
      * @return
      */
     public JsonWebKeySet getJwksForSigning() {
+        JsonWebKeySet jwks = new JsonWebKeySet();
+        jwks.addJsonWebKey(getKeyForAlgorithm(JwsAlgorithm.RS256));
+        jwks.addJsonWebKey(getKeyForAlgorithm(JwsAlgorithm.ES256));
         return jwks;
+
     }
 
     /**
@@ -87,9 +68,9 @@ public enum Jwt {
     public JsonWebSignature createSignedJwtRs256(String issuer, String audience, int lifetimeInMinutes, String subject, boolean includePublicKey, Map<String, String> additionalClaims) throws Exception {
         JwtClaims claims = createJwtPayload(issuer, audience, lifetimeInMinutes, subject, additionalClaims);
         if (includePublicKey) {
-            claims.setClaim("sub_jwk", new JSONParser().parse(typedJwks.get(AlgorithmIdentifiers.RSA_USING_SHA256).toJson()));
+            claims.setClaim("sub_jwk", new JSONParser().parse(getKeyForAlgorithm(JwsAlgorithm.RS256).toJson()));
         }
-        return createSignedJwt(claims.toJson(), AlgorithmIdentifiers.RSA_USING_SHA256);
+        return createSignedJwt(claims.toJson(), JwsAlgorithm.RS256);
     }
 
     public JsonWebSignature createSignedJwtEs256(String issuer, String audience, int lifetimeInMinutes, String subject, String nonce, boolean includePublicKey) throws Exception {
@@ -101,9 +82,9 @@ public enum Jwt {
     public JsonWebSignature createSignedJwtEs256(String issuer, String audience, int lifetimeInMinutes, String subject, boolean includePublicKey, Map<String, String> additionalClaims) throws Exception {
         JwtClaims claims = createJwtPayload(issuer, audience, lifetimeInMinutes, subject, additionalClaims);
         if (includePublicKey) {
-            claims.setClaim("sub_jwk", new JSONParser().parse(typedJwks.get(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256).toJson()));
+            claims.setClaim("sub_jwk", new JSONParser().parse(getKeyForAlgorithm(JwsAlgorithm.ES256).toJson()));
         }
-        return createSignedJwt(claims.toJson(), AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
+        return createSignedJwt(claims.toJson(), JwsAlgorithm.ES256);
     }
 
     /**
@@ -112,24 +93,25 @@ public enum Jwt {
      * @return JWT compact URL-safe serialization
      * @see <a href="https://bitbucket.org/b_c/jose4j/wiki/JWT%20Examples#markdown-header-producing-and-consuming-a-signed-jwt"></a>
      */
-    public JsonWebSignature createSignedJwt(String payload, String alg) {
-        String algToUse = alg == null || typedJwks.get(alg) == null ? AlgorithmIdentifiers.RSA_USING_SHA256 : alg;
-        PublicJsonWebKey jwk = (PublicJsonWebKey)typedJwks.get(algToUse);
+    public JsonWebSignature createSignedJwt(String payload, JwsAlgorithm alg) {
+        JwsAlgorithm algToUse = alg == null || getKeyForAlgorithm(alg) == null ? JwsAlgorithm.RS256 : alg;
+        PublicJsonWebKey jwk = getKeyForAlgorithm(algToUse);
         JsonWebSignature jws = new JsonWebSignature();
         jws.setPayload(payload);
         jws.setKey(jwk.getPrivateKey());
         jws.setKeyIdHeaderValue(jwk.getKeyId());
-        jws.setAlgorithmHeaderValue(algToUse);
+        jws.setAlgorithmHeaderValue(algToUse.toString());
         return jws;
     }
 
     /**
      * Validates an id_token with standard claims and optional others
-     * @param jwt the compact serialized jwt (aaaa.bbbb.ccccc)
+     *
+     * @param jwt               the compact serialized jwt (aaaa.bbbb.ccccc)
      * @param jsonWebKeySetJson the jwks that includes the key to be used for signature validation
-     * @param expectedIss expected issuer
-     * @param expectedAud expected audience
-     * @param expectedNonce expected nonce
+     * @param expectedIss       expected issuer
+     * @param expectedAud       expected audience
+     * @param expectedNonce     expected nonce
      * @return the json payload
      */
     public JSONObject validateIdToken(String jwt, String jsonWebKeySetJson, String expectedIss, String expectedAud, String expectedNonce) {
@@ -205,5 +187,34 @@ public enum Jwt {
             claims.setClaim(claim, additionalClaims.get(claim));
         }
         return claims;
+    }
+
+    private PublicJsonWebKey getKeyForAlgorithm(JwsAlgorithm algorithm) {
+        PublicJsonWebKey jwk = (PublicJsonWebKey) LoginbuddyStorage.STORAGE.get(String.format("jwks_%s", algorithm));
+        if(jwk == null) {
+            if (AlgorithmIdentifiers.RSA_USING_SHA256.equalsIgnoreCase(algorithm.toString())) {
+                try {
+                    jwk = RsaJwkGenerator.generateJwk(2048);
+                    jwk.setAlgorithm(AlgorithmIdentifiers.RSA_USING_SHA256);
+                } catch (JoseException e) {
+                    // should never happen
+                    LOGGER.severe(String.format("Should never happen: %s", e.getMessage()));
+                    return null;
+                }
+            } else {
+                try {
+                    jwk = EcJwkGenerator.generateJwk(EllipticCurves.P256);
+                    jwk.setAlgorithm(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
+                } catch (JoseException e) {
+                    // should never happen
+                    LOGGER.severe(String.format("Should never happen: %s", e.getMessage()));
+                    return null;
+                }
+            }
+            jwk.setKeyId(UUID.randomUUID().toString());
+            jwk.setUse("sig");
+            LoginbuddyStorage.STORAGE.putIfNull(String.format("jwks_%s", algorithm), jwk);
+        }
+        return jwk;
     }
 }

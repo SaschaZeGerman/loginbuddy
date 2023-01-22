@@ -27,17 +27,18 @@ public enum LoginbuddyCache {
     LoginbuddyCache() {
         try {
             listOfExpirations = new ConcurrentHashMap<>();
-            Context initCtx = new InitialContext();
-            Context envCtx = (Context) initCtx.lookup("java:comp/env");
-            if(System.getenv("HAZELCAST") != null) {
+            if (System.getenv("HAZELCAST") != null) {
                 try {
                     cache = new RemoteCache(System.getenv("HAZELCAST"));
                     LOGGER.info("Connected to hazelcast server(s) as session and cache store");
-                } catch(Exception e) {
+                } catch (Exception e) {
                     LOGGER.warning(String.format("Hazelcast cluster cannot be reached. Fallback to local cache. Error: %s", e.getMessage()));
-                    cache = (Cache) envCtx.lookup("bean/CacheFactory");
                 }
-            } else {
+            }
+            if (cache == null) {
+                Context initCtx = new InitialContext();
+                Context envCtx = (Context) initCtx.lookup("java:comp/env");
+                cache = (Cache) envCtx.lookup("bean/CacheFactory");
                 cache = (Cache) envCtx.lookup("bean/CacheFactory");
                 LOGGER.info("Connected to local session and cache store");
             }
@@ -63,7 +64,7 @@ public enum LoginbuddyCache {
             }
         };
         Timer timer = new Timer("LoginbuddyCacheMaintainerTimer");
-        long delay  = 1000L;
+        long delay = 1000L;
         long period = 30000L;
         timer.scheduleAtFixedRate(repeatedTask, delay, period);
     }
@@ -89,11 +90,11 @@ public enum LoginbuddyCache {
      */
     public Object put(String key, Object obj, Long lifetimeInSeconds) {
 
-        if(lifetimeInSeconds == null || lifetimeInSeconds > 3600 || lifetimeInSeconds <=0) {
+        if (lifetimeInSeconds == null || lifetimeInSeconds > 3600 || lifetimeInSeconds <= 0) {
             lifetimeInSeconds = 120L;
         }
 
-        listOfExpirations.put(new Date().getTime() + lifetimeInSeconds*1000, key);
+        listOfExpirations.put(new Date().getTime() + lifetimeInSeconds * 1000, key);
 
         return cache.put(key, obj);
     }

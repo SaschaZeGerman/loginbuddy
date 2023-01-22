@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
@@ -68,7 +69,7 @@ public class CallbackHandlerImplicit extends Callback implements CallbackHandler
                     idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
                     idTokenPayload.put("aud", currentClient.getClientId());
                     idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                    idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization();
+                    idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), JwsAlgorithm.findMatchingAlg(obo.getAlg())).getCompactSerialization();
                     break;
                 }
             }

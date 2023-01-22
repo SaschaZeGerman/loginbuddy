@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
@@ -86,7 +87,7 @@ public class CallbackParent extends HttpServlet {
     }
 
     protected String getSignedResponse(String payload, String alg) throws JoseException {
-        return Jwt.DEFAULT.createSignedJwt(payload, alg).getCompactSerialization();
+        return Jwt.DEFAULT.createSignedJwt(payload, JwsAlgorithm.findMatchingAlg(alg)).getCompactSerialization();
     }
 
 }

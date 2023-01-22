@@ -2,6 +2,7 @@ package net.loginbuddy.config.loginbuddy.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.Clients;
@@ -10,7 +11,9 @@ import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.lang.JoseException;
 import org.json.simple.JSONObject;
 
-public class OnBehalfOf {
+import java.io.Serializable;
+
+public class OnBehalfOf implements Serializable {
 
     @JsonProperty("token_type")
     @JsonIgnore(false)
@@ -72,7 +75,8 @@ public class OnBehalfOf {
                     idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
                     idTokenPayload.put("aud", currentClient.getClientId());
                     idTokenPayload.put("nonce", clientNonce);
-                    result.setIdToken(Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), obo.getAlg()).getCompactSerialization());
+                    // obo.getAlg() return the value that was configured in config.json for this client in on_behalf_of. Falling back to RS256 if the given value is not supported
+                    result.setIdToken(Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), JwsAlgorithm.valueOf(obo.getAlg())).getCompactSerialization());
                     result.setIdTokenPayload(idTokenPayload);
                     break;
                 }

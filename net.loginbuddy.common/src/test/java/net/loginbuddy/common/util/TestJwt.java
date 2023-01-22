@@ -8,6 +8,7 @@
 
 package net.loginbuddy.common.util;
 
+import net.loginbuddy.common.config.JwsAlgorithm;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -26,7 +27,7 @@ import static org.junit.Assert.*;
 
 public class TestJwt {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Jwt.class));
+    private static final Logger LOGGER_JWT = Logger.getLogger(Jwt.class.getName());
 
     private static String TestJwt, TestJwtExpired, TestJwtEs256, TestJwtExpiredEs256;
     private static JsonWebKeySet TestJwks;
@@ -47,14 +48,14 @@ public class TestJwt {
         jo.put("iat", Long.valueOf(String.valueOf(new Date().getTime()).substring(0, 10)));
         jo.put("exp", Long.valueOf(String.valueOf(new Date().getTime()+20000).substring(0, 10)));
         try {
-            TestJwt = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), "RS256").getCompactSerialization();
-            TestJwtEs256 = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), "ES256").getCompactSerialization();
+            TestJwt = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.RS256).getCompactSerialization();
+            TestJwtEs256 = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.ES256).getCompactSerialization();
 
             jo.put("iat", Long.valueOf(String.valueOf(new Date().getTime()-60000).substring(0, 10)));
             jo.put("exp", Long.valueOf(String.valueOf(new Date().getTime()-10000).substring(0, 10)));
 
-            TestJwtExpired = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), "RS256").getCompactSerialization();
-            TestJwtExpiredEs256 = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), "ES256").getCompactSerialization();
+            TestJwtExpired = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.RS256).getCompactSerialization();
+            TestJwtExpiredEs256 = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.ES256).getCompactSerialization();
         } catch (JoseException e) {
             fail(e.getMessage());
         }
@@ -156,7 +157,7 @@ public class TestJwt {
     public void testCreateJwtRs256() {
         try {
             JsonWebSignature jws = Jwt.DEFAULT.createSignedJwtRs256("https://self-issued.me", "https://local.loginbuddy.net/callback", 5, "01234567890", "randomnonce", true);
-            assertEquals("RS256", jws.getAlgorithm().getAlgorithmIdentifier());
+            assertEquals(JwsAlgorithm.RS256.toString(), jws.getAlgorithm().getAlgorithmIdentifier());
             assertNotNull(((JSONObject) new JSONParser().parse(jws.getUnverifiedPayload())).get("sub_jwk"));
         } catch (Exception e) {
             fail(e.getMessage());
@@ -167,7 +168,7 @@ public class TestJwt {
     public void testCreateJwtEc256() {
         try {
             JsonWebSignature jws = Jwt.DEFAULT.createSignedJwtEs256("https://self-issued.me", "https://local.loginbuddy.net/callback", 5, "01234567890", "randomnonce", true);
-            assertEquals("ES256", jws.getAlgorithm().getAlgorithmIdentifier());
+            assertEquals(JwsAlgorithm.ES256.toString(), jws.getAlgorithm().getAlgorithmIdentifier());
             assertNotNull(((JSONObject) new JSONParser().parse(jws.getUnverifiedPayload())).get("sub_jwk"));
         } catch (Exception e) {
             fail(e.getMessage());
@@ -177,6 +178,10 @@ public class TestJwt {
     @Test
     public void testJwks() {
         assertEquals(2, Jwt.DEFAULT.getJwksForSigning().getJsonWebKeys().size());
+        assertEquals(JwsAlgorithm.RS256.toString(), Jwt.DEFAULT.getJwksForSigning().getJsonWebKeys().get(0).getAlgorithm());
+        assertEquals(JwsAlgorithm.ES256.toString(), Jwt.DEFAULT.getJwksForSigning().getJsonWebKeys().get(1).getAlgorithm());
+        assertNotNull(Jwt.DEFAULT.getJwksForSigning().getJsonWebKeys().get(0).getKeyId());
+        assertNotNull(Jwt.DEFAULT.getJwksForSigning().getJsonWebKeys().get(1).getKeyId());
     }
 
     /**
@@ -184,7 +189,7 @@ public class TestJwt {
      */
     private void helperLogging() {
 
-        LOGGER.addHandler(new Handler() {
+        LOGGER_JWT.addHandler(new Handler() {
 
             @Override
             public void publish(LogRecord record) {

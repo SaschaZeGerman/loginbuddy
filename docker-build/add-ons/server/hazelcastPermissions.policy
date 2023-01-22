@@ -27,6 +27,6 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
     permission java.lang.RuntimePermission "createClassLoader";
 
     // Unfortunately, this requires a wildcard ...
-    permission javax.management.MBeanPermission "*", "registerMBean";
+    permission javax.management.MBeanPermission "*", "registerMBean,unregisterMBean";
     permission javax.management.MBeanTrustPermission "register";
 };

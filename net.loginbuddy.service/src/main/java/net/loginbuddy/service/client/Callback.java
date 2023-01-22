@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 
 public class Callback extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Callback.class));
+    private static final Logger LOGGER = Logger.getLogger(Callback.class.getName());
 
     protected String getMessageForRedirect(String redirectUri, String urlSafeKey, String value) {
         return redirectUri.concat(urlSafeKey).concat("=").concat(HttpHelper.urlEncode(value));
@@ -146,7 +147,7 @@ public class Callback extends HttpServlet {
 
         String authorizationCode = UUID.randomUUID().toString();
         if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
-            sessionCtx.put("eb", Jwt.DEFAULT.createSignedJwt(eb.toString(), sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey())).getCompactSerialization());
+            sessionCtx.put("eb", Jwt.DEFAULT.createSignedJwt(eb.toString(), JwsAlgorithm.findMatchingAlg(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))).getCompactSerialization());
         } else {
             sessionCtx.put("eb", eb.toString());
         }

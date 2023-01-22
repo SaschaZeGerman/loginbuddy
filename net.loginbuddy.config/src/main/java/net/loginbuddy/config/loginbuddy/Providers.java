@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Providers implements Serializable {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(Providers.class));
+    private static final Logger LOGGER = Logger.getLogger(Providers.class.getName());
 
     @JsonProperty("provider")
     @JsonIgnore(false)

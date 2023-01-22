@@ -3,12 +3,13 @@ package net.loginbuddy.config.loginbuddy.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Meta {
+public class Meta implements Serializable {
 
     public final static String STATUS_COMPLETE = "COMPLETE";
 
