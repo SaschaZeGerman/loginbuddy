@@ -8,8 +8,6 @@ import java.util.logging.Logger;
 
 public class Overlord extends HttpServlet {
 
-    private static Logger LOGGER = Logger.getLogger(String.valueOf(Overlord.class));
-
     @Override
     public void init() throws ServletException {
         super.init();

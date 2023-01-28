@@ -37,6 +37,16 @@
         <servlet-class>net.loginbuddy.sidecar.server.Callback</servlet-class>
     </servlet>
 
+    <!-- health checks -->
+    <servlet>
+        <servlet-name>Liveness</servlet-name>
+        <servlet-class>net.loginbuddy.sidecar.server.HealthCheck</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Health</servlet-name>
+        <servlet-class>net.loginbuddy.sidecar.server.HealthCheck</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>SidecarInitialize</servlet-name>
         <url-pattern>/sidecar/initialize</url-pattern>
@@ -44,6 +54,16 @@
     <servlet-mapping>
         <servlet-name>SidecarCallback</servlet-name>
         <url-pattern>/sidecar/callback</url-pattern>
+    </servlet-mapping>
+
+    <!-- Health checks -->
+    <servlet-mapping>
+        <servlet-name>Liveness</servlet-name>
+        <url-pattern>/status/liveness</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Health</servlet-name>
+        <url-pattern>/status/health</url-pattern>
     </servlet-mapping>
 
     <mime-mapping>

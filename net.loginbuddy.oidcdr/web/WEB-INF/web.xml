@@ -53,6 +53,16 @@
         <servlet-class>net.loginbuddy.oidcdr.selfissued.Discovery</servlet-class>
     </servlet>
 
+    <!-- health checks -->
+    <servlet>
+        <servlet-name>Liveness</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.server.HealthCheck</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Health</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.server.HealthCheck</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>OidcDrRegistation</servlet-name>
         <url-pattern>/oidcdr/register</url-pattern>
@@ -76,6 +86,16 @@
     <servlet-mapping>
         <servlet-name>SelfIssuedDiscovery</servlet-name>
         <url-pattern>/selfissued/openid-configuration</url-pattern>
+    </servlet-mapping>
+
+    <!-- Health checks -->
+    <servlet-mapping>
+        <servlet-name>Liveness</servlet-name>
+        <url-pattern>/status/liveness</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Health</servlet-name>
+        <url-pattern>/status/health</url-pattern>
     </servlet-mapping>
 
     <session-config>
