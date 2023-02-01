@@ -59,6 +59,7 @@ public enum LoginbuddyUtil implements Bootstrap {
     }
 
     public List<Providers> getProviders() {
+        // TODO do not load duplicates, only the first occurrence (duplicate == same value for 'provider')
         // need it from cache for provider configurations that used dynamic registrations. Otherwise, we register again and again
         List<Providers> providers = (List<Providers>) LoginbuddyCache.CACHE.get("providers");
         try {
@@ -103,7 +104,8 @@ public enum LoginbuddyUtil implements Bootstrap {
         if (cc.getClientProviders().size() > 0) {
             List<Providers> result = new ArrayList<>();
             for (Providers pc : getProviders()) {
-                if (cc.getClientProviders().contains(pc.getProvider())) {
+                // TODO remove '!result.contains(pc)' check when getProviders() supports it
+                if (cc.getClientProviders().contains(pc.getProvider()) && !result.contains(pc)) {
                     result.add(pc);
                 }
             }
@@ -111,6 +113,21 @@ public enum LoginbuddyUtil implements Bootstrap {
         } else {
             return getProviders();
         }
+    }
+
+    /**
+     * Finds the provider if it is valid for the client
+     * @param clientId current client_id
+     * @param providerHint requested provider
+     * @return
+     * @throws Exception
+     */
+    public Providers getProviders(String clientId, String providerHint) throws Exception {
+        List<Providers> providers = getProviders(clientId);
+        return providers.stream()
+                .filter(provider -> provider.getProvider().equalsIgnoreCase(providerHint))
+                .findFirst()
+                .orElse(null);
     }
 
     public Providers getProviderConfigByProvider(String providerHint) {

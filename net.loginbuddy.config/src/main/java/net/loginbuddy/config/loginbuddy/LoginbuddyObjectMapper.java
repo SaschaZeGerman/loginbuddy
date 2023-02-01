@@ -176,6 +176,7 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
                 currentProvider.put(Constants.TOKEN_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
                 currentProvider.put(Constants.USERINFO_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
                 currentProvider.put(Constants.JWKS_URI.getKey(), retrieveOidcConfig.get(Constants.JWKS_URI.getKey()));
+                currentProvider.put(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey()));
             } catch (Exception e) {
                 LOGGER.warning(e.getMessage());
                 providers.getMeta().addStatus(Meta.STATUS_OIDC_CONFIG_ERROR, String.format("Retrieving OIDC configuration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage()));
@@ -253,6 +254,12 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
             providers.setJwksUri((String) currentProvider.get("jwks_uri"));
         } else {
             LOGGER.warning("jwks_uri is not configured! No id_token validation possible!");
+        }
+
+        if (currentProvider.get("pushed_authorization_request_endpoint") != null) {
+            providers.setPushedAuthorizationRequestEndpoint((String) currentProvider.get("pushed_authorization_request_endpoint"));
+        } else {
+            LOGGER.info("pushed_authorization_request_endpoint is not configured!");
         }
 
         if (currentProvider.get("mappings") != null) {

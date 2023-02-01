@@ -83,6 +83,9 @@ public class Providers implements Serializable {
     @JsonProperty("mappings")
     private JSONObject mappings;
 
+    @JsonProperty("pushed_authorization_request_endpoint")
+    private String pushedAuthorizationRequestEndpoint;
+
     public Providers() {
         pkce = true;
         scope = Constants.OPENID_SCOPE.getKey();
@@ -116,6 +119,7 @@ public class Providers implements Serializable {
         this.userinfoEndpoint = config.getUserinfoEndpoint();
         this.jwksUri = config.getJwksUri();
         this.responseType = config.getResponseType();
+        this.pushedAuthorizationRequestEndpoint = config.getPushedAuthorizationRequestEndpoint();
         this.openidConfigurationUri = null;
     }
 
@@ -191,6 +195,10 @@ public class Providers implements Serializable {
         }
     }
 
+    public String getPushedAuthorizationRequestEndpoint() {
+        return pushedAuthorizationRequestEndpoint;
+    }
+
     @Deprecated
     public JSONObject mappingsAsJsonNode() {
         return mappings;
@@ -258,6 +266,10 @@ public class Providers implements Serializable {
 
     public void setMappings(JSONObject mappings) {
         this.mappings = mappings;
+    }
+
+    public void setPushedAuthorizationRequestEndpoint(String pushedAuthorizationRequestEndpoint) {
+        this.pushedAuthorizationRequestEndpoint = pushedAuthorizationRequestEndpoint;
     }
 
     public String getTemplate() {

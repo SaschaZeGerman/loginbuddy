@@ -108,6 +108,28 @@ public class TestLoginbuddyConfig {
     }
 
     @Test
+    public void testLoadProviderForClient() {
+        try {
+            assertEquals(6, LoginbuddyUtil.UTIL.getProviders("clientIdForTestingPurposes").size());
+            assertEquals(2, LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders").size());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testLoadProviderForClientWithProvider() {
+        try {
+            assertEquals("loginbuddy_demoId_temp01", LoginbuddyUtil.UTIL.getProviders("clientIdForTestingPurposes", "server_loginbuddy_01").getClientId());
+            assertEquals("openid://", LoginbuddyUtil.UTIL.getProviders("clientIdForTestingPurposes", "self-issued").getAuthorizationEndpoint());
+            assertNull(LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "server_loginbuddy_01"));
+            assertEquals("loginbuddy_google_client_id", LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "google").getClientId());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testTemplates() {
          Providers c = LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy_01");
          assertEquals("loginbuddy_demoId_temp01", c.getClientId());
@@ -172,7 +194,7 @@ public class TestLoginbuddyConfig {
         try {
 
             // check the defaults
-            assertEquals(1, LoginbuddyUtil.UTIL.getClients().size());
+            assertEquals(2, LoginbuddyUtil.UTIL.getClients().size());
             assertEquals("public", LoginbuddyUtil.UTIL.getClientConfigByClientId("clientIdForTestingPurposes").getClientType());
             assertEquals(6, LoginbuddyUtil.UTIL.getProviders().size());
 

@@ -112,6 +112,29 @@ public class HttpHelper {
     return postMessage(formParameters, tokenEndpoint, "application/json");
   }
 
+  /**
+   *
+   * @param queryString a key=value[&key=....] where value is URLEncoded. This methods sets the request content-type to application/x-www-form-urlencoded using this string as body
+   * @param targetUrl
+   * @param acceptContentType
+   * @return
+   * @throws IOException
+   */
+  public static MsgResponse postMessage(String queryString, String targetUrl, String acceptContentType)
+      throws IOException {
+
+    HttpPost req = new HttpPost(targetUrl);
+
+    HttpClient httpClient = HttpClientBuilder.create().build();
+    req.setEntity(new StringEntity(queryString));
+    req.addHeader("Accept", acceptContentType);
+    req.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    HttpResponse response = httpClient.execute(req);
+    return new MsgResponse(getHeader(response, "content-type", "application/json"),
+        EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+  }
+
   public static MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String acceptContentType)
       throws IOException {
 
@@ -133,8 +156,8 @@ public class HttpHelper {
     HttpPost req = new HttpPost(targetUrl);
     HttpClient httpClient = HttpClientBuilder.create().build();
     req.setEntity(requestEntity);
-    req.addHeader("Content-Type", "application/json");
     req.addHeader("Accept", acceptContentType);
+    req.addHeader("Content-Type", "application/json");
 
     HttpResponse response = httpClient.execute(req);
     return new MsgResponse(getHeader(response, "content-type", acceptContentType),

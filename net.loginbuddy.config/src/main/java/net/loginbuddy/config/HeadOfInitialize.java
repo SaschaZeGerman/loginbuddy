@@ -53,7 +53,6 @@ public class HeadOfInitialize {
 // ** Find the provider configuration. We may register one dynamically
 // ***************************************************************
 
-    // TODO Verify that the selected provider is valid for this client
     Providers providers = null;
     try {
 
@@ -65,7 +64,8 @@ public class HeadOfInitialize {
           selectedProvider = providers.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
         }
       } else {
-        providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(selectedProvider);
+        // null if the given provider is not available to the client
+        providers = LoginbuddyUtil.UTIL.getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()), selectedProvider);
       }
 
       // TODO if above if statement would be 'true' but accept_dynamic is false something is wrong ...
@@ -176,17 +176,41 @@ public class HeadOfInitialize {
     String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()));
     String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()));
 
-    authorizeUrl.append("?").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId())).
-        append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getResponseType()))
-        .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getScope()))
-        .append("&").append(Constants.NONCE.getKey()).append("=").append(HttpHelper.urlEncode((String)sessionCtx.get(Constants.CLIENT_NONCE.getKey())))
-        .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providers.getRedirectUri()))
-        .append(pkce == null ? "" : pkce)
-        .append(responseMode == null ? "" : responseMode)
-        .append(cp)
-        .append(lh)
-        .append(ith)
-        .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId());
+    StringBuilder queryParams = new StringBuilder();
+    queryParams.append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId())).
+            append("&").append(Constants.RESPONSE_TYPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getResponseType()))
+            .append("&").append(Constants.SCOPE.getKey()).append("=").append(HttpHelper.urlEncode(providers.getScope()))
+            .append("&").append(Constants.NONCE.getKey()).append("=").append(HttpHelper.urlEncode((String)sessionCtx.get(Constants.CLIENT_NONCE.getKey())))
+            .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providers.getRedirectUri()))
+            .append(pkce == null ? "" : pkce)
+            .append(responseMode == null ? "" : responseMode)
+            .append(cp)
+            .append(lh)
+            .append(ith)
+            .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId());
+
+    authorizeUrl.append("?");
+
+// ***************************************************************
+// ** prioritise PAR if the OP supports it
+// ***************************************************************
+
+    if(providers.getPushedAuthorizationRequestEndpoint() != null) {
+      try {
+        if(providers.getClientSecret() != null) {
+          queryParams.append("&").append(Constants.CLIENT_SECRET.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientSecret()));
+        }
+        MsgResponse msgResponse = HttpHelper.postMessage(queryParams.toString(), providers.getPushedAuthorizationRequestEndpoint(), "application/json");
+        JSONObject obj = (JSONObject)new JSONParser().parse(msgResponse.getMsg());
+        authorizeUrl.append(Constants.REQUEST_URI.getKey()).append("=").append(HttpHelper.urlEncode((String)obj.get(Constants.REQUEST_URI.getKey())));
+        authorizeUrl.append("&").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId()));
+      } catch (Exception e) {
+        LOGGER.warning(String.format("PAR request failed, attempting to use an authorization_code flow. Error: %s", e.getMessage()));
+        authorizeUrl.append(queryParams);
+      }
+    } else {
+      authorizeUrl.append(queryParams);
+    }
 
 // ***************************************************************
 // ** Finalize and update the session details
@@ -198,23 +222,6 @@ public class HeadOfInitialize {
 
     return authorizeUrl.toString();
   }
-//
-//  /**
-//   * Check if the user chose to dynamically set a provider
-//   */
-//  private static boolean checkForDynamicProvider(String provider, ParameterValidatorResult issuer,
-//      ParameterValidatorResult discoveryUrlResult, boolean acceptDynamicProvider) {
-//    boolean result = false;
-//    if (acceptDynamicProvider) {
-//      result = "dynamic_provider".equalsIgnoreCase(provider);
-//      result = result && issuer.getResult().equals(RESULT.VALID);
-//      result = result && HttpHelper.couldBeAUrl(issuer.getValue());
-//      if (discoveryUrlResult.getResult().equals(RESULT.VALID)) {
-//        result = result && HttpHelper.couldBeAUrl(discoveryUrlResult.getValue());
-//      }
-//    }
-//    return result;
-//  }
 
   /**
    * Register loginbuddy at the provider and remember a few details for later use
