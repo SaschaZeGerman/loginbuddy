@@ -305,6 +305,9 @@ public class HttpHelper {
     config.put("redirect_uri", redirectUri);
     config.put("scope", HttpHelper.jsonArrayToString((JSONArray) oidcConfig.get(Constants.SCOPES_SUPPORTED.getKey())));
     config.put("authorization_endpoint", oidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
+    if(oidcConfig.get(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey()) != null) {
+      config.put("pushed_authorization_request_endpoint", oidcConfig.get(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey()));
+    }
     config.put("token_endpoint", oidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
     config.put("userinfo_endpoint", oidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
     config.put("jwks_uri", oidcConfig.get(Constants.JWKS_URI.getKey()));
