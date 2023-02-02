@@ -1,0 +1,56 @@
+{
+  "clients": [
+  ],
+  "providers": [
+    {
+      "provider": "server_loginbuddy",
+      "issuer": "https://demoserver.loginbuddy.net",
+      "client_id": "loginbuddy_demoId",
+      "client_secret": "loginbuddy_demoSecret",
+      "authorization_endpoint": "https://demoserver.loginbuddy.net/authorize",
+      "token_endpoint": "https://demoserver.loginbuddy.net/token",
+      "userinfo_endpoint": "https://demoserver.loginbuddy.net/userinfo",
+      "jwks_uri": "https://demoserver.loginbuddy.net/jwks",
+      "scope": "openid profile email",
+      "response_type": "code",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "mappings": {
+        "key1": "value1",
+        "key2": "value2",
+        "key3": "value3"
+      }
+    },{
+      "provider": "server_loginbuddy_01",
+      "template": "server_loginbuddy",
+      "client_id": "loginbuddy_demoId_temp01"
+    },
+    {
+      "provider": "server_loginbuddy_02",
+      "template": "server_loginbuddy",
+      "client_id": "loginbuddy_demoId_temp02"
+    },
+    {
+      "provider": "google",
+      "template": "google",
+      "client_id": "loginbuddy_google_client_id",
+      "client_secret": "loginbuddy_google_client_secret_01"
+    },
+    {
+      "provider": "google",
+      "template": "google",
+      "client_id": "duplicate_provider_should_be_ignored",
+      "client_secret": "loginbuddy_google_client_secret_02"
+    },
+    {
+      "provider": "self-issued",
+      "issuer": "https://self-issued.me",
+      "client_id": "https://local.loginbuddy.net/callback",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "client_secret": "",
+      "response_type": "id_token",
+      "scope": "openid profile email address phone",
+      "authorization_endpoint": "openid://",
+      "pkce": true
+    }
+  ]
+}

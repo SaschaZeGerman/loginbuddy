@@ -34,6 +34,14 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
+        ParameterValidatorResult clientIdResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+        if (!clientIdResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+            LOGGER.warning("Missing or multiple client_id parameters given!");
+            handleError(400, "Missing or multiple client_id parameters given!", response);
+            return;
+        }
+
         // Check if this request includes a request_uri. If so, it is a PAR request and needs little attention only
         ParameterValidatorResult requestUriResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.REQUEST_URI.getKey()));
         if(requestUriResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
@@ -47,8 +55,12 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 }
                 // need to verify that the given requestUri is the one that belongs to this session
                 if(requestUriResult.getValue() != null && requestUriResult.getValue().equals(sessionCtx.useParRequestUri())) {
-                    LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
-                    handleAuthorizationResponse(request, response, sessionCtx, sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()));
+                    if(clientIdResult.getValue().equals(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()))) {
+                        LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
+                        handleAuthorizationResponse(request, response, sessionCtx, sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()));
+                    } else {
+                        handleError(400, "invalid client_id", response);
+                    }
                 } else {
                     handleError(400, "invalid request_uri", response);
                 }
@@ -59,8 +71,6 @@ public abstract class AuthorizationHandler extends HttpServlet {
             }
         }
 
-        ParameterValidatorResult clientIdResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
         ParameterValidatorResult clientSecretResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only valid for a PAR call
         ParameterValidatorResult clientResponseTypeResult = ParameterValidator
@@ -94,14 +104,8 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
 
 // ***************************************************************
-// ** Let's start with checking for a valid client_id
+// ** Let's start with checking for a valid client credentials
 // ***************************************************************
-
-        if (!clientIdResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
-            LOGGER.warning("Missing or multiple client_id parameters given!");
-            handleError(400, "Missing or multiple client_id parameters given!", response);
-            return;
-        }
 
         ClientAuthenticator.ClientCredentialsResult clientValidationResult = handleClientValidation(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()));
         if (!clientValidationResult.isValid()) {

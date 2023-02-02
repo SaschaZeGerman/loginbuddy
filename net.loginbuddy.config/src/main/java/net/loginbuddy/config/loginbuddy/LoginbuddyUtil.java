@@ -101,6 +101,10 @@ public enum LoginbuddyUtil implements Bootstrap {
     // TODO make this thing more efficient
     public List<Providers> getProviders(String clientId) throws Exception {
         Clients cc = getClientConfigByClientId(clientId);
+        // unknown clientId
+        if(cc == null) {
+            return new ArrayList<>();
+        }
         if (cc.getClientProviders().size() > 0) {
             List<Providers> result = new ArrayList<>();
             for (Providers pc : getProviders()) {

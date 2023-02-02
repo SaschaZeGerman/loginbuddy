@@ -96,8 +96,26 @@ public class LoginbuddyObjectMapper extends ObjectMapper {
     }
 
     private JSONObject mergeProviders(JSONObject configJson, JSONObject configTemplateJson) {
+
         JSONObject result = new JSONObject();
-        result.put("clients", configJson.get("clients"));
+
+        // if no clients are defined, the 'loginbuddy-sidecar' client is added to pass validations when searching for providers that belog to a specific client
+        // TODO is there a scenario where this could be an issue?
+        JSONArray clients = (JSONArray)configJson.get("clients");
+        if(clients.size() == 0) {
+
+            JSONArray redirectUris = new JSONArray();
+            redirectUris.add(Constants.SIDECAR_REDIRECT_URI.getKey());
+
+            JSONObject sidecarClient = new JSONObject();
+            sidecarClient.put(Constants.CLIENT_ID.getKey(),Constants.SIDECAR_CLIENT_ID.getKey());
+            sidecarClient.put(Constants.CLIENT_TYPE.getKey(),Constants.CLIENT_TYPE_CONFIDENTIAL.getKey());
+            sidecarClient.put(Constants.REDIRECT_URIS.getKey(),redirectUris);
+
+            clients.add(sidecarClient);
+        }
+        result.put("clients", clients);
+
         JSONArray resultProviders = new JSONArray();
         Iterator iter = ((JSONArray) configJson.get("providers")).iterator();
         DocumentContext ctx = JsonPath.parse(((JSONArray) configTemplateJson.get("providers")).toJSONString());

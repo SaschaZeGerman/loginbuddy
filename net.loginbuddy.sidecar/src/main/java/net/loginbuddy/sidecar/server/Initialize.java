@@ -81,12 +81,12 @@ public class Initialize extends HttpServlet {
                 .getSingleValue(request.getParameterValues(Constants.OBFUSCATE_TOKEN.getKey()), "false");
 
 // ***************************************************************
-// ** Create the session so that it can be handled through out multiple requests
+// ** Create the session so that it can be handled throughout multiple requests
 // ***************************************************************
 
         SessionContext sessionCtx = new SessionContext();
         sessionCtx.setSessionInit(
-                "loginbuddy-sidecar",
+                Constants.SIDECAR_CLIENT_ID.getKey(),
                 clientScopeResult.getValue(),
                 Constants.CODE.getKey(),
                 clientNonceResult.getValue(),
@@ -96,7 +96,7 @@ public class Initialize extends HttpServlet {
                 clientLoginHintResult.getValue(),
                 clientIdTokenHintResult.getValue(),
                 false,
-                "http://localhost/?",
+                Constants.SIDECAR_REDIRECT_URI.getKey(),
                 Boolean.parseBoolean(clientAcceptDynamicProvider.getValue().equals("true") ? clientAcceptDynamicProvider.getValue() : "false"),
                 signedResponseAlg.getValue(),
                 obfuscateTokenResult.getBooleanValue());

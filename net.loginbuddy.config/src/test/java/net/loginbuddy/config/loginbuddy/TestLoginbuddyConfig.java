@@ -124,6 +124,8 @@ public class TestLoginbuddyConfig {
             assertEquals("openid://", LoginbuddyUtil.UTIL.getProviders("clientIdForTestingPurposes", "self-issued").getAuthorizationEndpoint());
             assertNull(LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "server_loginbuddy_01"));
             assertEquals("loginbuddy_google_client_id", LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "google").getClientId());
+
+            assertNull(LoginbuddyUtil.UTIL.getProviders("unknown", "google"));
         } catch (Exception e) {
             fail(e.getMessage());
         }
