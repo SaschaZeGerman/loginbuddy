@@ -52,6 +52,15 @@ public class Callback extends CallbackParent {
             }
             response.setContentType("application/json");
 
+            if(sessionCtx.get("error") != null) {
+                response.getWriter().write(
+                        HttpHelper.getErrorAsJson(
+                                sessionCtx.get(Constants.ERROR.getKey(), String.class),
+                                sessionCtx.get(Constants.ERROR_DESCRIPTION.getKey(), String.class)
+                        ).toJSONString());
+                return;
+            }
+
 // ***************************************************************
 // ** If we did not get a valid code parameter we are done
 // ***************************************************************

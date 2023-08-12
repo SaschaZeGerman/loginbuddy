@@ -54,7 +54,11 @@ public class CallbackParent extends HttpServlet {
         if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
             LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
             response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "the current session is invalid or it has expired").toJSONString());
-            return null;
+
+            sessionCtx = new SessionContext();
+            sessionCtx.put(Constants.ERROR.getKey(), "invalid_session");
+            sessionCtx.put(Constants.ERROR_DESCRIPTION.getKey(), "the current session is invalid or it has expired");
+            return sessionCtx;
         }
 
 // ***************************************************************
@@ -62,8 +66,9 @@ public class CallbackParent extends HttpServlet {
 // ***************************************************************
 
         if (errorResult.getValue() != null) {
-            response.getWriter().write(HttpHelper.getErrorAsJson(errorResult.getValue(), errorDescriptionResult.getValue()).toJSONString());
-            return null;
+            sessionCtx.put(Constants.ERROR.getKey(), errorResult.getValue());
+            sessionCtx.put(Constants.ERROR_DESCRIPTION.getKey(), errorDescriptionResult.getValue());
+            return sessionCtx;
         }
 
 // ***************************************************************
@@ -74,8 +79,9 @@ public class CallbackParent extends HttpServlet {
             LOGGER.warning(
                     "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                             + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-            response.getWriter().write(HttpHelper.getErrorAsJson("invalid_session", "the request was not expected").toJSONString());
-            return null;
+            sessionCtx.put(Constants.ERROR.getKey(), errorResult.getValue());
+            sessionCtx.put(Constants.ERROR_DESCRIPTION.getKey(), errorDescriptionResult.getValue());
+            return sessionCtx;
         }
 
         return sessionCtx;
