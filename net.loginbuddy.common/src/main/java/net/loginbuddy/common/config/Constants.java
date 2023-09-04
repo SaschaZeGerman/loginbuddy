@@ -39,6 +39,7 @@ public enum Constants {
     ERROR_DESCRIPTION("error_description"),
     EXPIRES_IN("expires_in"),
     GRANT_TYPE("grant_type"),
+    GRANT_TYPE_AUTHORIZATION_CODE("authorization_code"),
     GRANT_TYPE_CLIENT_CREDENTIALS("client_credentials"),
     GRANT_TYPES_SUPPORTED("grant_types_supported"),
     ID_TOKEN("id_token"),
