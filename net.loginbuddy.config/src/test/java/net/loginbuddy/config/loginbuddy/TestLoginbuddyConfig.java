@@ -275,6 +275,22 @@ public class TestLoginbuddyConfig {
         assertEquals("confidential", LoginbuddyUtil.UTIL.getClientConfigByClientId("reloadClientId").getClientType());
     }
 
+    @Test
+    public void testEncryptDecrypt() {
+        try {
+            // Configure the environment variable:
+            // SECRET_OBFUSCATION
+            // mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
+            String encrypted = LoginbuddyUtil.UTIL.encrypt("hello world!");
+            // not ideal since the secret changes with each test run, but at least we know 'encrypt' did something :-)
+            assertEquals("PBg8MbGMa7jgWL2yYoN2lw==", encrypted);
+            String decrypted = LoginbuddyUtil.UTIL.decrypt(encrypted);
+            assertEquals("hello world!", decrypted);
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
     class TestLoginbuddy extends Loginbuddy {
 
         @Override

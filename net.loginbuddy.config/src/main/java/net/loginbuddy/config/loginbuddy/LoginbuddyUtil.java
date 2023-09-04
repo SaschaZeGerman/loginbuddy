@@ -16,10 +16,12 @@ import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.common.Meta;
 import org.json.simple.JSONObject;
 
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.util.*;
 import java.util.logging.Logger;
 
 public enum LoginbuddyUtil implements Bootstrap {
@@ -28,15 +30,30 @@ public enum LoginbuddyUtil implements Bootstrap {
 
     private final Logger LOGGER = Logger.getLogger(LoginbuddyUtil.class.getName());
 
+    private final LoginbuddyObjectMapper MAPPER = new LoginbuddyObjectMapper();
+
     private LoginbuddyLoader loader;
-    private LoginbuddyObjectMapper MAPPER = new LoginbuddyObjectMapper();
+    private SecretKey secretKey;
+    private Cipher cipher;
 
     LoginbuddyUtil() {
         try {
             setDefaultLoader();
         } catch (Exception e) {
             LOGGER.severe(String.format("Loginbuddy configuration could not be loaded! Error: '%s'", e.getMessage()));
-
+        }
+        try {
+            secretKey = KeyGenerator.getInstance("AES").generateKey();
+            cipher = Cipher.getInstance("AES");
+            if(System.getenv("SECRET_OBFUSCATION") == null || System.getenv("SECRET_OBFUSCATION").length() < 32) {
+                LOGGER.warning("Using a generated shared secret for obfuscation due to a missing or invalid value of SECRET_OBFUSCATION");
+            } else {
+                LOGGER.info("Using provided shared secret for obfuscation");
+                secretKey = new SecretKeySpec(System.getenv("SECRET_OBFUSCATION").substring(0,32).getBytes(StandardCharsets.UTF_8), "AES");
+            }
+        } catch(Exception e) {
+            LOGGER.warning("Obfuscation of token is not supported, see log for details");
+            LOGGER.warning(e.getMessage());
         }
     }
 
@@ -276,5 +293,27 @@ public enum LoginbuddyUtil implements Bootstrap {
 
     private ProviderConfigType getProviderType(Providers p) {
         return p.getClientId() == null ? ProviderConfigType.MINIMAL : p.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
+    }
+
+    public String encrypt(String msg) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+        // Encrypt the message
+        byte[] encryptedMessage = cipher.doFinal(msg.getBytes(StandardCharsets.UTF_8));
+
+        // Convert the encrypted message to Base64 encoded string
+        return Base64.getUrlEncoder().encodeToString(encryptedMessage);
+    }
+
+    public String decrypt(String msg) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+
+        // Reinitialize the cipher to DECRYPT_MODE
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+        // Decrypt the message
+        byte[] decryptedMessage = cipher.doFinal(Base64.getUrlDecoder().decode(msg));
+
+        return new String(decryptedMessage, StandardCharsets.UTF_8);
     }
 }

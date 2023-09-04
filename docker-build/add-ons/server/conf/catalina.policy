@@ -195,4 +195,7 @@ grant codeBase "file:${catalina.home}/webapps/ROOT/-" {
 
     // permission to check if storage should be used
     permission java.lang.RuntimePermission "getenv.STORAGE";
+
+    // permission to grab the shared secret for token encryption/decryption
+    permission java.lang.RuntimePermission "getenv.SECRET_OBFUSCATION";
 };

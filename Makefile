@@ -8,6 +8,8 @@ endef
 # Compile the code and build the docker images
 #
 build_all:
+	## this secret is used here: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
+	JAVA_OPTS=-DSECRET_OBFUSCATION=mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
 	mvn clean install
 	$(BUILD_DOCKER)
 
@@ -15,7 +17,7 @@ build_all:
 # Use this target if you do not have Java and Maven installed
 # Run the target 'build_builder' before running this target
 #
-build_all_non_dev: build_builder
+build_all_non_dev:
 	docker run -v `pwd`:/tmp saschazegerman/loginbuddy-builder:latest mvn -f "/tmp/pom.xml" clean package
 	$(BUILD_DOCKER)
 

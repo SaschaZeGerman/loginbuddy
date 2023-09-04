@@ -24,3 +24,4 @@ export $(cat .env | grep HOSTNAME_LOGINBUDDY)
 printf "\nSSL_PWD=${secret}" >> .env
 
 sh initialize-dev-tls-keypair.sh
+sh initialize-dev-obfuscation-secret.sh
