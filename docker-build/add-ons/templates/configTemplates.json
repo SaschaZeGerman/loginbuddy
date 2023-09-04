@@ -150,6 +150,28 @@
         "email_verifier": "asis:true",
         "provider": "$.details_provider.provider"
       }
+    },
+    {
+      "provider": "spotify",
+      "issuer": "https://api.spotify.com",
+      "client_id": "",
+      "client_secret": "",
+      "authorization_endpoint": "https://accounts.spotify.com/authorize",
+      "token_endpoint": "https://accounts.spotify.com/api/token",
+      "userinfo_endpoint": "https://api.spotify.com/v1/me",
+      "scope": "user-read-email user-read-private",
+      "response_type": "code",
+      "redirect_uri": "https://local.loginbuddy.net/callback",
+      "mappings": {
+        "sub": "$.details_provider.userinfo.id",
+        "email_verified": "asis:true",
+        "provider": "$.details_provider.provider",
+        "name": "$.details_provider.userinfo.display_name",
+        "preferred_username": "$.details_provider.userinfo.email",
+        "given_name": "$.details_provider.userinfo.display_name:[0]",
+        "family_name": "$.details_provider.userinfo.display_name:[1]",
+        "email": "$.details_provider.userinfo.email"
+      }
     }
   ]
 }
