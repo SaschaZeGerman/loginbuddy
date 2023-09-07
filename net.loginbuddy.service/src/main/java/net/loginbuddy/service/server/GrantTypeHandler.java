@@ -7,6 +7,6 @@ import java.io.IOException;
 
 public interface GrantTypeHandler {
 
-    void handleGrantType(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    void handleGrantType(HttpServletRequest request, HttpServletResponse response, String... extras) throws IOException;
 
 }

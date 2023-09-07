@@ -15,7 +15,7 @@ import java.io.IOException;
 public class GrantTypeAuthorizationCode implements GrantTypeHandler {
 
     @Override
-    public void handleGrantType(HttpServletRequest request, HttpServletResponse response) throws IOException  {
+    public void handleGrantType(HttpServletRequest request, HttpServletResponse response, String... extras) throws IOException  {
 
         ParameterValidatorResult codeResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));

@@ -315,20 +315,14 @@ public enum LoginbuddyUtil implements Bootstrap {
         }
     }
 
-    public String decrypt(String msg) {
+    public String decrypt(String msg) throws Exception {
         // all encrypted messages start with lb., otherwise, just return what we got
         if (msg != null && msg.startsWith("lb.")) {
-            try {
-                // Reinitialize the cipher to DECRYPT_MODE
-                cipher.init(Cipher.DECRYPT_MODE, secretKey);
-
-                // Decrypt the message
-                byte[] decryptedMessage = cipher.doFinal(Base64.getUrlDecoder().decode(msg.substring(3)));
-
-                return new String(decryptedMessage, StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                LOGGER.warning(String.format("Decryption failed: %s. Will return the given value instead\n", e.getMessage()));
-            }
+            // Reinitialize the cipher to DECRYPT_MODE
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            // Decrypt the message
+            byte[] decryptedMessage = cipher.doFinal(Base64.getUrlDecoder().decode(msg.substring(3)));
+            return new String(decryptedMessage, StandardCharsets.UTF_8);
         }
         return msg;
     }

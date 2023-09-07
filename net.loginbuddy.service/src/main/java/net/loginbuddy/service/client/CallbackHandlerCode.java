@@ -73,7 +73,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                     if (sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
                         tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s", providers.getProvider(), access_token)));
                         if (tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
-                            tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s:%s", providers.getProvider(), sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()))));
+                            tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s:%s", providers.getProvider(), sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()), tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()))));
                         }
                     }
                     String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()) == null ? null : (String)tokenResponseObject.get(Constants.ID_TOKEN.getKey());

@@ -41,6 +41,9 @@ public class Token extends HttpServlet {
             if (Constants.GRANT_TYPE_AUTHORIZATION_CODE.getKey().equalsIgnoreCase(grantType)) {
                 token_handler.put(grantType, new GrantTypeAuthorizationCode());
                 LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
+            } else if (Constants.GRANT_TYPE_REFRESH_TOKEN.getKey().equalsIgnoreCase(grantType)) {
+                token_handler.put(grantType, new GrantTypeRefreshToken());
+                LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
             }
         }
     }
@@ -90,7 +93,7 @@ public class Token extends HttpServlet {
 // ** Process the grant_type
 // ***************************************************************
 
-        token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response);
+        token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response, clientIdResult.getValue());
 
     }
 

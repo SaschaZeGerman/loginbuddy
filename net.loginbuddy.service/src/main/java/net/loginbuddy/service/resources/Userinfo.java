@@ -29,9 +29,16 @@ public class Userinfo extends Overlord {
     // encrypted token (i.e.: lb.access_token_value)
     if(token.length == 2 && "lb".equals(token[0]) )
     {
-      hint = LoginbuddyUtil.UTIL.decrypt(String.format("%s.%s", token[0], token[1]));
-      // the original access_token may be a reference token or a JWT
-      token = hint.split(":")[1].split("[.]");
+      try {
+        hint = LoginbuddyUtil.UTIL.decrypt(String.format("%s.%s", token[0], token[1]));
+        // the original access_token may be a reference token or a JWT
+        token = hint.split(":")[1].split("[.]");
+      } catch (Exception e) {
+        response.setStatus(400);
+        response.setContentType("application/json");
+        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the given token could not be encrypted").toJSONString());
+
+      }
     }
 
     // for JWT based token the signature was used as key for the cache

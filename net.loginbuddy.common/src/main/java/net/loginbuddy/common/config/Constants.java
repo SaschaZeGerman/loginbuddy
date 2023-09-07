@@ -41,6 +41,7 @@ public enum Constants {
     GRANT_TYPE("grant_type"),
     GRANT_TYPE_AUTHORIZATION_CODE("authorization_code"),
     GRANT_TYPE_CLIENT_CREDENTIALS("client_credentials"),
+    GRANT_TYPE_REFRESH_TOKEN("refresh_token"),
     GRANT_TYPES_SUPPORTED("grant_types_supported"),
     ID_TOKEN("id_token"),
     ID_TOKEN_HINT("id_token_hint"),
