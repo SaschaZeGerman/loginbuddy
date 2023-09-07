@@ -283,9 +283,11 @@ public class TestLoginbuddyConfig {
             // mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
             String encrypted = LoginbuddyUtil.UTIL.encrypt("hello world!");
             // not ideal since the secret changes with each test run, but at least we know 'encrypt' did something :-)
-            assertEquals("PBg8MbGMa7jgWL2yYoN2lw==", encrypted);
+            assertEquals("lb.PBg8MbGMa7jgWL2yYoN2lw==", encrypted);
             String decrypted = LoginbuddyUtil.UTIL.decrypt(encrypted);
             assertEquals("hello world!", decrypted);
+
+            assertEquals("unencrypted", LoginbuddyUtil.UTIL.decrypt("unencrypted"));
         } catch(Exception e) {
             fail(e.getMessage());
         }

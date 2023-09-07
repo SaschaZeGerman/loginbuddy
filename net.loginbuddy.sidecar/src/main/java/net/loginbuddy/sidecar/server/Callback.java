@@ -47,12 +47,12 @@ public class Callback extends CallbackParent {
                 return;
             }
 
-            if(sessionCtx.getString(Constants.CLIENT_STATE.getKey())!= null) {
+            if (sessionCtx.getString(Constants.CLIENT_STATE.getKey()) != null) {
                 response.setHeader("X-State", sessionCtx.getString(Constants.CLIENT_STATE.getKey()));
             }
             response.setContentType("application/json");
 
-            if(sessionCtx.get("error") != null) {
+            if (sessionCtx.get("error") != null) {
                 response.getWriter().write(
                         HttpHelper.getErrorAsJson(
                                 sessionCtx.get(Constants.ERROR.getKey(), String.class),
@@ -111,13 +111,13 @@ public class Callback extends CallbackParent {
                         JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
                         LOGGER.fine(tokenResponseObject.toJSONString());
                         access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
-                    if (sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
-                        tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), UUID.randomUUID().toString().substring(0, 8));
-                        if (tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
-                            tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), UUID.randomUUID().toString().substring(0, 8));
+                        if (sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
+                            tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s", providers.getProvider(), access_token)));
+                            if (tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
+                                tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s", providers.getProvider(), tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()))));
+                            }
                         }
-                    }
-                        String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()) == null ? null : (String)tokenResponseObject.get(Constants.ID_TOKEN.getKey());
+                        String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()) == null ? null : (String) tokenResponseObject.get(Constants.ID_TOKEN.getKey());
                         if (id_token != null) {
                             try {
                                 MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));

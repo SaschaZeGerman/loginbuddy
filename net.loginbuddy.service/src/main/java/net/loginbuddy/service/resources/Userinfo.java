@@ -9,6 +9,7 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.service.server.Overlord;
 import org.json.simple.JSONObject;
 
@@ -24,7 +25,17 @@ public class Userinfo extends Overlord {
 
     String hint;
     String[] token = HttpHelper.extractAccessToken(accessToken, authorizationHeader).split("[.]");
-    if(token.length == 3) {
+
+    // encrypted token (i.e.: lb.access_token_value)
+    if(token.length == 2 && "lb".equals(token[0]) )
+    {
+      hint = LoginbuddyUtil.UTIL.decrypt(String.format("%s.%s", token[0], token[1]));
+      // the original access_token may be a reference token or a JWT
+      token = hint.split(":")[1].split("[.]");
+    }
+
+    // for JWT based token the signature was used as key for the cache
+    if (token.length == 3) {
       hint = token[2];
     } else {
       hint = token[0];
