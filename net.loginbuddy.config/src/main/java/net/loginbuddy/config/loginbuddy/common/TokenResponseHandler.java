@@ -7,6 +7,7 @@ import org.json.simple.parser.ParseException;
 
 public interface TokenResponseHandler {
 
-    JSONObject handleTokenResponse(MsgResponse tokenResponse, boolean encryptToken, Providers providers, String clientId, String clientNonce, String jwksUri) throws ParseException;
+    JSONObject handleCodeTokenExchangeResponse(MsgResponse tokenResponse, boolean encryptToken, Providers providers, String clientId, String clientNonce, String jwksUri) throws ParseException;
+    JSONObject handleRefreshTokenResponse(MsgResponse tokenResponse, Providers providers, String clientId) throws ParseException;
 
 }

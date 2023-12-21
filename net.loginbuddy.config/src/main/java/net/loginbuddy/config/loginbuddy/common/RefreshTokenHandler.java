@@ -8,8 +8,11 @@ import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.Providers;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +24,7 @@ public class RefreshTokenHandler implements GrantTypeHandler {
     private static final Logger LOGGER = Logger.getLogger(RefreshTokenHandler.class.getName());
 
     @Override
-    public void handleGrantType(HttpServletRequest request, HttpServletResponse response, String... extras) throws IOException  {
+    public void handleGrantType(HttpServletRequest request, HttpServletResponse response, String... extras) throws IOException {
 
         ParameterValidatorResult refreshTokenResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.REFRESH_TOKEN.getKey()));
@@ -50,9 +53,12 @@ public class RefreshTokenHandler implements GrantTypeHandler {
 
                 // check if the given client_id (RP of Loginbuddy) is the one that requested the refresh_token
                 if(clientId.equals(extras[0])) {
+
+                    Providers providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
+
                     List<NameValuePair> parameters = new ArrayList<>();
                     parameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), clientId));
-                    parameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider).getClientSecret()));
+                    parameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), providers.getClientSecret()));
                     parameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.GRANT_TYPE_REFRESH_TOKEN.getKey()));
                     parameters.add(new BasicNameValuePair(Constants.REFRESH_TOKEN.getKey(), refreshToken));
                     if(scopeResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
@@ -60,11 +66,20 @@ public class RefreshTokenHandler implements GrantTypeHandler {
                     } else {
                         LOGGER.warning(String.format("parameter scope is ignored for refresh_token request to provider %s with client_id %s.\n", provider, clientId));
                     }
-                    MsgResponse resp = HttpHelper.postMessage(parameters, LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider).getTokenEndpoint(), "application/json");
-                    response.setStatus(resp.getStatus());
-                    response.setContentType(resp.getContentType());
-                    response.getWriter().write(resp.getMsg());
+                    MsgResponse tokenResponse = HttpHelper.postMessage(parameters, providers.getTokenEndpoint(), "application/json");
 
+                    JSONObject tokenResponseObject = null;
+                    try {
+                        tokenResponseObject = new DefaultTokenResponseHandler().handleRefreshTokenResponse(tokenResponse, providers, clientId);
+                        response.setStatus(tokenResponse.getStatus());
+                        response.setContentType(tokenResponse.getContentType());
+                        response.getWriter().write(tokenResponseObject.toJSONString());
+                    } catch (ParseException e) {
+                        LOGGER.info(e.getMessage());
+                        response.setStatus(400);
+                        response.setContentType("application/json");
+                        response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the opeid connect provider return an unusable response").toJSONString());
+                    }
                 } else {
                     response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the client is not authorized for this request").toJSONString());
                 }

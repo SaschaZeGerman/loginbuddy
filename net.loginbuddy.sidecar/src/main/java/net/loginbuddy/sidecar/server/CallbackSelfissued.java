@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 
 public class CallbackSelfissued extends CallbackParent {
 
+    // TODO remove since it is not in use
+
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(CallbackSelfissued.class));
 
     @Override
