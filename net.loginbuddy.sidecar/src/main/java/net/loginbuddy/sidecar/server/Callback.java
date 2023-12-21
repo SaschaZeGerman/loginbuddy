@@ -17,6 +17,7 @@ import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.common.DefaultTokenResponseHandler;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
 import net.loginbuddy.sidecar.util.SessionContext;
@@ -108,36 +109,51 @@ public class Callback extends CallbackParent {
             if (tokenResponse != null) {
                 if (tokenResponse.getStatus() == 200) {
                     if (tokenResponse.getContentType().startsWith("application/json")) {
-                        JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
-                        LOGGER.fine(tokenResponseObject.toJSONString());
-                        access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
-                        if (sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
-                            tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s", providers.getProvider(), access_token)));
-                            if (tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
-                                tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s", providers.getProvider(), tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()))));
-                            }
+
+                        JSONObject tokenResponseObject = new DefaultTokenResponseHandler().handleTokenResponse(
+                                tokenResponse,
+                                sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey()),
+                                providers,
+                                sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
+                                sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+                                sessionCtx.getString(Constants.JWKS_URI.getKey())
+                        );
+                        if(tokenResponseObject.get("id_token_payload") != null) {
+                            eb.setIdTokenPayload((JSONObject)tokenResponseObject.remove("id_token_payload"));
                         }
-                        String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()) == null ? null : (String) tokenResponseObject.get(Constants.ID_TOKEN.getKey());
-                        if (id_token != null) {
-                            try {
-                                MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
-                                JSONObject idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                                // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
-                                OnBehalfOfResult resigningResult = OnBehalfOf.signOnBehalfOf(
-                                        sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
-                                        sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
-                                        "id_token",
-                                        idTokenPayload,
-                                        id_token
-                                );
-                                tokenResponseObject.put("id_token", resigningResult.getIdToken());
-                                eb.setIdTokenPayload(resigningResult.getIdTokenPayload());
-                            } catch (Exception e) {
-                                LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
-                            }
-                        } else {
-                            LOGGER.warning("No id_token was issued");
-                        }
+                        access_token = (String)tokenResponseObject.remove("provider_access_token");
+
+
+//                        JSONObject tokenResponseObject = ((JSONObject) new JSONParser().parse(tokenResponse.getMsg()));
+//                        LOGGER.fine(tokenResponseObject.toJSONString());
+//                        access_token = tokenResponseObject.get(Constants.ACCESS_TOKEN.getKey()).toString();
+//                        if (sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey())) {
+//                            tokenResponseObject.put(Constants.ACCESS_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s", providers.getProvider(), access_token)));
+//                            if (tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()) != null) {
+//                                tokenResponseObject.put(Constants.REFRESH_TOKEN.getKey(), LoginbuddyUtil.UTIL.encrypt(String.format("%s:%s:%s", providers.getProvider(), providers.getClientId(), tokenResponseObject.get(Constants.REFRESH_TOKEN.getKey()))));
+//                            }
+//                        }
+//                        String id_token = tokenResponseObject.get(Constants.ID_TOKEN.getKey()) == null ? null : (String) tokenResponseObject.get(Constants.ID_TOKEN.getKey());
+//                        if (id_token != null) {
+//                            try {
+//                                MsgResponse jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey()));
+//                                JSONObject idTokenPayload = Jwt.DEFAULT.validateIdToken(id_token, jwks.getMsg(), providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
+//                                // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
+//                                OnBehalfOfResult resigningResult = OnBehalfOf.signOnBehalfOf(
+//                                        sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
+//                                        sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+//                                        "id_token",
+//                                        idTokenPayload,
+//                                        id_token
+//                                );
+//                                tokenResponseObject.put("id_token", resigningResult.getIdToken());
+//                                eb.setIdTokenPayload(resigningResult.getIdTokenPayload());
+//                            } catch (Exception e) {
+//                                LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
+//                            }
+//                        } else {
+//                            LOGGER.warning("No id_token was issued");
+//                        }
                         eb.setTokenResponse(tokenResponseObject);
                     } else {
                         response.getWriter()

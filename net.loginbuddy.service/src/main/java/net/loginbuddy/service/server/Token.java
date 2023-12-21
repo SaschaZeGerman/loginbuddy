@@ -19,6 +19,8 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.common.GrantTypeHandler;
+import net.loginbuddy.config.loginbuddy.common.RefreshTokenHandler;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,10 +41,10 @@ public class Token extends HttpServlet {
         token_handler = new HashMap<>();
         for (String grantType : DiscoveryUtil.UTIL.getGrantTypesSupported()) {
             if (Constants.GRANT_TYPE_AUTHORIZATION_CODE.getKey().equalsIgnoreCase(grantType)) {
-                token_handler.put(grantType, new GrantTypeAuthorizationCode());
+                token_handler.put(grantType, new AuthorizationCodeHandler());
                 LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
             } else if (Constants.GRANT_TYPE_REFRESH_TOKEN.getKey().equalsIgnoreCase(grantType)) {
-                token_handler.put(grantType, new GrantTypeRefreshToken());
+                token_handler.put(grantType, new RefreshTokenHandler());
                 LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
             }
         }

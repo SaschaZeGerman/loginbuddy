@@ -8,11 +8,12 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Pkce;
+import net.loginbuddy.config.loginbuddy.common.GrantTypeHandler;
 import net.loginbuddy.service.util.SessionContext;
 
 import java.io.IOException;
 
-public class GrantTypeAuthorizationCode implements GrantTypeHandler {
+public class AuthorizationCodeHandler implements GrantTypeHandler {
 
     @Override
     public void handleGrantType(HttpServletRequest request, HttpServletResponse response, String... extras) throws IOException  {

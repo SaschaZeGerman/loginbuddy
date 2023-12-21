@@ -1,3 +1,6 @@
+## this secret is used here: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
+export SECRET_OBFUSCATION = mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
+
 define BUILD_DOCKER
 	docker build --no-cache --tag saschazegerman/loginbuddy-base:latest -f Dockerfile_base .
 	docker build --no-cache --tag saschazegerman/loginbuddy:latest .
@@ -8,8 +11,6 @@ endef
 # Compile the code and build the docker images
 #
 build_all:
-	## this secret is used here: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
-	JAVA_OPTS=-DSECRET_OBFUSCATION=mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
 	mvn clean install
 	$(BUILD_DOCKER)
 

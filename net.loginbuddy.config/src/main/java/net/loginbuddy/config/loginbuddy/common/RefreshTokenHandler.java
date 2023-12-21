@@ -1,16 +1,13 @@
-package net.loginbuddy.service.server;
+package net.loginbuddy.config.loginbuddy.common;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
-import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.common.util.Pkce;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
-import net.loginbuddy.service.util.SessionContext;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -19,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class GrantTypeRefreshToken implements GrantTypeHandler {
+public class RefreshTokenHandler implements GrantTypeHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(GrantTypeRefreshToken.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RefreshTokenHandler.class.getName());
 
     @Override
     public void handleGrantType(HttpServletRequest request, HttpServletResponse response, String... extras) throws IOException  {

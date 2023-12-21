@@ -36,6 +36,10 @@
         <servlet-name>SidecarCallback</servlet-name>
         <servlet-class>net.loginbuddy.sidecar.server.Callback</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SidecarToken</servlet-name>
+        <servlet-class>net.loginbuddy.sidecar.server.Token</servlet-class>
+    </servlet>
 
     <!-- health checks -->
     <servlet>
@@ -54,6 +58,10 @@
     <servlet-mapping>
         <servlet-name>SidecarCallback</servlet-name>
         <url-pattern>/sidecar/callback</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SidecarToken</servlet-name>
+        <url-pattern>/sidecar/token</url-pattern>
     </servlet-mapping>
 
     <!-- Health checks -->

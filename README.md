@@ -22,6 +22,7 @@ Loginbuddy includes configuration templates for common OpenID providers which si
 - Amazon (Login with Amazon)
 - OpenID Dynamic registration
 - self-issued
+- Spotify
 
 # API and Protocols 
 
