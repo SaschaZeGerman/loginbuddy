@@ -85,12 +85,15 @@ public class Providers implements Serializable {
 
     @JsonProperty("pushed_authorization_request_endpoint")
     private String pushedAuthorizationRequestEndpoint;
+    @JsonProperty("dpop_bound_access_tokens")
+    private boolean dpopBoundAccessTokens;
 
     public Providers() {
         pkce = true;
         scope = Constants.OPENID_SCOPE.getKey();
         responseType = Constants.CODE.getKey();
         meta = new Meta();
+        dpopBoundAccessTokens = false;
     }
 
     public Providers(String issuer, String clientId, String redirectUri) {
@@ -121,6 +124,7 @@ public class Providers implements Serializable {
         this.responseType = config.getResponseType();
         this.pushedAuthorizationRequestEndpoint = config.getPushedAuthorizationRequestEndpoint();
         this.openidConfigurationUri = null;
+        this.dpopBoundAccessTokens = config.isDpopBoundAccessTokens();
     }
 
     public String getProvider() {
@@ -197,6 +201,10 @@ public class Providers implements Serializable {
 
     public String getPushedAuthorizationRequestEndpoint() {
         return pushedAuthorizationRequestEndpoint;
+    }
+
+    public boolean isDpopBoundAccessTokens() {
+        return dpopBoundAccessTokens;
     }
 
     @Deprecated
@@ -278,6 +286,10 @@ public class Providers implements Serializable {
 
     public void setTemplate(String template) {
         this.template = template;
+    }
+
+    public void setDpopBoundAccessTokens(boolean dpopBoundAccessTokens) {
+        this.dpopBoundAccessTokens = dpopBoundAccessTokens;
     }
 
     @JsonIgnore()
