@@ -24,6 +24,11 @@ then
   SSL_PORT=443
 fi
 
+# port for the sidecar usage
+#
+export SIDECAR_SSL_PORT=444
+export SIDECAR_HTTP_PORT=8044
+
 # creating a keystore and generating a password for it
 #
 UUID=${SSL_PWD}
@@ -68,12 +73,16 @@ export CATALINA_OPTS="${SYSTEM_PROPS} -Dorg.jose4j.jws.default-allow-none=false"
 sed -i "s/@@hostname@@"/${HOSTNAME_LOGINBUDDY}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslport@@"/${SSL_PORT}/g /usr/local/tomcat/conf/server.xml
 sed -i "s/@@sslpwd@@"/${UUID}/g /usr/local/tomcat/conf/server.xml
+sed -i "s/@@sidecarsslport@@"/${SIDECAR_SSL_PORT}/g /usr/local/tomcat/conf/server.xml
+sed -i "s/@@sidecarhttpport@@"/${SIDECAR_HTTP_PORT}/g /usr/local/tomcat/conf/server.xml
 
 # overwrite the variables since they are not needed anywhere anymore
 #
 unset HOSTNAME_LOGINBUDDY=
 unset SSL_PORT=
 unset UUID=
+unset SIDECAR_SSL_PORT=
+unset SIDECAR_HTTP_PORT=
 
 # run the original tomcat entry point command as specified in tomcat's Dockerfile
 #

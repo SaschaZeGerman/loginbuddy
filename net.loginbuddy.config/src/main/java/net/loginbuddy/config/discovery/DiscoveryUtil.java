@@ -117,6 +117,10 @@ public enum DiscoveryUtil implements Bootstrap {
         return loader.getDiscoveryConfig().getPushedAuthorizationRequestEndpoint();
     }
 
+    public String getSidecarAuthorizationRequestEndpoint() {
+        return loader.getDiscoveryConfig().getSidecarAuthorizationRequestEndpoint();
+    }
+
     public String getOpenIdConfigurationAsJsonString() {
         try {
             return MAPPER.writeValueAsString(loader.getDiscoveryConfig());

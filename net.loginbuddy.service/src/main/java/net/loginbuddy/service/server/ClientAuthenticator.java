@@ -68,7 +68,7 @@ public class ClientAuthenticator {
         return new ClientCredentialsResult(null, true, cc);
     }
 
-    public static ClientRedirecUriResult validateClddddientRedirectUri(ParameterValidatorResult clientRedirectUriResult, String registeredRedirectUris, String clientType) {
+    public static ClientRedirecUriResult validateClientRedirectUri(ParameterValidatorResult clientRedirectUriResult, String registeredRedirectUris, String clientType) {
 
         boolean checkRedirectUri = true;
 

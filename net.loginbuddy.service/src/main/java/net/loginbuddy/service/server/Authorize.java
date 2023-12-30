@@ -36,4 +36,9 @@ public class Authorize extends AuthorizationHandler {
         }
         return new ClientAuthenticator.ClientCredentialsResult(null, true, cc);
     }
+
+    @Override
+    protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader, String signedResponseAlg, boolean acceptDynamicProvider) {
+        return handleClientValidation(clientIdResult, clientSecretResult, authorizationHeader); // ignoring other parameters on purpose
+    }
 }

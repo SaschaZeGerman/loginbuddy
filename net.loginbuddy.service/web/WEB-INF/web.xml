@@ -123,6 +123,10 @@
         <servlet-class>net.loginbuddy.service.client.Callback</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>CallbackSidecar</servlet-name>
+        <servlet-class>net.loginbuddy.service.client.CallbackSidecar</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Authorize</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Authorize</servlet-class>
     </servlet>
@@ -131,8 +135,16 @@
         <servlet-class>net.loginbuddy.service.server.AuthorizePar</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>AuthorizeSidecar</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.AuthorizeSidecar</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>Token</servlet-name>
         <servlet-class>net.loginbuddy.service.server.Token</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TokenSidecar</servlet-name>
+        <servlet-class>net.loginbuddy.service.server.TokenSidecar</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>Discovery</servlet-name>
@@ -208,12 +220,24 @@
         <url-pattern>/pauthorize</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
+        <servlet-name>AuthorizeSidecar</servlet-name>
+        <url-pattern>/sidecar/initialize</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CallbackSidecar</servlet-name>
+        <url-pattern>/sidecar/callback</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>Token</servlet-name>
         <url-pattern>/exchange</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Token</servlet-name>
         <url-pattern>/token</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TokenSidecar</servlet-name>
+        <url-pattern>/sidecar/token</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Discovery</servlet-name>
@@ -307,6 +331,12 @@
         <user-data-constraint>
             <transport-guarantee>NONE</transport-guarantee>
         </user-data-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>HTTPSOrHTTP</web-resource-name>
+            <url-pattern>/sidecar/*</url-pattern>
+        </web-resource-collection>
     </security-constraint>
 
     <security-role>

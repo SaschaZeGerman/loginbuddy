@@ -62,11 +62,14 @@ public class Discovery implements Bootstrap {
     @JsonProperty("pushed_authorization_request_endpoint")
     private String pushedAuthorizationRequestEndpoint;
 
+    @JsonProperty("signing_alg_values_supported")
+    private String[] signingAlgValuesSupported;
+
     // *** values specific to Loginbuddy *** //
     private Management management;
 
-    @JsonProperty("signing_alg_values_supported")
-    private String[] signingAlgValuesSupported;
+    @JsonProperty("sidecar_authorization_request_endpoint")
+    private String sidecarAuthorizationRequestEndpoint;
 
     public String getIssuer() {
         return issuer;
@@ -132,6 +135,10 @@ public class Discovery implements Bootstrap {
         return management;
     }
 
+    public String getSidecarAuthorizationRequestEndpoint() {
+        return sidecarAuthorizationRequestEndpoint;
+    }
+
     public void setIssuer(String issuer) {
         this.issuer = issuer;
     }
@@ -190,6 +197,10 @@ public class Discovery implements Bootstrap {
 
     public void setManagement(Management management) {
         this.management = management;
+    }
+
+    public void setSidecarAuthorizationRequestEndpoint(String sidecarAuthorizationRequestEndpoint) {
+        this.sidecarAuthorizationRequestEndpoint = sidecarAuthorizationRequestEndpoint;
     }
 
     public void setSigningAlgValuesSupported(String[] signingAlgValuesSupported) {

@@ -96,7 +96,6 @@ public class Token extends HttpServlet {
 // ***************************************************************
 
         token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response, clientIdResult.getValue());
-
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

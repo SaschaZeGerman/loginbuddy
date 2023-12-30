@@ -31,6 +31,11 @@ public class AuthorizePar extends AuthorizationHandler {
     }
 
     @Override
+    protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader, String signedResponseAlg, boolean acceptDynamicProvider) {
+        return handleClientValidation(clientIdResult, clientSecretResult, authorizationHeader); // ignoring other parameters on purpose
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // the parameter 'request_uri' MUST NOT be submitted
