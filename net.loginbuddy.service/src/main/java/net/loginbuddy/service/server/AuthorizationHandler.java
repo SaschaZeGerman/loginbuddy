@@ -34,16 +34,10 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-//        ParameterValidatorResult clientIdResult = getClientIdResult(request, response);
-//        if (!clientIdResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
-//            LOGGER.warning("Missing or multiple client_id parameters given!");
-//            handleError(400, "Missing or multiple client_id parameters given!", response);
-//            return;
-//        }
-
 // ***************************************************************
 // ** Potentially used with sidecar requests, ignored otherwise since these values would be configured in client configurations
 // ***************************************************************
+
         ParameterValidatorResult signedResponseAlgResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.SIGNED_RESPONSE_ALG.getKey()));
         ParameterValidatorResult acceptDynamicProviderResult = ParameterValidator
@@ -60,8 +54,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             handleError(400, "Missing or multiple client_id parameters given!", response);
             return;
         }
-        ParameterValidatorResult clientSecretResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only needed for a PAR call (.../pauthorize)
+        ParameterValidatorResult clientSecretResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only needed for a PAR call (.../pauthorize)
         ClientAuthenticator.ClientCredentialsResult clientValidationResult =
                 handleClientValidation(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()), signedResponseAlgResult.getValue(), acceptDynamicProviderResult.getBooleanValue());
         if (!clientValidationResult.isValid()) {
@@ -77,7 +70,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
         ParameterValidatorResult clientResponseTypeResult = getResponseTypeResult(request, response);
         ParameterValidatorResult clientRedirectUriResult = getRedirectUriResult(request, response);
-        ParameterValidatorResult clientProviderResult = getProviderResult(request);
+        ParameterValidatorResult clientProviderResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()), "");
         ParameterValidatorResult clientStateResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.STATE.getKey()), "");
         ParameterValidatorResult scopeResult = ParameterValidator
@@ -101,20 +94,6 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE.getKey()));
         ParameterValidatorResult clientCodeChallendeMethodResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()));
-
-//// ***************************************************************
-//// ** Let's start with checking for a valid client credentials
-//// ***************************************************************
-//
-//        ParameterValidatorResult clientSecretResult = ParameterValidator
-//                .getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only needed for a PAR call (.../pauthorize)
-//        ClientAuthenticator.ClientCredentialsResult clientValidationResult = handleClientValidation(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()));
-//        if (!clientValidationResult.isValid()) {
-//            LOGGER.warning(clientValidationResult.getErrorMsg());
-//            handleError(400, clientValidationResult.getErrorMsg(), response);
-//            return;
-//        }
-//        Clients cc = clientValidationResult.getClients();
 
 // ***************************************************************
 // ** Check the given redirect_uri. Confidential clients only need to have one registered but not passed in
@@ -265,7 +244,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
             }
             // TODO: do we need logging for informational purposes?
         }
-        boolean acceptDynamicProvider= cc.isAcceptDynamicProvider();
+        boolean acceptDynamicProvider = cc.isAcceptDynamicProvider();
         createSessionAndResponse(
                 request,
                 response,
@@ -380,10 +359,6 @@ public abstract class AuthorizationHandler extends HttpServlet {
         return ParameterValidator.getSingleValue(request.getParameterValues(Constants.REDIRECT_URI.getKey()));
     }
 
-    protected ParameterValidatorResult getProviderResult(HttpServletRequest request) {
-        return ParameterValidator.getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()), "");
-    }
-
     protected void handleAuthorizationResponse(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, Object value) throws ServletException, IOException {
         if ("".equals(value)) {
             request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
@@ -395,8 +370,6 @@ public abstract class AuthorizationHandler extends HttpServlet {
     }
 
     protected abstract void handleError(int httpStatus, String errorMsg, HttpServletResponse response) throws IOException;
-
-    protected abstract ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader);
 
     protected abstract ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader, String signedResponseAlg, boolean acceptDynamicProvider);
 }

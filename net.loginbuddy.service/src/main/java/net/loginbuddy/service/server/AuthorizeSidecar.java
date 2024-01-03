@@ -7,7 +7,6 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.HeadOfInitialize;
-import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.service.util.SessionContext;
 
 import java.io.IOException;
@@ -24,9 +23,8 @@ public class AuthorizeSidecar extends AuthorizationHandler {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         try {
-            SidecarMaster.checkClientConnection(request);
+            Sidecar.checkClientConnection(request);
         } catch (IllegalAccessException e) {
             LOGGER.warning(e.getMessage());
             response.setStatus(400);
@@ -34,7 +32,6 @@ public class AuthorizeSidecar extends AuthorizationHandler {
             response.getWriter().write(e.getMessage());
             return;
         }
-
         super.doGet(request, response);
     }
 
@@ -42,22 +39,12 @@ public class AuthorizeSidecar extends AuthorizationHandler {
     protected void handleError(int httpStatus, String errorMsg, HttpServletResponse response) throws IOException {
         System.out.println(httpStatus);
         System.out.println(errorMsg);
-    }
-
-    @Override
-    protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader) {
-        return handleClientValidation(clientIdResult, clientSecretResult, authorizationHeader, null, false);
+        // TODO handle errors (if necessary)
     }
 
     @Override
     protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader, String signedResponseAlg, boolean acceptDynamicProvider) {
-        Clients c = new Clients();
-        c.setClientId(Constants.SIDECAR_CLIENT_ID.getKey());
-        c.setClientType(Constants.CLIENT_TYPE_CONFIDENTIAL.getKey());
-        c.setRedirectUri(Constants.SIDECAR_REDIRECT_URI.getKey());
-        c.setSignedResponseAlg(signedResponseAlg);
-        c.setAcceptDynamicProvider(acceptDynamicProvider);
-        return new ClientAuthenticator.ClientCredentialsResult(null, true, c);
+        return Sidecar.getClientForAuthorize(clientIdResult, signedResponseAlg, acceptDynamicProvider);
     }
 
     @Override
@@ -76,15 +63,6 @@ public class AuthorizeSidecar extends AuthorizationHandler {
     protected ParameterValidatorResult getRedirectUriResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // this should not be passed in, will be ignored
         return ParameterValidator.getSingleValue(new String[]{Constants.SIDECAR_REDIRECT_URI.getKey()});
-    }
-
-    @Override
-    protected ParameterValidatorResult getProviderResult(HttpServletRequest request) {
-        return ParameterValidator.getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()), "");
-//        ParameterValidatorResult issuerResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.ISSUER.getKey()));
-//        ParameterValidatorResult providerResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()));
-//        String providerValue = "".equals(providerResult.getValue()) ? issuerResult.getResult().equals(ParameterValidatorResult.RESULT.VALID) ? Constants.DYNAMIC_PROVIDER.getKey() : "" : providerResult.getValue();
-//        return ParameterValidator.getSingleValue(new String[]{providerValue});
     }
 
     @Override

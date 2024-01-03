@@ -11,7 +11,7 @@ import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.service.server.SidecarMaster;
+import net.loginbuddy.service.server.Sidecar;
 import net.loginbuddy.service.util.SessionContext;
 import org.jose4j.lang.JoseException;
 
@@ -20,12 +20,12 @@ import java.util.logging.Logger;
 
 public class CallbackSidecarParent extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(CallbackSidecarParent.class));
+    private static final Logger LOGGER = Logger.getLogger(CallbackSidecarParent.class.getName());
 
     protected SessionContext checkForSessionAndErrors(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         try {
-            SidecarMaster.checkClientConnection(request);
+            Sidecar.checkClientConnection(request);
         } catch (IllegalAccessException e) {
             LOGGER.warning(e.getMessage());
             response.setStatus(400);

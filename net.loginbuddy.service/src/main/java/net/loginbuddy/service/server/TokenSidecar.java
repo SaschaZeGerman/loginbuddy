@@ -1,7 +1,14 @@
+/*
+ * Copyright (c) 2018. . All rights reserved.
+ *
+ * This software may be modified and distributed under the terms of the Apache License 2.0 license.
+ * See http://www.apache.org/licenses/LICENSE-2.0 for details.
+ *
+ */
+
 package net.loginbuddy.service.server;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.config.Constants;
@@ -15,43 +22,36 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class TokenSidecar extends HttpServlet {
+public class TokenSidecar extends Token  {
 
-    private static final Logger LOGGER = Logger.getLogger(Token.class.getName());
-
-    private Map<String, GrantTypeHandler> token_handler;
+    private static final Logger LOGGER = Logger.getLogger(TokenSidecar.class.getName());
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-        token_handler = new HashMap<>();
-        token_handler.put(Constants.GRANT_TYPE_REFRESH_TOKEN.getKey(), new RefreshTokenHandler());
-        LOGGER.info(String.format("Registering handler for grant_type: %s\n", Constants.GRANT_TYPE_REFRESH_TOKEN.getKey()));
-    }
-
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-// ***************************************************************
-// ** Whatever happens, we'll return JSON
-// ***************************************************************
-
-        response.setContentType("application/json");
-        response.addHeader("Cache-Control", "no-store");
-        response.addHeader("Pragma", "no-cache");
-        response.setStatus(400);
-
-        ParameterValidatorResult grantTypeResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.GRANT_TYPE.getKey()));
-
-// ***************************************************************
-// ** Process the grant_type
-// ***************************************************************
-
-        token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response, Constants.SIDECAR_CLIENT_ID.getKey());
+        try {
+            Sidecar.checkClientConnection(request);
+        } catch (IllegalAccessException e) {
+            LOGGER.warning(e.getMessage());
+            response.setStatus(400);
+            response.setContentType("application/json");
+            response.getWriter().write(e.getMessage());
+            return;
+        }
+        super.doPost(request, response);
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setHeader("Allow", "POST");
-        response.sendError(405, "Method not allowed");
+    @Override
+    protected Map<String, GrantTypeHandler> getGrantTypeHandlers() {
+        Map<String, GrantTypeHandler> tokenHandler = new HashMap<>();
+        tokenHandler.put(Constants.GRANT_TYPE_REFRESH_TOKEN.getKey(), new RefreshTokenHandler());
+        LOGGER.info(String.format("Registering handler for grant_type: %s\n", Constants.GRANT_TYPE_REFRESH_TOKEN.getKey()));
+        return tokenHandler;
+    }
+
+    @Override
+    protected ClientAuthenticator.ClientCredentialsResult authenticateClient(HttpServletRequest request, HttpServletResponse response) throws IOException {
+//        ParameterValidatorResult clientIdResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+        ParameterValidatorResult clientIdResult = ParameterValidator.getSingleValue(new String[]{Constants.SIDECAR_CLIENT_ID.getKey()});
+        return Sidecar.getClientForToken(clientIdResult);
     }
 }
