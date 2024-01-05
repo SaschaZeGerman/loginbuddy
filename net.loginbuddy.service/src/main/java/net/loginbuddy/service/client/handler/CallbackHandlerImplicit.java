@@ -1,4 +1,4 @@
-package net.loginbuddy.service.client;
+package net.loginbuddy.service.client.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,9 +17,9 @@ import org.json.simple.JSONObject;
 
 import java.util.logging.Logger;
 
-public class CallbackHandlerImplicit extends Callback implements CallbackHandler {
+public class CallbackHandlerImplicit extends CallbackHandlerDefault {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(CallbackHandlerImplicit.class));
+    private static final Logger LOGGER = Logger.getLogger(CallbackHandlerImplicit.class.getName());
 
     @Override
     public void handleCallback(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb, String provider) throws Exception {

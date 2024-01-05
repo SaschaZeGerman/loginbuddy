@@ -6,7 +6,7 @@
  *
  */
 
-package net.loginbuddy.service.client;
+package net.loginbuddy.service.client.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,10 +25,11 @@ import org.json.simple.parser.JSONParser;
 
 import java.util.logging.Logger;
 
-public class CallbackHandlerCode extends Callback implements CallbackHandler {
+public class CallbackHandlerCode extends CallbackHandlerDefault {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(CallbackHandlerCode.class));
+    private static final Logger LOGGER = Logger.getLogger(CallbackHandlerCode.class.getName());
 
+    @Override
     public void handleCallback(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb, String provider) throws Exception {
 
 // ***************************************************************
@@ -38,7 +39,7 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                 .getSingleValue(request.getParameterValues(Constants.CODE.getKey()));
         if (!codeResult.getResult().equals(RESULT.VALID)) {
             LOGGER.warning("Missing code parameter returned from provider!");
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "missing or invalid code parameter"));
+            endFunHere("invalid_session", "missing or invalid code parameter", sessionCtx, response);
             return;
         }
 
@@ -79,21 +80,19 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
                     access_token = (String)tokenResponseObject.remove("provider_access_token");
                     eb.setTokenResponse(tokenResponseObject);
                 } else {
-                    response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
-                            "invalid_response",
-                            String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType())));
+                    endFunHere("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()), sessionCtx, response);
                     return;
                 }
             } else {
                 // need to handle error cases
                 if (tokenResponse.getContentType().startsWith("application/json")) {
                     JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-                    response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String) err.get("error"), (String) err.get("error_description")));
+                    endFunHere((String) err.get("error"), (String) err.get("error_description"), sessionCtx, response);
                     return;
                 }
             }
         } else {
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "the code exchange failed. An access_token could not be retrieved"));
+            endFunHere("invalid_request", "the code exchange failed. An access_token could not be retrieved", sessionCtx, response);
             return;
         }
 
@@ -116,6 +115,14 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
             }
         }
         eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
+
+        createUserInfoSession(sessionCtx, access_token);
+
+        returnAuthorizationCode(response, sessionCtx, eb);
+    }
+
+    protected void createUserInfoSession(SessionContext sessionCtx, String access_token) {
+
 // ***************************************************************
 // ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
 // ***************************************************************
@@ -129,7 +136,5 @@ public class CallbackHandlerCode extends Callback implements CallbackHandler {
         } else {
             LoginbuddyCache.CACHE.put(access_token, jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
         }
-
-        returnAuthorizationCode(response, sessionCtx, eb);
     }
 }
