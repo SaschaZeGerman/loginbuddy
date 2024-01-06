@@ -1,7 +1,10 @@
 version: '3.4'
 services:
 
-  # Use this for development purposes as it enables remote debugging
+  # This is a simple Loginbuddy configuration that enables debugging. Otherwise, it is the same as 'docker-compose.yml'.
+  #
+  # TIP: Visit this page for details on how to enable debugging in your IDE and using JMX:
+  # - https://github.com/SaschaZeGerman/loginbuddy/wiki/Development
   #
   loginbuddy:
     image: saschazegerman/loginbuddy:latest
@@ -11,13 +14,14 @@ services:
     volumes:
       - ./dev/loginbuddy.p12:/usr/local/tomcat/ssl/loginbuddy.p12
     ports:
-      - "80:80"
       - "443:443"
       - "8000:8000"
       - "9010:9010"
       - "9011:9011"
     environment:
+      - "HOSTNAME_LOGINBUDDY=${HOSTNAME_LOGINBUDDY}"
       - "SSL_PWD=${SSL_PWD}"
+      - "SECRET_OBFUSCATION=${SECRET_OBFUSCATION}"
       - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=*:8000,suspend=n,server=y \
         -Dcom.sun.management.jmxremote \
         -Dcom.sun.management.jmxremote.authenticate=false \

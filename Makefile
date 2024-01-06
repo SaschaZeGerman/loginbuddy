@@ -1,10 +1,9 @@
-## this secret is used here: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
+## this secret is used for testing here: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
 export SECRET_OBFUSCATION = mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
 
 define BUILD_DOCKER
 	docker build --no-cache --tag saschazegerman/loginbuddy-base:latest -f Dockerfile_base .
 	docker build --no-cache --tag saschazegerman/loginbuddy:latest .
-	docker build --no-cache --tag saschazegerman/loginbuddy-sidecar:latest -f Dockerfile_sidecar .
 	docker build --no-cache --tag saschazegerman/loginbuddy-oidcdr:latest -f Dockerfile_oidcdr .
 endef
 

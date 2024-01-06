@@ -43,10 +43,8 @@ COPY net.loginbuddy.common/ /tmp/net.loginbuddy.common
 COPY net.loginbuddy.config/ /tmp/net.loginbuddy.config
 COPY net.loginbuddy.oidcdr/ /tmp/net.loginbuddy.oidcdr
 COPY net.loginbuddy.service/ /tmp/net.loginbuddy.service
-COPY net.loginbuddy.service/ /tmp/net.loginbuddy.service
-COPY net.loginbuddy.sidecar/ /tmp/net.loginbuddy.sidecar
 
-## This secret is used for teting: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
+## This secret is used for testing: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
 #
 ENV SECRET_OBFUSCATION=mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
 

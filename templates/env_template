@@ -8,4 +8,4 @@
 #
 HOSTNAME_LOGINBUDDY=local.loginbuddy.net
 
-# the password for the shared private key used for SSL/ TLS
+# the password for the shared private key used for SSL/ TLS and the secret to obfuscate token
