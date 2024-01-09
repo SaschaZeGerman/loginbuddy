@@ -289,6 +289,12 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
             providers.setTemplate((String) currentProvider.get("template"));
         }
 
+        if (currentProvider.get("dpop_bound_access_tokens") != null) {
+            providers.setDpopBoundAccessTokens(Boolean.parseBoolean(currentProvider.get("dpop_bound_access_tokens").toString()));
+        } else {
+            LOGGER.info("dpop_bound_access_tokens is not configured!");
+        }
+
         return providers;
     }
 

@@ -25,6 +25,7 @@ import org.jose4j.lang.JoseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -105,6 +106,59 @@ public enum Jwt {
     }
 
     /**
+     * See details here: <a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop-16#name-dpop-proof-jwt-syntax">DPoP (RFC 9449)</a>
+     * @param htm MUST NOT be null
+     * @param htu MUST NOT be null
+     * @param accessToken MAY be null
+     * @param nonce MAY be null
+     * @param additionalClaims Non-Null list, MAY be empty
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public JsonWebSignature createDpopProofRS256(String htm, String htu, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
+        return createDpopProof(htm, htu, JwsAlgorithm.RS256, accessToken, nonce, additionalClaims);
+    }
+    public JsonWebSignature createDpopProofRS256(String htm, String htu, String accessToken, String nonce) throws NoSuchAlgorithmException {
+        return createDpopProofRS256(htm, htu, accessToken, nonce, new HashMap<>());
+    }
+    public JsonWebSignature createDpopProofES256(String htm, String htu, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
+        return createDpopProof(htm, htu, JwsAlgorithm.ES256, accessToken, nonce, additionalClaims);
+    }
+    public JsonWebSignature createDpopProofES256(String htm, String htu, String accessToken, String nonce) throws NoSuchAlgorithmException {
+        return createDpopProofES256(htm, htu, accessToken, nonce, new HashMap<>());
+    }
+
+    private JsonWebSignature createDpopProof(String htm, String htu, JwsAlgorithm alg, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
+
+        JwtClaims claims = new JwtClaims();
+        claims.setGeneratedJwtId();
+        claims.setClaim("htm", htm);
+        claims.setClaim("htu", htu);
+        if(accessToken != null) {
+            claims.setClaim("ath", CertificateManager.generateBase64UrlEncodedSha256(accessToken));
+        }
+        if(nonce != null) {
+            claims.setClaim("nonce", nonce);
+        }
+        claims.setIssuedAtToNow();
+        for (String claim : additionalClaims.keySet()) {
+            claims.setClaim(claim, additionalClaims.get(claim));
+        }
+
+        JwsAlgorithm algToUse = alg == null || getKeyForAlgorithm(alg) == null ? JwsAlgorithm.RS256 : alg;
+        PublicJsonWebKey jwk = getKeyForAlgorithm(algToUse);
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setKey(jwk.getPrivateKey());
+
+        jws.setHeader("typ", "dpop+jwt");
+        jws.setAlgorithmHeaderValue(algToUse.toString());
+        jws.setJwkHeader(jwk);
+
+        jws.setPayload(claims.toJson());
+        return jws;
+    }
+
+    /**
      * Validates an id_token with standard claims and optional others
      *
      * @param jwt               the compact serialized jwt (aaaa.bbbb.ccccc)
@@ -177,7 +231,7 @@ public enum Jwt {
         // Create the Claims, which will be the content of the JWT
         JwtClaims claims = new JwtClaims();
         claims.setIssuer(issuer);  // who creates the token and signs it
-        claims.setSubject(subject); // the subject/principal is whom the token is about
+        claims.setSubject(subject); // the subject/principal whom the token is about
         claims.setAudience(audience); // to whom the token is intended to be sent
         claims.setExpirationTimeMinutesInTheFuture(lifetimeInMinutes); // time when the token will expire
         claims.setIssuedAtToNow();  // when the token was issued/created (now)

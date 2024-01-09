@@ -29,13 +29,14 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class HttpHelper {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(HttpHelper.class));
+    private static final Logger LOGGER = Logger.getLogger(HttpHelper.class.getName());
 
     private static final Pattern urlPattern = Pattern.compile("^http[s]?://[a-zA-Z0-9.\\-:/]{1,92}");
 
@@ -63,16 +64,14 @@ public class HttpHelper {
     }
 
     public static MsgResponse getAPI(String accessToken, String targetApi) throws IOException {
-        HttpGet req = new HttpGet(targetApi);
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        req.setHeader(Constants.AUTHORIZATION.getKey(), String.format("%s %s", Constants.BEARER.getKey(), accessToken));
-
-        HttpResponse response = httpClient.execute(req);
-        return new MsgResponse(getHeader(response, "content-type", "application/json"),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+        return getAPI(GetRequest.create(targetApi).setBearerAccessToken(accessToken).build());
     }
 
     public static MsgResponse getAPI(String targetApi) throws IOException {
+        return getAPI(GetRequest.create(targetApi).build());
+    }
+
+    public static MsgResponse getAPI(HttpGet req) throws IOException {
 
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
         requestBuilder.setConnectTimeout(5000);
@@ -81,7 +80,6 @@ public class HttpHelper {
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultRequestConfig(requestBuilder.build());
 
-        HttpGet req = new HttpGet(targetApi);
         HttpClient httpClient = builder.build();
 
         HttpResponse response = httpClient.execute(req);
@@ -122,43 +120,26 @@ public class HttpHelper {
      */
     public static MsgResponse postMessage(String queryString, String targetUrl, String acceptContentType)
             throws IOException {
-
-        HttpPost req = new HttpPost(targetUrl);
-
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        req.setEntity(new StringEntity(queryString));
-        req.addHeader("Accept", acceptContentType);
-        req.addHeader("Content-Type", "application/x-www-form-urlencoded");
-
-        HttpResponse response = httpClient.execute(req);
-        return new MsgResponse(getHeader(response, "content-type", "application/json"),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+        return postMessage(
+                PostRequest.create(targetUrl).setAcceptType(acceptContentType).setUrlEncodedParametersPayload(queryString).build(),
+                acceptContentType);
     }
 
     public static MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String acceptContentType)
             throws IOException {
-
-        HttpPost req = new HttpPost(targetUrl);
-
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        req.setEntity(new UrlEncodedFormEntity(formParameters));
-        req.addHeader("Accept", acceptContentType);
-
-        HttpResponse response = httpClient.execute(req);
-        return new MsgResponse(getHeader(response, "content-type", "application/json"),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+        return postMessage(
+                PostRequest.create(targetUrl).setAcceptType(acceptContentType).setFormParametersPayload(formParameters).build(),
+                acceptContentType);
     }
 
     protected static MsgResponse postMessage(JSONObject input, String targetUrl, String acceptContentType) throws IOException {
+        return postMessage(
+                PostRequest.create(targetUrl).setAcceptType(acceptContentType).setJsonPayload(input.toJSONString()).build(),
+                acceptContentType);
+    }
 
-        StringEntity requestEntity = new StringEntity(input.toJSONString(), "UTF-8");
-        requestEntity.setContentType("application/json");
-        HttpPost req = new HttpPost(targetUrl);
+    public static MsgResponse postMessage(HttpPost req, String acceptContentType) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().build();
-        req.setEntity(requestEntity);
-        req.addHeader("Accept", acceptContentType);
-        req.addHeader("Content-Type", "application/json");
-
         HttpResponse response = httpClient.execute(req);
         return new MsgResponse(getHeader(response, "content-type", acceptContentType),
                 EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
@@ -293,6 +274,7 @@ public class HttpHelper {
      * @return
      */
     private static JSONObject providerTemplate(JSONObject oidcConfig, JSONObject registration, String redirectUri, boolean updateProvider, boolean updateIssuer) {
+        // TODO this should be removed, it is a mean redundant piece of code
         JSONObject config = new JSONObject();
         config.put("client_id", registration.get(Constants.CLIENT_ID.getKey()));
         config.put("client_secret", registration.get(Constants.CLIENT_SECRET.getKey()));
@@ -315,6 +297,11 @@ public class HttpHelper {
                 ((JSONArray) oidcConfig.get(Constants.RESPONSE_TYPES_SUPPORTED.getKey())).contains("code") ? "code" :
                         ((JSONArray) oidcConfig.get(Constants.RESPONSE_TYPES_SUPPORTED.getKey())).contains("id_token") ? "id_token" : "unsupported";
         config.put("response_type", responseType);
+        if (oidcConfig.get("dpop_bound_access_tokens") != null) {
+            config.put("dpop_bound_access_tokens", Boolean.parseBoolean(oidcConfig.get("dpop_bound_access_tokens").toString()));
+        } else {
+            config.put("dpop_bound_access_tokens", false);
+        }
         return config;
     }
 

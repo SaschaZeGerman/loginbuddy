@@ -9,17 +9,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class CertificateManager {
@@ -81,6 +76,16 @@ public class CertificateManager {
         FileOutputStream fos = new FileOutputStream(f);
         ks.store(fos, pwdArray);
         fos.close();
+    }
+
+    /**
+     * Generate base64url encoded sha256 value
+     * @param input value for which to generate the output value
+     */
+    public static String generateBase64UrlEncodedSha256(String input) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] encodedHash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+        return new String(Base64.getUrlEncoder().encode(encodedHash));
     }
 
     /**

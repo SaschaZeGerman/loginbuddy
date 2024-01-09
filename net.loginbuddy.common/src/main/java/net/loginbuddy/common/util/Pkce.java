@@ -9,8 +9,6 @@
 package net.loginbuddy.common.util;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
@@ -39,9 +37,7 @@ public class Pkce {
             return false;
         }
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256"); // the only algorithm this fake provider supports
-            byte[] encodedhash = digest.digest(code_verifier.getBytes(StandardCharsets.UTF_8));
-            if (!code_challenge.equals(new String(Base64.getUrlEncoder().encode(encodedhash)).replace("=", ""))) {
+            if (!code_challenge.equals(CertificateManager.generateBase64UrlEncodedSha256(code_verifier).replace("=", ""))) {
                 LOGGER.warning("The given code_verifier is invalid");
             } else return true;
         } catch (NoSuchAlgorithmException e) {
@@ -66,9 +62,7 @@ public class Pkce {
         try {
             String code_verifier = UUID.randomUUID().toString().replace("-", "");
             code_verifier = new String(Base64.getEncoder().encode(code_verifier.getBytes())).replace("=", "");
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedhash = digest.digest(code_verifier.getBytes(StandardCharsets.UTF_8));
-            return new PkcePair(code_verifier, new String(Base64.getUrlEncoder().encode(encodedhash)).replace("=", ""));
+            return new PkcePair(code_verifier, CertificateManager.generateBase64UrlEncodedSha256(code_verifier).replace("=", ""));
         } catch (NoSuchAlgorithmException e) {
             // this should never ever happen!
             LOGGER.severe("This should never happen, must be the java implementation!");
