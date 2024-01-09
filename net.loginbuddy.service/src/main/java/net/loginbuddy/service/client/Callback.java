@@ -7,27 +7,22 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.ExchangeBean;
-import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.properties.PropertiesUtil;
+import net.loginbuddy.service.client.handler.CallbackHandler;
+import net.loginbuddy.service.client.handler.CallbackHandlerCode;
+import net.loginbuddy.service.client.handler.CallbackHandlerImplicit;
 import net.loginbuddy.service.util.SessionContext;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 public class Callback extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(Callback.class.getName());
-
-    protected String getMessageForRedirect(String redirectUri, String urlSafeKey, String value) {
-        return redirectUri.concat(urlSafeKey).concat("=").concat(HttpHelper.urlEncode(value));
-    }
 
     protected SessionContext checkForSessionAndErrors(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
@@ -44,15 +39,14 @@ public class Callback extends HttpServlet {
 
         if (!sessionIdResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
             LOGGER.warning("Missing or invalid state parameter returned from provider!");
-            response.sendError(400, "Missing or invalid state parameter");
+            sendError(400, "invalid_response", "Missing or invalid state parameter returned from provider", response);
             return null;
         }
 
         SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.remove(sessionIdResult.getValue());
         if (sessionCtx == null || !sessionIdResult.getValue().equals(sessionCtx.getId())) {
             LOGGER.warning("The current session is invalid or it has expired! Given: '" + sessionIdResult.getValue() + "'");
-            response.sendError(400, "The current session is invalid or it has expired!");
-            return null;
+            return sendError(400, "invalid_session", "The current session is invalid or it has expired!", response, null);
         }
 
 // ***************************************************************
@@ -60,8 +54,7 @@ public class Callback extends HttpServlet {
 // ***************************************************************
 
         if (errorResult.getValue() != null) {
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), errorResult.getValue(), errorDescriptionResult.getValue()));
-            return null;
+            return endFunHere(errorResult.getValue(), errorDescriptionResult.getValue(), sessionCtx, response);
         }
 
 // ***************************************************************
@@ -72,8 +65,7 @@ public class Callback extends HttpServlet {
             LOGGER.warning(
                     "The current action was not expected! Given: '" + sessionCtx.getString(Constants.ACTION_EXPECTED.getKey())
                             + "', expected: '" + Constants.ACTION_CALLBACK.getKey() + "'");
-            response.sendRedirect(HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_session", "the request was not expected"));
-            return null;
+            return endFunHere("invalid_session", "the request was not expected", null, response);
         }
 
         return sessionCtx;
@@ -87,7 +79,7 @@ public class Callback extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        // either a invalid request ... or an implicit flow ...
+        // either an invalid request ... or an implicit flow ...
         if (request.getParameterMap().get("state") == null && request.getParameterMap().get("handled") == null) {
             // TODO: prevent endless back and forth (handled enough?)
             StringBuilder sb = new StringBuilder();
@@ -110,6 +102,9 @@ public class Callback extends HttpServlet {
                     return;
                 }
 
+                // This is needed to merge the sidecar implementation into this container
+                if (handleEarlyResponse(response, sessionCtx)) return;
+
 // ***************************************************************
 // ** Find the chosen provider of this session and get a token. Also start preparing the response for the client
 // ***************************************************************
@@ -123,12 +118,7 @@ public class Callback extends HttpServlet {
                 eb.setNonce(sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
                 eb.setProvider(provider);
 
-                CallbackHandler handler = null;
-                if (Constants.CODE.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
-                    handler = new CallbackHandlerCode();
-                } else if (Constants.ID_TOKEN.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
-                    handler = new CallbackHandlerImplicit();
-                }
+                CallbackHandler handler = getCallbackHandler(sessionCtx);
                 handler.handleCallback(request, response, sessionCtx, eb, provider);
 
             } catch (Exception e) {
@@ -139,21 +129,34 @@ public class Callback extends HttpServlet {
         }
     }
 
-    void returnAuthorizationCode(HttpServletResponse response, SessionContext sessionCtx, ExchangeBean eb) throws Exception {
+    protected boolean handleEarlyResponse(HttpServletResponse response, SessionContext sessionCtx) throws IOException {
+        return false;  // do not do anything here, overwritten in CallbackSidecar
+    }
 
-// ***************************************************************
-// ** Issue our own authorization_code and add details for the final client response
-// ***************************************************************
-
-        String authorizationCode = UUID.randomUUID().toString();
-        if( !("".equals(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))) ){
-            sessionCtx.put("eb", Jwt.DEFAULT.createSignedJwt(eb.toString(), JwsAlgorithm.findMatchingAlg(sessionCtx.getString(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey()))).getCompactSerialization());
-        } else {
-            sessionCtx.put("eb", eb.toString());
+    protected CallbackHandler getCallbackHandler(SessionContext sessionCtx) {
+        if (Constants.CODE.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
+            return new CallbackHandlerCode();
+        } else if (Constants.ID_TOKEN.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
+            return new CallbackHandlerImplicit();
         }
-        sessionCtx.put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_TOKEN_EXCHANGE.getKey());
-        LoginbuddyCache.CACHE.put(authorizationCode, sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode"));
+        return null;
+    }
 
-        response.sendRedirect(getMessageForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), Constants.CODE.getKey(), authorizationCode));
+    protected SessionContext sendError(int httpStatus, String error, String errorMsg, HttpServletResponse response) throws IOException {
+        response.sendError(httpStatus, errorMsg);
+        return null;
+    }
+    protected SessionContext sendError(int httpStatus, String error, String errorMsg, HttpServletResponse response, SessionContext sessionCtx) throws IOException {
+        response.sendError(httpStatus, errorMsg);
+        return null;
+    }
+
+    protected SessionContext endFunHere(String error, String errorDescription, SessionContext sessionCtx, HttpServletResponse response) throws IOException {
+        response.sendRedirect(
+                HttpHelper.getErrorForRedirect(
+                        sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()),
+                        error,
+                        errorDescription));
+        return null;
     }
 }

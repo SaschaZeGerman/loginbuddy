@@ -25,6 +25,33 @@
 
     <Service name="Catalina">
 
+        <Connector
+                port="@@sidecarhttpport@@"
+                protocol="org.apache.coyote.http11.Http11NioProtocol"
+                connectionTimeout="20000"
+                scheme="http"
+                maxThreads="150"/>
+
+        <Connector
+                SSLEnabled="true"
+                secure="true"
+                scheme="https"
+                port="@@sidecarsslport@@"
+                defaultSSLHostConfigName="@@hostname@@"
+                protocol="org.apache.coyote.http11.Http11NioProtocol"
+                maxThreads="150"
+                parseBodyMethods="POST,PUT">
+            <SSLHostConfig hostName="@@hostname@@"
+                           protocols="TLSv1.2"
+                           sslProtocol="TLS">
+                <Certificate
+                        certificateKeystoreFile="/usr/local/tomcat/ssl/loginbuddy.p12"
+                        certificateKeystorePassword="@@sslpwd@@"
+                        certificateKeyAlias="loginbuddy"
+                        certificateVerification="true"/>
+            </SSLHostConfig>
+        </Connector>
+
         <Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="@@sslport@@" parseBodyMethods="POST,PUT"/>
 
         <Connector

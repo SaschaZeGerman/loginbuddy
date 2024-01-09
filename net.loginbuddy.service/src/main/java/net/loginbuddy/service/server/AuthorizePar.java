@@ -26,8 +26,8 @@ public class AuthorizePar extends AuthorizationHandler {
     }
 
     @Override
-    protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader) {
-        return ClientAuthenticator.validateClientCredentials(clientIdResult, clientSecretResult, authorizationHeader);
+    protected ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader, String signedResponseAlg, boolean acceptDynamicProvider) {
+        return ClientAuthenticator.validateClientCredentials(clientIdResult, clientSecretResult, authorizationHeader); // ignoring other parameters on purpose
     }
 
     @Override

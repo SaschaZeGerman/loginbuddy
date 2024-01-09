@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 public abstract class AuthorizationHandler extends HttpServlet {
 
-    private static Logger LOGGER = Logger.getLogger(String.valueOf(AuthorizationHandler.class));
+    private static final Logger LOGGER = Logger.getLogger(AuthorizationHandler.class.getName());
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -34,57 +34,45 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        ParameterValidatorResult clientIdResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+// ***************************************************************
+// ** Potentially used with sidecar requests, ignored otherwise since these values would be configured in client configurations
+// ***************************************************************
+
+        ParameterValidatorResult signedResponseAlgResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.SIGNED_RESPONSE_ALG.getKey()));
+        ParameterValidatorResult acceptDynamicProviderResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.ACCEPT_DYNAMIC_PROVIDER.getKey()));
+
+// ***************************************************************
+// ** Let's start with checking for a valid client credentials
+// ***************************************************************
+
+        ParameterValidatorResult clientIdResult = getClientIdResult(request, response);
+        // simple check first
         if (!clientIdResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
             LOGGER.warning("Missing or multiple client_id parameters given!");
             handleError(400, "Missing or multiple client_id parameters given!", response);
             return;
         }
-
-        // Check if this request includes a request_uri. If so, it is a PAR request and needs little attention only
-        ParameterValidatorResult requestUriResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.REQUEST_URI.getKey()));
-        if(requestUriResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
-            String[] parRequestUriParts = requestUriResult.getValue().split(":");
-            if(parRequestUriParts.length == 3) {
-                SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(parRequestUriParts[2]);
-                if (sessionCtx == null || !parRequestUriParts[2].equals(sessionCtx.getId())) {
-                    LOGGER.warning("The current session is invalid or it has expired! Given: '" + parRequestUriParts[2] + "'");
-                    handleError(400, "The current session is invalid or it has expired!", response);
-                    return;
-                }
-                // need to verify that the given requestUri is the one that belongs to this session
-                if(requestUriResult.getValue() != null && requestUriResult.getValue().equals(sessionCtx.useParRequestUri())) {
-                    if(clientIdResult.getValue().equals(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()))) {
-                        LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
-                        handleAuthorizationResponse(request, response, sessionCtx, sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()));
-                    } else {
-                        handleError(400, "invalid client_id", response);
-                    }
-                } else {
-                    handleError(400, "invalid request_uri", response);
-                }
-                return;
-            } else {
-                handleError(400, "invalid request_uri", response);
-                return;
-            }
+        ParameterValidatorResult clientSecretResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only needed for a PAR call (.../pauthorize)
+        ClientAuthenticator.ClientCredentialsResult clientValidationResult =
+                handleClientValidation(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()), signedResponseAlgResult.getValue(), acceptDynamicProviderResult.getBooleanValue());
+        if (!clientValidationResult.isValid()) {
+            LOGGER.warning(clientValidationResult.getErrorMsg());
+            handleError(400, clientValidationResult.getErrorMsg(), response);
+            return;
         }
+        Clients cc = clientValidationResult.getClients();
 
-        ParameterValidatorResult clientSecretResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only valid for a PAR call
-        ParameterValidatorResult clientResponseTypeResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.RESPONSE_TYPE.getKey()));
-        ParameterValidatorResult clientRedirectUriResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.REDIRECT_URI.getKey()));
-        ParameterValidatorResult clientProviderResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()), "");
+        // Check if this request includes a request_uri. If so, it is a PAR request and needs little attention.
+        // The authorization response is also created and returned to the client; processing ends here
+        if (handleParRequestUriRequest(request, response, clientIdResult)) return;
+
+        ParameterValidatorResult clientResponseTypeResult = getResponseTypeResult(request, response);
+        ParameterValidatorResult clientRedirectUriResult = getRedirectUriResult(request, response);
+        ParameterValidatorResult clientProviderResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.PROVIDER.getKey()), "");
         ParameterValidatorResult clientStateResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.STATE.getKey()), "");
-        ParameterValidatorResult clientCodeChallengeResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE.getKey()));
-        ParameterValidatorResult clientCodeChallendeMethodResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()));
         ParameterValidatorResult scopeResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.SCOPE.getKey()));
         ParameterValidatorResult clientNonceResult = ParameterValidator
@@ -102,18 +90,10 @@ public abstract class AuthorizationHandler extends HttpServlet {
         ParameterValidatorResult obfuscateTokenResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.OBFUSCATE_TOKEN.getKey()), "false");
 
-
-// ***************************************************************
-// ** Let's start with checking for a valid client credentials
-// ***************************************************************
-
-        ClientAuthenticator.ClientCredentialsResult clientValidationResult = handleClientValidation(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()));
-        if (!clientValidationResult.isValid()) {
-            LOGGER.warning(clientValidationResult.getErrorMsg());
-            handleError(400, clientValidationResult.getErrorMsg(), response);
-            return;
-        }
-        Clients cc = clientValidationResult.getClients();
+        ParameterValidatorResult clientCodeChallengeResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE.getKey()));
+        ParameterValidatorResult clientCodeChallendeMethodResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.CODE_CHALLENGE_METHOD.getKey()));
 
 // ***************************************************************
 // ** Check the given redirect_uri. Confidential clients only need to have one registered but not passed in
@@ -157,7 +137,10 @@ public abstract class AuthorizationHandler extends HttpServlet {
 // ***************************************************************
 
         String clientRedirectUriValid;
-        if (clientRedirectUri.contains("?")) {
+        if (clientRedirectUri.endsWith("?")) {
+            // do nothing, attach parameters directly
+            clientRedirectUriValid = clientRedirectUri;
+        } else if (clientRedirectUri.contains("?")) {
             clientRedirectUriValid = clientRedirectUri.concat("&");
         } else {
             clientRedirectUriValid = clientRedirectUri.concat("?");
@@ -213,14 +196,14 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
         if (clientCodeChallendeMethodResult.getResult().equals(ParameterValidatorResult.RESULT.MULTIPLE)) {
             LOGGER.warning("Multiple code_challenge_method parameters found!");
-            handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request","multiple code_challenge_method parameters found!"), response);
+            handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "multiple code_challenge_method parameters found!"), response);
             return;
         }
 
         if (clientCodeChallendeMethodResult.getResult().equals(ParameterValidatorResult.RESULT.VALID) && !Pkce.CODE_CHALLENGE_METHOD_S256
                 .equals(clientCodeChallendeMethodResult.getValue())) {
             LOGGER.warning("Unsupported code_challenge_method parameter!");
-            handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request","unsupported code_challenge_method parameter"), response);
+            handleError(301, HttpHelper.getErrorForRedirect(clientRedirectUriValid, "invalid_request", "unsupported code_challenge_method parameter"), response);
             return;
         }
 
@@ -261,22 +244,60 @@ public abstract class AuthorizationHandler extends HttpServlet {
             }
             // TODO: do we need logging for informational purposes?
         }
+        boolean acceptDynamicProvider = cc.isAcceptDynamicProvider();
+        createSessionAndResponse(
+                request,
+                response,
+                clientIdResult.getValue(),
+                clientScope,
+                clientResponseTypeResult.getValue(),
+                clientCodeChallengeResult.getValue(),
+                clientCodeChallendeMethodResult.getValue(),
+                clientRedirectUri,
+                clientNonceResult.getValue(),
+                clientStateResult.getValue(),
+                clientProviderResult,
+                clientPromptResult.getValue(),
+                clientLoginHintResult.getValue(),
+                clientIdTokenHintResult.getValue(),
+                checkRedirectUri,
+                clientRedirectUriValid,
+                acceptDynamicProvider,
+                signResponseAlg,
+                obfuscateTokenResult.getBooleanValue());
+    }
 
-// ***************************************************************
-// ** Create the session so that it can be handled throughout multiple requests
-// ***************************************************************
+    protected void createSessionAndResponse(HttpServletRequest request, HttpServletResponse response, String clientId, String clientScope, String clientResponseType, String clientCodeChallenge, String clientCodeChallendeMethod, String clientRedirectUri, String clientNonce, String clientState, ParameterValidatorResult clientProviderResult, String clientPrompt, String clientLoginHint, String clientIdTokenHint, boolean checkRedirectUri, String clientRedirectUriValid, boolean acceptDynamicProvider, String signResponseAlg, boolean obfuscateToken) throws IOException, ServletException {
 
-        String parRequestUri = null;
-        boolean isPar = Boolean.valueOf( request.getAttribute("par") == null ? false : (Boolean)request.getAttribute("par"));
+        // ***************************************************************
+        // ** Create the session so that it can be handled throughout multiple requests
+        // ***************************************************************
+
+        boolean isPar = Boolean.valueOf(request.getAttribute("par") == null ? false : (Boolean) request.getAttribute("par"));
         SessionContext sessionCtx = new SessionContext();
-        if(isPar) {
+        String parRequestUri = null;
+        if (isPar) {
             parRequestUri = String.format("urn:loginbuddy:%s", sessionCtx.getId());
         }
-        sessionCtx.setSessionInit(clientIdResult.getValue(), clientScope, clientResponseTypeResult.getValue(),
-                clientCodeChallengeResult.getValue(), clientCodeChallendeMethodResult.getValue(),
-                clientRedirectUri, clientNonceResult.getValue(), clientStateResult.getValue(), clientProviderResult.getValue(),
-                clientPromptResult.getValue(), clientLoginHintResult.getValue(), clientIdTokenHintResult.getValue(),
-                checkRedirectUri, clientRedirectUriValid, cc.isAcceptDynamicProvider(), signResponseAlg, obfuscateTokenResult.getBooleanValue(), parRequestUri);
+        sessionCtx.setSessionInit(
+                clientId,
+                clientScope,
+                clientResponseType,
+                clientCodeChallenge,
+                clientCodeChallendeMethod,
+                clientRedirectUri,
+                clientNonce,
+                clientState,
+                clientProviderResult.getValue(),
+                clientPrompt,
+                clientLoginHint,
+                clientIdTokenHint,
+                checkRedirectUri,
+                clientRedirectUriValid,
+                acceptDynamicProvider,
+                signResponseAlg,
+                obfuscateToken,
+                parRequestUri);
 
         LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 
@@ -284,7 +305,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
 // ** Present the provider selection page if non was given in this request. Otherwise, fast forward
 // ***************************************************************
 
-        if(isPar) {
+        if (isPar) {
             response.setContentType("application/json");
             response.setStatus(201);
             JSONObject obj = new JSONObject();
@@ -296,7 +317,49 @@ public abstract class AuthorizationHandler extends HttpServlet {
         }
     }
 
-    private void handleAuthorizationResponse(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, Object value) throws ServletException, IOException {
+    private boolean handleParRequestUriRequest(HttpServletRequest request, HttpServletResponse response, ParameterValidatorResult clientIdResult) throws IOException, ServletException {
+        ParameterValidatorResult requestUriResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.REQUEST_URI.getKey()));
+        if (requestUriResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+            String[] parRequestUriParts = requestUriResult.getValue().split(":");
+            if (parRequestUriParts.length == 3) {
+                SessionContext sessionCtx = (SessionContext) LoginbuddyCache.CACHE.get(parRequestUriParts[2]);
+                if (sessionCtx == null || !parRequestUriParts[2].equals(sessionCtx.getId())) {
+                    LOGGER.warning("The current session is invalid or it has expired! Given: '" + parRequestUriParts[2] + "'");
+                    handleError(400, "The current session is invalid or it has expired!", response);
+                    return true;
+                }
+                // need to verify that the given requestUri is the one that belongs to this session
+                if (requestUriResult.getValue() != null && requestUriResult.getValue().equals(sessionCtx.useParRequestUri())) {
+                    if (clientIdResult.getValue().equals(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()))) {
+                        LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
+                        handleAuthorizationResponse(request, response, sessionCtx, sessionCtx.get(Constants.CLIENT_PROVIDER.getKey()));
+                    } else {
+                        handleError(400, "invalid client_id", response);
+                    }
+                } else {
+                    handleError(400, "invalid request_uri", response);
+                }
+            } else {
+                handleError(400, "invalid request_uri", response);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    protected ParameterValidatorResult getClientIdResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+    }
+
+    protected ParameterValidatorResult getResponseTypeResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return ParameterValidator.getSingleValue(request.getParameterValues(Constants.RESPONSE_TYPE.getKey()));
+    }
+
+    protected ParameterValidatorResult getRedirectUriResult(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return ParameterValidator.getSingleValue(request.getParameterValues(Constants.REDIRECT_URI.getKey()));
+    }
+
+    protected void handleAuthorizationResponse(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, Object value) throws ServletException, IOException {
         if ("".equals(value)) {
             request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
                     .forward(request, response);
@@ -307,5 +370,6 @@ public abstract class AuthorizationHandler extends HttpServlet {
     }
 
     protected abstract void handleError(int httpStatus, String errorMsg, HttpServletResponse response) throws IOException;
-    protected abstract ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader);
+
+    protected abstract ClientAuthenticator.ClientCredentialsResult handleClientValidation(ParameterValidatorResult clientIdResult, ParameterValidatorResult clientSecretResult, String authorizationHeader, String signedResponseAlg, boolean acceptDynamicProvider);
 }

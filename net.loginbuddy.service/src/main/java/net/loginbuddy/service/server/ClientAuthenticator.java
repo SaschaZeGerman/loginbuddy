@@ -40,7 +40,7 @@ public class ClientAuthenticator {
 
         Clients cc = LoginbuddyUtil.UTIL.getClientConfigByClientId(clientId);
         if (cc != null) {
-            // let's check supported methods (if any were configured. Otherwise we'll accept the one that was used)
+            // let's check supported methods (if any were configured. Otherwise, we'll accept the one that was used)
             String supportedMethods = DiscoveryUtil.UTIL.getTokenEndpointAuthMethodsSupportedAsString();
             if (supportedMethods == null) {
                 supportedMethods = usedAuthMethod;
@@ -68,7 +68,7 @@ public class ClientAuthenticator {
         return new ClientCredentialsResult(null, true, cc);
     }
 
-    public static ClientRedirecUriResult validateClddddientRedirectUri(ParameterValidatorResult clientRedirectUriResult, String registeredRedirectUris, String clientType) {
+    public static ClientRedirecUriResult validateClientRedirectUri(ParameterValidatorResult clientRedirectUriResult, String registeredRedirectUris, String clientType) {
 
         boolean checkRedirectUri = true;
 

@@ -40,9 +40,6 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
     put(Constants.CLIENT_RESPONSE_TYPE.getKey(), response_type);
-    put(Constants.CLIENT_CODE_CHALLENGE.getKey(), code_challenge);
-    put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), code_challenge_method);
-    put(Constants.CLIENT_REDIRECT.getKey(), redirectUri);
     put(Constants.CLIENT_REDIRECT_VALID.getKey(), redirectUriValid);
     put(Constants.CLIENT_STATE.getKey(), state);
     put(Constants.CLIENT_PROVIDER.getKey(), provider);
@@ -53,11 +50,12 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey(), signedResponseAlg);
     put(Constants.CHECK_REDIRECT_URI.getKey(), checkRedirectUri);
     put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_LOGINBUDDY.getKey()); // default: assuming a registered provider is used
-
     put(Constants.CLIENT_NONCE.getKey(), nonce == null ? UUID.randomUUID().toString() : nonce);
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
-
     put(Constants.OBFUSCATE_TOKEN.getKey(), obfuscateToken);
+    put(Constants.CLIENT_REDIRECT.getKey(), redirectUri);
+    put(Constants.CLIENT_CODE_CHALLENGE.getKey(), code_challenge);
+    put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), code_challenge_method);
     put(Constants.PAR_REQUEST_URI.getKey(), requestUriPar);
   }
 

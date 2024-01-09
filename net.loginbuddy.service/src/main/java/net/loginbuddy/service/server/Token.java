@@ -9,7 +9,6 @@
 package net.loginbuddy.service.server;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +16,6 @@ import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.common.GrantTypeHandler;
 import net.loginbuddy.config.loginbuddy.common.RefreshTokenHandler;
@@ -26,9 +24,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
-@WebServlet(name = "Token")
 public class Token extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(Token.class.getName());
@@ -38,18 +34,10 @@ public class Token extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        token_handler = new HashMap<>();
-        for (String grantType : DiscoveryUtil.UTIL.getGrantTypesSupported()) {
-            if (Constants.GRANT_TYPE_AUTHORIZATION_CODE.getKey().equalsIgnoreCase(grantType)) {
-                token_handler.put(grantType, new AuthorizationCodeHandler());
-                LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
-            } else if (Constants.GRANT_TYPE_REFRESH_TOKEN.getKey().equalsIgnoreCase(grantType)) {
-                token_handler.put(grantType, new RefreshTokenHandler());
-                LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
-            }
-        }
+        token_handler = getGrantTypeHandlers();
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
 // ***************************************************************
@@ -61,46 +49,50 @@ public class Token extends HttpServlet {
         response.addHeader("Pragma", "no-cache");
         response.setStatus(400);
 
-        ParameterValidatorResult clientIdResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
-        ParameterValidatorResult clientSecretResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));
-        ParameterValidatorResult grantTypeResult = ParameterValidator
-                .getSingleValue(request.getParameterValues(Constants.GRANT_TYPE.getKey()));
-
-// ***************************************************************
-// ** 1. Find the clientId. Either as POST parameter or in the Authorization header but not at both locations.
-// ** 2. Lookup the client registration details to verify given credentials
-// ***************************************************************
-
-        String errorMsg;
-        if ((errorMsg = ClientAuthenticator.validateClientCredentials(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey())).getErrorMsg()) != null) {
-            response.getWriter().write(HttpHelper.createJsonErrorResponse(errorMsg));
-            return;
-        }
+        ClientAuthenticator.ClientCredentialsResult clientCredentialsResult = authenticateClient(request, response);
+        if (clientCredentialsResult.isValid()) {
 
 // ***************************************************************
 // ** Check for grant_type parameter and if the given one is supported
 // ***************************************************************
 
-        if (!grantTypeResult.getResult().equals(RESULT.VALID)) {
-            response.getWriter().write(HttpHelper.createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
-            return;
-        } else if (Stream.of((DiscoveryUtil.UTIL.getGrantTypesSupported())).noneMatch(grantTypeResult.getValue()::equals)) {
-            response.getWriter().write(HttpHelper.createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
-            return;
+            ParameterValidatorResult grantTypeResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.GRANT_TYPE.getKey()));
+            if (!grantTypeResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
+                response.getWriter().write(HttpHelper.createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
+                return;
+            } else if (token_handler.keySet().stream().noneMatch(grantTypeResult.getValue()::equals)) {
+                response.getWriter().write(HttpHelper.createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
+                return;
+            }
+            token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response, clientCredentialsResult.getClients().getClientId());
+        } else {
+            response.getWriter().write(HttpHelper.createJsonErrorResponse(clientCredentialsResult.getErrorMsg()));
         }
-
-// ***************************************************************
-// ** Process the grant_type
-// ***************************************************************
-
-        token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response, clientIdResult.getValue());
-
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setHeader("Allow", "POST");
         response.sendError(405, "Method not allowed");
+    }
+
+    protected ClientAuthenticator.ClientCredentialsResult authenticateClient(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ParameterValidatorResult clientIdResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
+        ParameterValidatorResult clientSecretResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));
+        return ClientAuthenticator.validateClientCredentials(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()));
+    }
+
+    protected Map<String, GrantTypeHandler> getGrantTypeHandlers() {
+        Map<String, GrantTypeHandler> tokenHandler = new HashMap<>();
+        for (String grantType : DiscoveryUtil.UTIL.getGrantTypesSupported()) {
+            if (Constants.GRANT_TYPE_AUTHORIZATION_CODE.getKey().equalsIgnoreCase(grantType)) {
+                tokenHandler.put(grantType, new AuthorizationCodeHandler());
+                LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
+            } else if (Constants.GRANT_TYPE_REFRESH_TOKEN.getKey().equalsIgnoreCase(grantType)) {
+                tokenHandler.put(grantType, new RefreshTokenHandler());
+                LOGGER.info(String.format("Registering handler for grant_type: %s\n", grantType));
+            }
+        }
+        return tokenHandler;
     }
 }
