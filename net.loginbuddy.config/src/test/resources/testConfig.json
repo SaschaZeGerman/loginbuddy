@@ -28,6 +28,7 @@
       "response_type": "code",
       "redirect_uri": "https://local.loginbuddy.net/callback",
       "dpop_bound_access_tokens": true,
+      "dpop_signing_alg": "ES256",
       "mappings": {
         "key1": "value1",
         "key2": "value2",

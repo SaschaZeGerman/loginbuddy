@@ -18,7 +18,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -85,15 +85,15 @@ public class Providers implements Serializable {
 
     @JsonProperty("pushed_authorization_request_endpoint")
     private String pushedAuthorizationRequestEndpoint;
-    @JsonProperty("dpop_bound_access_tokens")
-    private boolean dpopBoundAccessTokens;
+
+    @JsonProperty("dpop_signing_alg")
+    private String dpopSigningAlg;
 
     public Providers() {
         pkce = true;
         scope = Constants.OPENID_SCOPE.getKey();
         responseType = Constants.CODE.getKey();
         meta = new Meta();
-        dpopBoundAccessTokens = false;
     }
 
     public Providers(String issuer, String clientId, String redirectUri) {
@@ -124,7 +124,7 @@ public class Providers implements Serializable {
         this.responseType = config.getResponseType();
         this.pushedAuthorizationRequestEndpoint = config.getPushedAuthorizationRequestEndpoint();
         this.openidConfigurationUri = null;
-        this.dpopBoundAccessTokens = config.isDpopBoundAccessTokens();
+        this.dpopSigningAlg = config.getDpopSigningAlg();
     }
 
     public String getProvider() {
@@ -203,13 +203,8 @@ public class Providers implements Serializable {
         return pushedAuthorizationRequestEndpoint;
     }
 
-    public boolean isDpopBoundAccessTokens() {
-        return dpopBoundAccessTokens;
-    }
-
-    @Deprecated
-    public JSONObject mappingsAsJsonNode() {
-        return mappings;
+    public String getDpopSigningAlg() {
+        return dpopSigningAlg;
     }
 
     public void setProvider(String provider) {
@@ -288,8 +283,19 @@ public class Providers implements Serializable {
         this.template = template;
     }
 
-    public void setDpopBoundAccessTokens(boolean dpopBoundAccessTokens) {
-        this.dpopBoundAccessTokens = dpopBoundAccessTokens;
+    public void setDpopSigningAlg(String dpopSigningAlg) {
+        this.dpopSigningAlg = dpopSigningAlg;
+    }
+
+    @JsonIgnore()
+    public boolean isDpopEnabled() {
+        return dpopSigningAlg != null;
+    }
+
+    @JsonIgnore()
+    @Deprecated
+    public JSONObject mappingsAsJsonNode() {
+        return mappings;
     }
 
     @JsonIgnore()

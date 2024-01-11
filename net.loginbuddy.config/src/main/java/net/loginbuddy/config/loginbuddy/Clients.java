@@ -84,10 +84,6 @@ public class Clients implements Serializable {
         this.clientType = clientType;
     }
 
-    public String getRedirectUri() {
-        return (String)redirectUris.toArray()[0];
-    }
-
     public String getClientUri() {
         return clientUri;
     }
@@ -195,11 +191,6 @@ public class Clients implements Serializable {
         return clientContacts;
     }
 
-    @JsonIgnore
-    public String getClientContactsAsString() {
-        return String.join(",", clientContacts);
-    }
-
     public void setClientContacts(Set<String> clientContacts) {
         this.clientContacts = clientContacts;
     }
@@ -233,6 +224,11 @@ public class Clients implements Serializable {
     }
 
     @JsonIgnore()
+    public String getRedirectUri() {
+        return (String)redirectUris.toArray()[0];
+    }
+
+    @JsonIgnore()
     public int getRedirectUrisCount() {
         return redirectUris.size();
     }
@@ -245,6 +241,11 @@ public class Clients implements Serializable {
     @JsonIgnore()
     public boolean isUsable() {
         return meta.getStatus().size() == 0;
+    }
+
+    @JsonIgnore
+    public String getClientContactsAsString() {
+        return String.join(",", clientContacts);
     }
 
     @Override

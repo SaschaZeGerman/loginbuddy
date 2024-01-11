@@ -78,7 +78,9 @@ public class LoginbuddyObjectMapper extends ObjectMapper {
                 }
             }
         }
-        return readValue(config.toJSONString(), Loginbuddy.class);
+        Loginbuddy lb = readValue(config.toJSONString(), Loginbuddy.class);
+        LOGGER.fine(writeValueAsString(lb));
+        return lb;
     }
 
     public List<Clients> readClients(File clients) throws IOException {
@@ -289,10 +291,10 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
             providers.setTemplate((String) currentProvider.get("template"));
         }
 
-        if (currentProvider.get("dpop_bound_access_tokens") != null) {
-            providers.setDpopBoundAccessTokens(Boolean.parseBoolean(currentProvider.get("dpop_bound_access_tokens").toString()));
+        if (currentProvider.get("dpop_signing_alg") != null) {
+            providers.setDpopSigningAlg((String) currentProvider.get("dpop_signing_alg"));
         } else {
-            LOGGER.info("dpop_bound_access_tokens is not configured!");
+            LOGGER.info("dpop is not supported by this provider!");
         }
 
         return providers;

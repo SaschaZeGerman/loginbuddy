@@ -27,13 +27,18 @@ public class GetRequest extends AnyRequest {
         return this;
     }
 
-    public GetRequest setDpopHeaderRS256(String method, String targetApi, String accessToken, String nonce) throws Exception {
-        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProofRS256(method, targetApi, accessToken, nonce).getCompactSerialization());
+    public GetRequest setDpopHeader(String alg, String targetApi, String accessToken, String nonce) throws Exception {
+        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProof(alg, "GET", targetApi, accessToken, nonce).getCompactSerialization());
         return this;
     }
 
     public GetRequest setBearerAccessToken(String accessToken) {
         setBearerAccessToken(req, accessToken);
+        return this;
+    }
+
+    public GetRequest setAccessToken(String scheme, String accessToken) {
+        setAccessToken(req, scheme, accessToken);
         return this;
     }
 

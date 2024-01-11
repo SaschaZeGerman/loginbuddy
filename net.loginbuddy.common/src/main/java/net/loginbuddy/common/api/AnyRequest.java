@@ -14,8 +14,12 @@ public abstract class AnyRequest {
     }
 
     protected void setBearerAccessToken(HttpRequestBase rb, String accessToken) {
+        setAccessToken(rb, Constants.BEARER.getKey(), accessToken);
+    }
+
+    protected void setAccessToken(HttpRequestBase rb, String scheme, String accessToken) {
         if (accessToken != null) {
-            rb.setHeader(Constants.AUTHORIZATION.getKey(), String.format("%s %s", Constants.BEARER.getKey(), accessToken));
+            rb.setHeader(Constants.AUTHORIZATION.getKey(), String.format("%s %s", scheme, accessToken));
         } else {
             LOGGER.warning("The given access_token is null, the request may fail!");
         }

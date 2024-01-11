@@ -12,6 +12,7 @@ import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -198,16 +199,17 @@ public class HeadOfInitialize {
                 if (providers.getClientSecret() != null) {
                     queryParams.append("&").append(Constants.CLIENT_SECRET.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientSecret()));
                 }
-
-                MsgResponse msgResponse = providers.isDpopBoundAccessTokens() ?
-                        HttpHelper.postMessage(PostRequest.create(
-                                        providers.getPushedAuthorizationRequestEndpoint())
+                HttpPost req = providers.isDpopEnabled() ?
+                        PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
                                 .setAcceptType("application/json")
                                 .setUrlEncodedParametersPayload(queryParams.toString())
-                                .setDpopHeaderRS256("POST", providers.getPushedAuthorizationRequestEndpoint(),null,null)
-                                .build(), "application/json") :
-                        HttpHelper.postMessage(queryParams.toString(), providers.getPushedAuthorizationRequestEndpoint(), "application/json");
-
+                                .setDpopHeader(providers.getDpopSigningAlg(), providers.getPushedAuthorizationRequestEndpoint(), null, null)
+                                .build() :
+                        PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
+                                .setAcceptType("application/json")
+                                .setUrlEncodedParametersPayload(queryParams.toString())
+                                .build();
+                MsgResponse msgResponse = HttpHelper.postMessage(req, "application/json");
                 JSONObject obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
                 authorizeUrl.append(Constants.REQUEST_URI.getKey()).append("=").append(HttpHelper.urlEncode((String) obj.get(Constants.REQUEST_URI.getKey())));
                 authorizeUrl.append("&").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId()));

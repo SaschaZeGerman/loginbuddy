@@ -63,6 +63,10 @@ public class HttpHelper {
         return result;
     }
 
+    public static MsgResponse getAPI(String authScheme, String accessToken, String targetApi) throws IOException {
+        return getAPI(GetRequest.create(targetApi).setAccessToken(authScheme, accessToken).build());
+    }
+
     public static MsgResponse getAPI(String accessToken, String targetApi) throws IOException {
         return getAPI(GetRequest.create(targetApi).setBearerAccessToken(accessToken).build());
     }
@@ -168,8 +172,8 @@ public class HttpHelper {
                         JSONObject registrationMSg = new JSONObject();
                         JSONArray redirectUrisArray = new JSONArray();
                         redirectUrisArray.add(redirectUri);
-                        registrationMSg.put("redirect_uris", redirectUrisArray);
-                        registrationMSg.put(Constants.TOKEN_ENDPOINT_AUTH_METHOD.getKey(), "client_secret_post");
+                        registrationMSg.put(Constants.REDIRECT_URIS.getKey(), redirectUrisArray);
+                        registrationMSg.put(Constants.TOKEN_ENDPOINT_AUTH_METHOD.getKey(), Constants.CLIENT_SECRET_POST.getKey());
                         MsgResponse registrationResponse = postMessage(registrationMSg, registerUrl, "application/json");
                         if (registrationResponse.getStatus() == 200) {
                             if (registrationResponse.getContentType().startsWith("application/json")) {
@@ -301,6 +305,24 @@ public class HttpHelper {
             config.put("dpop_bound_access_tokens", Boolean.parseBoolean(oidcConfig.get("dpop_bound_access_tokens").toString()));
         } else {
             config.put("dpop_bound_access_tokens", false);
+        }
+        if (oidcConfig.get("dpop_signing_alg_values_supported") != null) {
+            JSONArray algs = (JSONArray)oidcConfig.get("dpop_signing_alg_values_supported");
+            String chosenAlg = null;
+            for(Object alg : algs) {
+                // we prefer ES256 over RS256
+                if("ES256".equalsIgnoreCase((String)alg)) {
+                    chosenAlg = "ES256";
+                    break;
+                } else if ("RS256".equalsIgnoreCase((String)alg) && chosenAlg == null) {
+                    chosenAlg = "RS256";
+                }
+            }
+            if(chosenAlg != null) {
+                config.put("dpop_signing_alg", chosenAlg);
+            } else {
+                LOGGER.info("No suitable algorithm for DPoP is supported by this provider!");
+            }
         }
         return config;
     }

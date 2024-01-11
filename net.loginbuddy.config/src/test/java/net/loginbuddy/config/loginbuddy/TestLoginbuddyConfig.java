@@ -99,7 +99,8 @@ public class TestLoginbuddyConfig {
     @Test
     public void testLoadProvider() {
         assertEquals("loginbuddy_demoId", LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").getClientId());
-        assertTrue(LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").isDpopBoundAccessTokens());
+        assertTrue(LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").isDpopEnabled());
+        assertEquals("ES256", LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").getDpopSigningAlg());
         try {
             JSONObject mappings = LoginbuddyUtil.UTIL.getProviderConfigByProvider("server_loginbuddy").getMappings();
             assertEquals("value1", mappings.get("key1"));
@@ -125,7 +126,8 @@ public class TestLoginbuddyConfig {
             assertEquals("openid://", LoginbuddyUtil.UTIL.getProviders("clientIdForTestingPurposes", "self-issued").getAuthorizationEndpoint());
             assertNull(LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "server_loginbuddy_01"));
             assertEquals("loginbuddy_google_client_id", LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "google").getClientId());
-            assertFalse(LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "google").isDpopBoundAccessTokens());
+            assertFalse(LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "google").isDpopEnabled());
+            assertNull(LoginbuddyUtil.UTIL.getProviders("clientIdLimitedProviders", "google").getDpopSigningAlg());
 
             assertNull(LoginbuddyUtil.UTIL.getProviders("unknown", "google"));
         } catch (Exception e) {

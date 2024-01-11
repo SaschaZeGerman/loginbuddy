@@ -10,7 +10,10 @@ package net.loginbuddy.service.client.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.GetRequest;
 import net.loginbuddy.common.api.HttpHelper;
+import net.loginbuddy.common.api.PostBody;
+import net.loginbuddy.common.api.PostRequest;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.*;
@@ -20,9 +23,13 @@ import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.config.loginbuddy.common.DefaultTokenResponseHandler;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 public class CallbackHandlerCode extends CallbackHandlerDefault {
@@ -61,8 +68,26 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
 // ** Exchange the code for a token response
 // ***************************************************************
 
-        MsgResponse tokenResponse = HttpHelper.postTokenExchange(providers.getClientId(), providers.getClientSecret(), providers.getRedirectUri(), codeResult.getValue(),
-                sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()));
+        List<NameValuePair> params = PostBody.create()
+                .addParameter(Constants.CLIENT_ID.getKey(), providers.getClientId())
+                .addParameter(Constants.CLIENT_SECRET.getKey(), providers.getClientSecret())
+                .addParameter(Constants.REDIRECT_URI.getKey(), providers.getRedirectUri())
+                .addParameter(Constants.CODE.getKey(), codeResult.getValue())
+                .addParameter(Constants.CODE_VERIFIER.getKey(), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()))
+                .addParameter(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey())
+                .build();
+        HttpPost req = providers.isDpopEnabled() ?
+                PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
+                        .setFormParametersPayload(params)
+                        .setDpopHeader(providers.getDpopSigningAlg(), sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), null, null)
+                        .setAcceptType("application/json")
+                        .build() :
+                PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
+                        .setFormParametersPayload(params)
+                        .setAcceptType("application/json")
+                        .build();
+        MsgResponse tokenResponse = HttpHelper.postMessage(req, "application/json");
+        String tokenType = Constants.BEARER.getKey();
         if (tokenResponse != null) {
             if (tokenResponse.getStatus() == 200) {
                 if (tokenResponse.getContentType().startsWith("application/json")) {
@@ -74,10 +99,11 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                             sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
                             sessionCtx.getString(Constants.JWKS_URI.getKey())
                     );
-                    if(tokenResponseObject.get("id_token_payload") != null) {
-                        eb.setIdTokenPayload((JSONObject)tokenResponseObject.remove("id_token_payload"));
+                    tokenType = tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) != null ? (String) tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) : tokenType;
+                    if (tokenResponseObject.get("id_token_payload") != null) {
+                        eb.setIdTokenPayload((JSONObject) tokenResponseObject.remove("id_token_payload"));
                     }
-                    access_token = (String)tokenResponseObject.remove("provider_access_token");
+                    access_token = (String) tokenResponseObject.remove("provider_access_token");
                     eb.setTokenResponse(tokenResponseObject);
                 } else {
                     endFunHere("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()), sessionCtx, response);
@@ -103,7 +129,15 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
         if (userinfo != null) {
             try {
-                MsgResponse userinfoResp = HttpHelper.getAPI(access_token, userinfo);
+                HttpGet userInfoReq = Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
+                        GetRequest.create(userinfo)
+                                .setBearerAccessToken(access_token)
+                                .build():
+                        GetRequest.create(userinfo)
+                                .setAccessToken(tokenType, access_token)
+                                .setDpopHeader(providers.getDpopSigningAlg(), userinfo, access_token, null)
+                                .build();
+                MsgResponse userinfoResp = HttpHelper.getAPI(userInfoReq);
                 if (userinfoResp.getStatus() == 200) {
                     if (userinfoResp.getContentType().startsWith("application/json")) {
                         JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
@@ -116,12 +150,12 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         }
         eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
 
-        createUserInfoSession(sessionCtx, access_token);
+        createUserInfoSession(sessionCtx, access_token, tokenType, providers.getDpopSigningAlg());
 
         returnAuthorizationCode(response, sessionCtx, eb);
     }
 
-    protected void createUserInfoSession(SessionContext sessionCtx, String access_token) {
+    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg) {
 
 // ***************************************************************
 // ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
@@ -130,6 +164,8 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         JSONObject jo = new JSONObject();
         jo.put(Constants.USERINFO_ENDPOINT.getKey(), sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
         jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
+        jo.put(Constants.TOKEN_TYPE.getKey(), tokenType);
+        jo.put(Constants.DPOP_SIGNING_ALG.getKey(), dpopSigningAlg);
         String[] hint = access_token.split("[.]");
         if (hint.length == 3) {
             LoginbuddyCache.CACHE.put(hint[2], jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));

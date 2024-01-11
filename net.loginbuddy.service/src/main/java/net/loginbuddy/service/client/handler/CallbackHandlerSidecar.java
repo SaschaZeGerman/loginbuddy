@@ -14,7 +14,7 @@ import java.io.IOException;
 public class CallbackHandlerSidecar extends CallbackHandlerCode {
 
     @Override
-    protected void createUserInfoSession(SessionContext sessionCtx, String access_token) {
+    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg) {
         // do nothing on purpose
     }
 

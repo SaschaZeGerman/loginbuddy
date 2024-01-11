@@ -1,17 +1,12 @@
 package net.loginbuddy.common.api;
 
-import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Jwt;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.lang.JoseException;
 
 import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -33,13 +28,18 @@ public class PostRequest extends AnyRequest {
         return this;
     }
 
-    public PostRequest setDpopHeaderRS256(String method, String targetApi, String accessToken, String nonce) throws Exception {
-        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProofRS256(method, targetApi, accessToken, nonce).getCompactSerialization());
+    public PostRequest setDpopHeader(String alg, String targetApi, String accessToken, String nonce) throws Exception {
+        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProof(alg, "POST", targetApi, accessToken, nonce).getCompactSerialization());
         return this;
     }
 
     public PostRequest setBearerAccessToken(String accessToken) {
         setBearerAccessToken(req, accessToken);
+        return this;
+    }
+
+    public PostRequest setAccessToken(String scheme, String accessToken) {
+        setAccessToken(req, scheme, accessToken);
         return this;
     }
 

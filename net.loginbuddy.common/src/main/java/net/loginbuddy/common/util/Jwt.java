@@ -107,37 +107,28 @@ public enum Jwt {
 
     /**
      * See details here: <a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop-16#name-dpop-proof-jwt-syntax">DPoP (RFC 9449)</a>
-     * @param htm MUST NOT be null
-     * @param htu MUST NOT be null
-     * @param accessToken MAY be null
-     * @param nonce MAY be null
+     *
+     * @param alg              The algorithm to use when creating DPoP proof's.
+     * @param htm              MUST NOT be null
+     * @param htu              MUST NOT be null
+     * @param accessToken      MAY be null
+     * @param nonce            MAY be null
      * @param additionalClaims Non-Null list, MAY be empty
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public JsonWebSignature createDpopProofRS256(String htm, String htu, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
-        return createDpopProof(htm, htu, JwsAlgorithm.RS256, accessToken, nonce, additionalClaims);
-    }
-    public JsonWebSignature createDpopProofRS256(String htm, String htu, String accessToken, String nonce) throws NoSuchAlgorithmException {
-        return createDpopProofRS256(htm, htu, accessToken, nonce, new HashMap<>());
-    }
-    public JsonWebSignature createDpopProofES256(String htm, String htu, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
-        return createDpopProof(htm, htu, JwsAlgorithm.ES256, accessToken, nonce, additionalClaims);
-    }
-    public JsonWebSignature createDpopProofES256(String htm, String htu, String accessToken, String nonce) throws NoSuchAlgorithmException {
-        return createDpopProofES256(htm, htu, accessToken, nonce, new HashMap<>());
-    }
+    public JsonWebSignature createDpopProof(String alg, String htm, String htu, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
 
-    private JsonWebSignature createDpopProof(String htm, String htu, JwsAlgorithm alg, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
+        JwsAlgorithm algToUse = JwsAlgorithm.valueOf(alg);
 
         JwtClaims claims = new JwtClaims();
         claims.setGeneratedJwtId();
         claims.setClaim("htm", htm);
         claims.setClaim("htu", htu);
-        if(accessToken != null) {
+        if (accessToken != null) {
             claims.setClaim("ath", CertificateManager.generateBase64UrlEncodedSha256(accessToken));
         }
-        if(nonce != null) {
+        if (nonce != null) {
             claims.setClaim("nonce", nonce);
         }
         claims.setIssuedAtToNow();
@@ -145,7 +136,6 @@ public enum Jwt {
             claims.setClaim(claim, additionalClaims.get(claim));
         }
 
-        JwsAlgorithm algToUse = alg == null || getKeyForAlgorithm(alg) == null ? JwsAlgorithm.RS256 : alg;
         PublicJsonWebKey jwk = getKeyForAlgorithm(algToUse);
         JsonWebSignature jws = new JsonWebSignature();
         jws.setKey(jwk.getPrivateKey());
@@ -156,6 +146,10 @@ public enum Jwt {
 
         jws.setPayload(claims.toJson());
         return jws;
+    }
+
+    public JsonWebSignature createDpopProof(String alg, String htm, String htu, String accessToken, String nonce) throws NoSuchAlgorithmException {
+        return createDpopProof(alg, htm, htu, accessToken, nonce, new HashMap<>());
     }
 
     /**
@@ -245,7 +239,7 @@ public enum Jwt {
 
     private PublicJsonWebKey getKeyForAlgorithm(JwsAlgorithm algorithm) {
         PublicJsonWebKey jwk = (PublicJsonWebKey) LoginbuddyStorage.STORAGE.get(String.format("jwks_%s", algorithm));
-        if(jwk == null) {
+        if (jwk == null) {
             if (AlgorithmIdentifiers.RSA_USING_SHA256.equalsIgnoreCase(algorithm.toString())) {
                 try {
                     jwk = RsaJwkGenerator.generateJwk(2048);
