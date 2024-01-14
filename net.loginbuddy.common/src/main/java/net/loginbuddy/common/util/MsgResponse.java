@@ -9,6 +9,8 @@
 package net.loginbuddy.common.util;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The data model that is returned to Loginbuddy after receiving a response from providers.
@@ -18,13 +20,20 @@ public class MsgResponse implements Serializable {
     private String contentType, msg;
     private int status;
 
+    private Map<String, String> headers;
+
     public MsgResponse() {
     }
 
     public MsgResponse(String contentType, String msg, int status) {
+        this(contentType, msg, status, new HashMap<>());
+    }
+
+    public MsgResponse(String contentType, String msg, int status, Map<String, String> headers) {
         this.contentType = contentType;
         this.msg = msg;
         this.status = status;
+        this.headers = headers;
     }
 
     public String getContentType() {
@@ -49,6 +58,10 @@ public class MsgResponse implements Serializable {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public String getHeader(String headerName) {
+        return headers.get(headerName);
     }
 
     @Override

@@ -1,17 +1,9 @@
 package net.loginbuddy.common.api;
 
-import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.Jwt;
 import org.apache.http.client.methods.HttpGet;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.lang.JoseException;
-
-import java.net.URI;
-import java.util.logging.Logger;
 
 public class GetRequest extends AnyRequest {
-
-    private static final Logger LOGGER = Logger.getLogger(GetRequest.class.getName());
 
     private HttpGet req;
     private GetRequest(String targetApi) {

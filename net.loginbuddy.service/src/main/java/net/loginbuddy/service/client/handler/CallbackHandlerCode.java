@@ -79,7 +79,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         HttpPost req = providers.isDpopEnabled() ?
                 PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
                         .setFormParametersPayload(params)
-                        .setDpopHeader(providers.getDpopSigningAlg(), sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), null, null)
+                        .setDpopHeader(providers.getDpopSigningAlg(), sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), null, Constants.DPOP_NONCE_HEADER.getKey())
                         .setAcceptType("application/json")
                         .build() :
                 PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))

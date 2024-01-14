@@ -26,10 +26,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -87,8 +84,14 @@ public class HttpHelper {
         HttpClient httpClient = builder.build();
 
         HttpResponse response = httpClient.execute(req);
+
+        Map<String, String> headers = new HashMap<>();
+        for(Header h : response.getAllHeaders()) {
+            headers.put(h.getName(), h.getValue());
+        }
         return new MsgResponse(getHeader(response, "content-type", "application/json"),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
+                headers);
     }
 
     // TODO check got 'single' header
@@ -145,8 +148,13 @@ public class HttpHelper {
     public static MsgResponse postMessage(HttpPost req, String acceptContentType) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().build();
         HttpResponse response = httpClient.execute(req);
+        Map<String, String> headers = new HashMap<>();
+        for(Header h : response.getAllHeaders()) {
+            headers.put(h.getName(), h.getValue());
+        }
         return new MsgResponse(getHeader(response, "content-type", acceptContentType),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode());
+                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
+                headers);
     }
 
     public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri) {

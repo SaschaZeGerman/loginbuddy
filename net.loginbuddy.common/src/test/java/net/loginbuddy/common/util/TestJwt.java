@@ -11,7 +11,6 @@ package net.loginbuddy.common.util;
 import net.loginbuddy.common.config.JwsAlgorithm;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -50,13 +49,13 @@ public class TestJwt {
         jo.put("aud", "audience");
         jo.put("nonce", "nonceInIdToken");
         jo.put("iat", Long.valueOf(String.valueOf(new Date().getTime()).substring(0, 10)));
-        jo.put("exp", Long.valueOf(String.valueOf(new Date().getTime()+20000).substring(0, 10)));
+        jo.put("exp", Long.valueOf(String.valueOf(new Date().getTime() + 20000).substring(0, 10)));
         try {
             TestJwt = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.RS256).getCompactSerialization();
             TestJwtEs256 = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.ES256).getCompactSerialization();
 
-            jo.put("iat", Long.valueOf(String.valueOf(new Date().getTime()-60000).substring(0, 10)));
-            jo.put("exp", Long.valueOf(String.valueOf(new Date().getTime()-10000).substring(0, 10)));
+            jo.put("iat", Long.valueOf(String.valueOf(new Date().getTime() - 60000).substring(0, 10)));
+            jo.put("exp", Long.valueOf(String.valueOf(new Date().getTime() - 10000).substring(0, 10)));
 
             TestJwtExpired = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.RS256).getCompactSerialization();
             TestJwtExpiredEs256 = Jwt.DEFAULT.createSignedJwt(jo.toJSONString(), JwsAlgorithm.ES256).getCompactSerialization();
@@ -196,7 +195,7 @@ public class TestJwt {
             assertEquals("RS256", dpopProof.getHeader("alg"));
             assertNotNull(dpopProof.getJwkHeader());
 
-            JSONObject proof = (JSONObject)new JSONParser().parse(dpopProof.getUnverifiedPayload());
+            JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("POST", proof.get("htm"));
             assertEquals("https://localhost/token", proof.get("htu"));
         } catch (Exception e) {
@@ -211,12 +210,12 @@ public class TestJwt {
             additionalClaims.put("key1", "value1");
             JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("RS256", "POST", "https://localhost/token", "accessToken", "nonceValue", additionalClaims);
 
-            JSONObject proof = (JSONObject)new JSONParser().parse(dpopProof.getUnverifiedPayload());
+            JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("value1", proof.get("key1"));
             assertEquals("lKJ3bnvW9hFGK8Q0Thd3PGX8TEhkAWQ7ck0QKok23_Q=", proof.get("ath"));
             assertEquals("nonceValue", proof.get("nonce"));
 
-            JSONObject proofJwk = (JSONObject)new JSONParser().parse(dpopProof.getJwkHeader().toJson());
+            JSONObject proofJwk = (JSONObject) new JSONParser().parse(dpopProof.getJwkHeader().toJson());
             assertEquals("RSA", proofJwk.get("kty"));
             assertEquals("AQAB", proofJwk.get("e"));
             assertNotNull(proofJwk.get("n"));
@@ -242,11 +241,11 @@ public class TestJwt {
             additionalClaims.put("key1", "value1");
             JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("ES256", "POST", "https://localhost/token", "accessToken", "nonce", additionalClaims);
 
-            JSONObject proof = (JSONObject)new JSONParser().parse(dpopProof.getUnverifiedPayload());
+            JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("value1", proof.get("key1"));
             assertEquals("lKJ3bnvW9hFGK8Q0Thd3PGX8TEhkAWQ7ck0QKok23_Q=", proof.get("ath"));
 
-            JSONObject proofJwk = (JSONObject)new JSONParser().parse(dpopProof.getJwkHeader().toJson());
+            JSONObject proofJwk = (JSONObject) new JSONParser().parse(dpopProof.getJwkHeader().toJson());
             assertEquals("EC", proofJwk.get("kty"));
             assertEquals("P-256", proofJwk.get("crv"));
             assertNotNull(proofJwk.get("x"));
@@ -254,6 +253,12 @@ public class TestJwt {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void testGetDpopJkt() {
+        assertNotNull(Jwt.DEFAULT.getDpopJkt("RS256"));
+        assertNotNull(Jwt.DEFAULT.getDpopJkt("ES256"));
     }
 
     /**

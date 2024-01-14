@@ -186,7 +186,8 @@ public class HeadOfInitialize {
                 .append(cp)
                 .append(lh)
                 .append(ith)
-                .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId());
+                .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId())
+                .append(providers.isDpopEnabled() ? String.format("&dpop_jkt=%s", HttpHelper.urlEncode(Jwt.DEFAULT.getDpopJkt(providers.getDpopSigningAlg()))) : "");
 
         authorizeUrl.append("?");
 
@@ -203,7 +204,7 @@ public class HeadOfInitialize {
                         PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
                                 .setAcceptType("application/json")
                                 .setUrlEncodedParametersPayload(queryParams.toString())
-                                .setDpopHeader(providers.getDpopSigningAlg(), providers.getPushedAuthorizationRequestEndpoint(), null, null)
+                                .setDpopHeader(providers.getDpopSigningAlg(), providers.getPushedAuthorizationRequestEndpoint(), null, sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()))
                                 .build() :
                         PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
                                 .setAcceptType("application/json")
@@ -211,6 +212,13 @@ public class HeadOfInitialize {
                                 .build();
                 MsgResponse msgResponse = HttpHelper.postMessage(req, "application/json");
                 JSONObject obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
+                if (msgResponse.getStatus() > 204) {
+                    LOGGER.warning(String.format("The PAR request failed: %s\n", obj.get("error_description")));
+                    return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String)obj.get("error"),(String)obj.get("error_description"));
+                }
+                if(msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
+                    sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                }
                 authorizeUrl.append(Constants.REQUEST_URI.getKey()).append("=").append(HttpHelper.urlEncode((String) obj.get(Constants.REQUEST_URI.getKey())));
                 authorizeUrl.append("&").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId()));
             } catch (Exception e) {

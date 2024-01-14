@@ -152,6 +152,10 @@ public enum Jwt {
         return createDpopProof(alg, htm, htu, accessToken, nonce, new HashMap<>());
     }
 
+    public String getDpopJkt(String alg) {
+        return getKeyForAlgorithm(JwsAlgorithm.valueOf(alg)).calculateBase64urlEncodedThumbprint("SHA-256");
+    }
+
     /**
      * Validates an id_token with standard claims and optional others
      *

@@ -1,8 +1,10 @@
 package net.loginbuddy.common.api;
 
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.Jwt;
 import org.apache.http.client.methods.HttpRequestBase;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 public abstract class AnyRequest {
@@ -24,5 +26,4 @@ public abstract class AnyRequest {
             LOGGER.warning("The given access_token is null, the request may fail!");
         }
     }
-
 }

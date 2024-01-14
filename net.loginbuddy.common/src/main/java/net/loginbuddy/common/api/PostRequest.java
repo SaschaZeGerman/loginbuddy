@@ -8,11 +8,8 @@ import org.apache.http.entity.StringEntity;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class PostRequest extends AnyRequest {
-
-    private static final Logger LOGGER = Logger.getLogger(PostRequest.class.getName());
 
     private HttpPost req;
     private PostRequest(String targetApi) {
@@ -28,8 +25,8 @@ public class PostRequest extends AnyRequest {
         return this;
     }
 
-    public PostRequest setDpopHeader(String alg, String targetApi, String accessToken, String nonce) throws Exception {
-        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProof(alg, "POST", targetApi, accessToken, nonce).getCompactSerialization());
+    public PostRequest setDpopHeader(String alg, String targetApi, String accessToken, String dpopNonce) throws Exception {
+        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProof(alg, "POST", targetApi, accessToken, dpopNonce).getCompactSerialization());
         return this;
     }
 
