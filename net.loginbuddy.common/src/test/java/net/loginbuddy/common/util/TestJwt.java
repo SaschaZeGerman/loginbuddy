@@ -212,7 +212,7 @@ public class TestJwt {
 
             JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("value1", proof.get("key1"));
-            assertEquals("lKJ3bnvW9hFGK8Q0Thd3PGX8TEhkAWQ7ck0QKok23_Q=", proof.get("ath"));
+            assertEquals("lKJ3bnvW9hFGK8Q0Thd3PGX8TEhkAWQ7ck0QKok23_Q", proof.get("ath"));
             assertEquals("nonceValue", proof.get("nonce"));
 
             JSONObject proofJwk = (JSONObject) new JSONParser().parse(dpopProof.getJwkHeader().toJson());
@@ -244,7 +244,7 @@ public class TestJwt {
 
             JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("value1", proof.get("key1"));
-            assertEquals("lKJ3bnvW9hFGK8Q0Thd3PGX8TEhkAWQ7ck0QKok23_Q=", proof.get("ath"));
+            assertEquals("lKJ3bnvW9hFGK8Q0Thd3PGX8TEhkAWQ7ck0QKok23_Q", proof.get("ath"));
 
             JSONObject proofJwk = (JSONObject) new JSONParser().parse(dpopProof.getJwkHeader().toJson());
             assertEquals("EC", proofJwk.get("kty"));

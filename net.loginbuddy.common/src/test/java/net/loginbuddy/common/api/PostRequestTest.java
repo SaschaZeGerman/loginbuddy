@@ -23,7 +23,7 @@ public class PostRequestTest {
             assertEquals("POST", dpopProofPayload.get("htm"));
             assertEquals("https://localhost:8443/token", dpopProofPayload.get("htu"));
             assertEquals("dpop-nonce-value", dpopProofPayload.get("nonce"));
-            assertEquals("duQDMgs1kN5rJ8XEG5n1ClU97kGkhWOzSzZy9S9RKrE=", dpopProofPayload.get("ath"));
+            assertEquals("duQDMgs1kN5rJ8XEG5n1ClU97kGkhWOzSzZy9S9RKrE", dpopProofPayload.get("ath"));
         } catch (Exception e) {
             fail(e.getMessage());
         }

@@ -85,7 +85,7 @@ public class CertificateManager {
     public static String generateBase64UrlEncodedSha256(String input) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] encodedHash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-        return new String(Base64.getUrlEncoder().encode(encodedHash));
+        return new String(Base64.getUrlEncoder().withoutPadding().encode(encodedHash));
     }
 
     /**
