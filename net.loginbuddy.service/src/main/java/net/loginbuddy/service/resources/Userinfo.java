@@ -10,6 +10,7 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.service.server.Overlord;
 import org.apache.http.client.methods.HttpGet;
@@ -25,15 +26,15 @@ public class Userinfo extends Overlord {
         ParameterValidatorResult accessToken = ParameterValidator.getSingleValue(request.getParameterValues(Constants.ACCESS_TOKEN.getKey()));
         String authorizationHeader = request.getHeader(Constants.AUTHORIZATION.getKey());
 
-        String hint;
+        String tokenHint;
         String[] token = HttpHelper.extractAccessToken(accessToken, authorizationHeader).split("[.]");
 
         // encrypted token (i.e.: lb.access_token_value)
         if (token.length == 2 && "lb".equals(token[0])) {
             try {
-                hint = LoginbuddyUtil.UTIL.decrypt(String.format("%s.%s", token[0], token[1]));
+                tokenHint = LoginbuddyUtil.UTIL.decrypt(String.format("%s.%s", token[0], token[1]));
                 // the original access_token may be a reference token or a JWT
-                token = hint.split(":")[1].split("[.]");
+                token = tokenHint.split(":")[1].split("[.]");
             } catch (Exception e) {
                 response.setStatus(400);
                 response.setContentType("application/json");
@@ -44,13 +45,13 @@ public class Userinfo extends Overlord {
 
         // for JWT based token the signature was used as key for the cache
         if (token.length == 3) {
-            hint = token[2];
+            tokenHint = token[2];
         } else {
-            hint = token[0];
+            tokenHint = token[0];
         }
 
         MsgResponse msg;
-        JSONObject apis = (JSONObject) LoginbuddyCache.CACHE.get(hint);
+        JSONObject apis = (JSONObject) LoginbuddyCache.CACHE.get(tokenHint);
         if (apis == null) {
             msg = new MsgResponse();
             msg.setStatus(400);
@@ -58,16 +59,16 @@ public class Userinfo extends Overlord {
             msg.setMsg(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
         } else {
             try {
-                String tokenType = (String) apis.get(Constants.TOKEN_TYPE.getKey());
-                HttpGet req = Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
-                        GetRequest.create((String) apis.get(Constants.USERINFO_ENDPOINT.getKey()))
-                                .setBearerAccessToken(hint)
-                                .build() :
-                        GetRequest.create((String) apis.get(Constants.USERINFO_ENDPOINT.getKey()))
-                                .setAccessToken((String) apis.get(Constants.TOKEN_TYPE.getKey()), hint)
-                                .setDpopHeader((String) apis.get(Constants.DPOP_SIGNING_ALG.getKey()), (String) apis.get(Constants.USERINFO_ENDPOINT.getKey()), hint, null)
-                                .build();
+                String dpopNonce = (String)apis.get(Constants.DPOP_NONCE_HEADER.getKey());
+                String dpopNonceProvider = (String)apis.get(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey());
+                HttpGet req = getUserinfo(apis, tokenHint, dpopNonce, dpopNonceProvider);
                 msg = HttpHelper.getAPI(req);
+                if (msg.getStatus() == 401) {
+                    if (msg.getHeader("WWW-Authenticate") != null && msg.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
+                        req = getUserinfo(apis, tokenHint, msg.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                        msg = HttpHelper.getAPI(req);
+                    }
+                }
             } catch (Exception e) {
                 response.setStatus(500);
                 response.setContentType("application/json");
@@ -79,6 +80,22 @@ public class Userinfo extends Overlord {
         response.setStatus(msg.getStatus());
         response.setContentType(msg.getContentType());
         response.getWriter().write(msg.getMsg());
+    }
+
+    private HttpGet getUserinfo(JSONObject apis, String tokenHint, String dpopNonce) throws Exception {
+        return getUserinfo(apis, tokenHint, dpopNonce, Sanetizer.getDomain((String) apis.get(Constants.USERINFO_ENDPOINT.getKey())));
+    }
+
+    private HttpGet getUserinfo(JSONObject apis, String tokenHint, String dpopNonce, String dpopNonceProvider) throws Exception {
+        String tokenType = (String) apis.get(Constants.TOKEN_TYPE.getKey());
+        return Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
+                GetRequest.create((String) apis.get(Constants.USERINFO_ENDPOINT.getKey()))
+                        .setBearerAccessToken(tokenHint)
+                        .build() :
+                GetRequest.create((String) apis.get(Constants.USERINFO_ENDPOINT.getKey()))
+                        .setAccessToken((String) apis.get(Constants.TOKEN_TYPE.getKey()), tokenHint)
+                        .setDpopHeader((String) apis.get(Constants.DPOP_SIGNING_ALG.getKey()), (String) apis.get(Constants.USERINFO_ENDPOINT.getKey()), tokenHint, dpopNonce, dpopNonceProvider)
+                        .build();
     }
 
     @Override

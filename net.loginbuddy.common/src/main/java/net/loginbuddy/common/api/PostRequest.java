@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 
 public class PostRequest extends AnyRequest {
@@ -25,8 +26,12 @@ public class PostRequest extends AnyRequest {
         return this;
     }
 
-    public PostRequest setDpopHeader(String alg, String targetApi, String accessToken, String dpopNonce) throws Exception {
-        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProof(alg, "POST", targetApi, accessToken, dpopNonce).getCompactSerialization());
+    public PostRequest setDpopHeader(String alg, String targetApi, String accessToken, String dpopNonce, String dpopNonceProvider) throws Exception {
+        return setDpopHeader(alg, targetApi, accessToken, dpopNonce, dpopNonceProvider, new HashMap<>());
+    }
+
+    public PostRequest setDpopHeader(String alg, String targetApi, String accessToken, String dpopNonce, String dpopNonceProvider, HashMap<String, String> additionalClaims) throws Exception {
+        addDpopHeader(req, Jwt.DEFAULT.createDpopProof(alg, "POST", targetApi, accessToken, dpopNonce, dpopNonceProvider, additionalClaims).getCompactSerialization());
         return this;
     }
 

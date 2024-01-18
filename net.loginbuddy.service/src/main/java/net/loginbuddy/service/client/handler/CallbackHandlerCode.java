@@ -79,7 +79,12 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         HttpPost req = providers.isDpopEnabled() ?
                 PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
                         .setFormParametersPayload(params)
-                        .setDpopHeader(providers.getDpopSigningAlg(), sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), null, Constants.DPOP_NONCE_HEADER.getKey())
+                        .setDpopHeader(
+                                providers.getDpopSigningAlg(),
+                                sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()),
+                                null,
+                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                         .setAcceptType("application/json")
                         .build() :
                 PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
@@ -87,6 +92,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                         .setAcceptType("application/json")
                         .build();
         MsgResponse tokenResponse = HttpHelper.postMessage(req, "application/json");
+
         String tokenType = Constants.BEARER.getKey();
         if (tokenResponse != null) {
             if (tokenResponse.getStatus() == 200) {
@@ -135,7 +141,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                                 .build():
                         GetRequest.create(userinfo)
                                 .setAccessToken(tokenType, access_token)
-                                .setDpopHeader(providers.getDpopSigningAlg(), userinfo, access_token, null)
+                                .setDpopHeader(providers.getDpopSigningAlg(), userinfo, access_token, null, null)
                                 .build();
                 MsgResponse userinfoResp = HttpHelper.getAPI(userInfoReq);
                 if (userinfoResp.getStatus() == 200) {
@@ -166,6 +172,8 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
         jo.put(Constants.TOKEN_TYPE.getKey(), tokenType);
         jo.put(Constants.DPOP_SIGNING_ALG.getKey(), dpopSigningAlg);
+        jo.put(Constants.DPOP_NONCE_HEADER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()));
+        jo.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
         String[] hint = access_token.split("[.]");
         if (hint.length == 3) {
             LoginbuddyCache.CACHE.put(hint[2], jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));

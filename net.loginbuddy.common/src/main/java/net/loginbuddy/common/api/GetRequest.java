@@ -3,6 +3,9 @@ package net.loginbuddy.common.api;
 import net.loginbuddy.common.util.Jwt;
 import org.apache.http.client.methods.HttpGet;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 public class GetRequest extends AnyRequest {
 
     private HttpGet req;
@@ -19,8 +22,12 @@ public class GetRequest extends AnyRequest {
         return this;
     }
 
-    public GetRequest setDpopHeader(String alg, String targetApi, String accessToken, String nonce) throws Exception {
-        addHeader(req, "dpop", Jwt.DEFAULT.createDpopProof(alg, "GET", targetApi, accessToken, nonce).getCompactSerialization());
+    public GetRequest setDpopHeader(String alg, String targetApi, String accessToken, String dpopNonce, String dpopNonceProvider) throws Exception {
+        return setDpopHeader(alg, targetApi, accessToken, dpopNonce, dpopNonceProvider, new HashMap<>());
+    }
+
+    public GetRequest setDpopHeader(String alg, String targetApi, String accessToken, String dpopNonce, String dpopNonceProvider, HashMap<String, String> additionalClaims) throws Exception {
+        addDpopHeader(req, Jwt.DEFAULT.createDpopProof(alg, "GET", targetApi, accessToken, dpopNonce, dpopNonceProvider, additionalClaims).getCompactSerialization());
         return this;
     }
 

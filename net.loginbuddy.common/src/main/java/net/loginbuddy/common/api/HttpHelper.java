@@ -13,6 +13,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -38,6 +39,22 @@ public class HttpHelper {
     private static final Pattern urlPattern = Pattern.compile("^http[s]?://[a-zA-Z0-9.\\-:/]{1,92}");
 
     public HttpHelper() {
+    }
+
+    private static HttpResponse getHttpResponse(HttpRequestBase req) throws IOException {
+        RequestConfig.Builder requestBuilder = RequestConfig.custom();
+        requestBuilder.setConnectTimeout(5000);
+        requestBuilder.setConnectionRequestTimeout(5000);
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setDefaultRequestConfig(requestBuilder.build());
+        HttpClient httpClient = builder.build();
+        return httpClient.execute(req);
+    }
+
+    // TODO check got 'single' header
+    private static String getHeader(HttpResponse response, String headerName, String defaultValue) {
+        Header[] headers = response.getHeaders(headerName);
+        return headers == null ? defaultValue : headers.length != 1 ? defaultValue : headers[0].getValue();
     }
 
     public static boolean couldBeAUrl(String url) {
@@ -73,18 +90,7 @@ public class HttpHelper {
     }
 
     public static MsgResponse getAPI(HttpGet req) throws IOException {
-
-        RequestConfig.Builder requestBuilder = RequestConfig.custom();
-        requestBuilder.setConnectTimeout(5000);
-        requestBuilder.setConnectionRequestTimeout(5000);
-
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        builder.setDefaultRequestConfig(requestBuilder.build());
-
-        HttpClient httpClient = builder.build();
-
-        HttpResponse response = httpClient.execute(req);
-
+        HttpResponse response = getHttpResponse(req);
         Map<String, String> headers = new HashMap<>();
         for(Header h : response.getAllHeaders()) {
             headers.put(h.getName(), h.getValue());
@@ -92,12 +98,6 @@ public class HttpHelper {
         return new MsgResponse(getHeader(response, "content-type", "application/json"),
                 EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
                 headers);
-    }
-
-    // TODO check got 'single' header
-    private static String getHeader(HttpResponse response, String headerName, String defaultValue) {
-        Header[] headers = response.getHeaders(headerName);
-        return headers == null ? defaultValue : headers.length != 1 ? defaultValue : headers[0].getValue();
     }
 
     public static MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode,
@@ -139,15 +139,14 @@ public class HttpHelper {
                 acceptContentType);
     }
 
-    protected static MsgResponse postMessage(JSONObject input, String targetUrl, String acceptContentType) throws IOException {
+    public static MsgResponse postMessage(JSONObject input, String targetUrl, String acceptContentType) throws IOException {
         return postMessage(
                 PostRequest.create(targetUrl).setAcceptType(acceptContentType).setJsonPayload(input.toJSONString()).build(),
                 acceptContentType);
     }
 
     public static MsgResponse postMessage(HttpPost req, String acceptContentType) throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpResponse response = httpClient.execute(req);
+        HttpResponse response = getHttpResponse(req);
         Map<String, String> headers = new HashMap<>();
         for(Header h : response.getAllHeaders()) {
             headers.put(h.getName(), h.getValue());

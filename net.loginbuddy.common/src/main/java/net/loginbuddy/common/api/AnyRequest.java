@@ -11,6 +11,10 @@ public abstract class AnyRequest {
 
     private static final Logger LOGGER = Logger.getLogger(AnyRequest.class.getName());
 
+    protected void addDpopHeader(HttpRequestBase rb, String value) {
+        addHeader(rb, "dpop", value);
+    }
+
     protected void addHeader(HttpRequestBase rb, String header, String value) {
         rb.setHeader(header, value);
     }

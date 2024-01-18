@@ -36,6 +36,7 @@ public enum Constants {
     DISCOVERY_URL("discovery_url"),
     DISCOVERY_DOC("discovery_doc"),
     DPOP_NONCE_HEADER("dpop-nonce"),
+    DPOP_NONCE_HEADER_PROVIDER("dpop-nonce-provider"), // let's remember who issued the nonce
     DPOP_SIGNING_ALG("dpop_signing_alg"),
     DPOP_SIGNING_ALG_VALUES_SUPPORTED("dpop_signing_alg_values_supported"),
     DYNAMIC_PROVIDER("dynamic_provider"),

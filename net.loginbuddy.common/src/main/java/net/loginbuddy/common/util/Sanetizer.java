@@ -6,6 +6,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Sanetizer {
@@ -14,6 +15,7 @@ public class Sanetizer {
 
     private static final Pattern urlPattern = Pattern.compile("^http[s]?://[a-zA-Z0-9.\\-:_/]{1,256}"); // will be extended over time as required
     private static final Pattern urlPathPattern = Pattern.compile("^[.]{0,2}/[a-zA-Z0-9.\\-:_/]{1,256}"); // will be extended over time as required
+    private static final Pattern urlDomainPattern = Pattern.compile("^http[s]?://([a-zA-Z0-9.\\-:]{1,63})[?/]?"); // will be extended over time as required
 
     public static String sanetize(String input) {
         return sanetize(input, 0);
@@ -87,5 +89,16 @@ public class Sanetizer {
             ((JSONObject)obj).put("client_secret", "***");
             return ((JSONObject)obj).toJSONString();
         }
+    }
+
+    public static String getDomain(String input) {
+        if(input == null) {
+            return null;
+        }
+        Matcher mUrlDomain = urlDomainPattern.matcher(input);
+        if(mUrlDomain.find()) {
+            return mUrlDomain.group(1);
+        }
+        return null;
     }
 }

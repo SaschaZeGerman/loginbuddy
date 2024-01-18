@@ -68,12 +68,11 @@ public class RefreshTokenHandler implements GrantTypeHandler {
                             .addParameter(Constants.REFRESH_TOKEN.getKey(), refreshToken)
                             .addParameter(Constants.SCOPE.getKey(), scopeForRTRequest)
                             .build();
-
                     try {
                         HttpPost req = providers.isDpopEnabled() ?
                                 PostRequest.create(providers.getTokenEndpoint())
                                         .setFormParametersPayload(params)
-                                        .setDpopHeader(providers.getDpopSigningAlg(), providers.getTokenEndpoint(), null, null)
+                                        .setDpopHeader(providers.getDpopSigningAlg(), providers.getTokenEndpoint(), null, null, null)
                                         .setAcceptType("application/json")
                                         .build() :
                                 PostRequest.create(providers.getTokenEndpoint())

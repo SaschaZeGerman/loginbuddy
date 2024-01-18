@@ -204,7 +204,12 @@ public class HeadOfInitialize {
                         PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
                                 .setAcceptType("application/json")
                                 .setUrlEncodedParametersPayload(queryParams.toString())
-                                .setDpopHeader(providers.getDpopSigningAlg(), providers.getPushedAuthorizationRequestEndpoint(), null, sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()))
+                                .setDpopHeader(
+                                        providers.getDpopSigningAlg(),
+                                        providers.getPushedAuthorizationRequestEndpoint(),
+                                        null,
+                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                                 .build() :
                         PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
                                 .setAcceptType("application/json")
@@ -218,6 +223,7 @@ public class HeadOfInitialize {
                 }
                 if(msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                    sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(providers.getPushedAuthorizationRequestEndpoint()));
                 }
                 authorizeUrl.append(Constants.REQUEST_URI.getKey()).append("=").append(HttpHelper.urlEncode((String) obj.get(Constants.REQUEST_URI.getKey())));
                 authorizeUrl.append("&").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId()));

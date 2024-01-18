@@ -50,7 +50,6 @@ public class TokenSidecar extends Token  {
 
     @Override
     protected ClientAuthenticator.ClientCredentialsResult authenticateClient(HttpServletRequest request, HttpServletResponse response) throws IOException {
-//        ParameterValidatorResult clientIdResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_ID.getKey()));
         ParameterValidatorResult clientIdResult = ParameterValidator.getSingleValue(new String[]{Constants.SIDECAR_CLIENT_ID.getKey()});
         return Sidecar.getClientForToken(clientIdResult);
     }

@@ -107,17 +107,19 @@ public enum Jwt {
 
     /**
      * See details here: <a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-dpop-16#name-dpop-proof-jwt-syntax">DPoP (RFC 9449)</a>
+     * Loginbuddy will only include the dpopNonce if it was originally provided by the issuing domain
      *
-     * @param alg              The algorithm to use when creating DPoP proof's.
-     * @param htm              MUST NOT be null
-     * @param htu              MUST NOT be null
-     * @param accessToken      MAY be null
-     * @param nonce            MAY be null
-     * @param additionalClaims Non-Null list, MAY be empty
+     * @param alg               The algorithm to use when creating DPoP proof's.
+     * @param htm               MUST NOT be null, http method
+     * @param htu               MUST NOT be null, http target url
+     * @param accessToken       MAY be null
+     * @param dpopNonce             MAY be null
+     * @param dpopNonceProvider MUST NOT be null if dpopNonce was provider
+     * @param additionalClaims  Non-Null list, MAY be empty
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public JsonWebSignature createDpopProof(String alg, String htm, String htu, String accessToken, String nonce, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
+    public JsonWebSignature createDpopProof(String alg, String htm, String htu, String accessToken, String dpopNonce, String dpopNonceProvider, Map<String, String> additionalClaims) throws NoSuchAlgorithmException {
 
         JwsAlgorithm algToUse = JwsAlgorithm.valueOf(alg);
 
@@ -128,8 +130,10 @@ public enum Jwt {
         if (accessToken != null) {
             claims.setClaim("ath", CertificateManager.generateBase64UrlEncodedSha256(accessToken));
         }
-        if (nonce != null) {
-            claims.setClaim("nonce", nonce);
+        if (dpopNonce != null && Sanetizer.getDomain(htu).equalsIgnoreCase(dpopNonceProvider)) {
+            claims.setClaim("nonce", dpopNonce);
+        } else {
+            LOGGER.info("DPoP nonce was not set as it was created by a different provider");
         }
         claims.setIssuedAtToNow();
         for (String claim : additionalClaims.keySet()) {
@@ -148,8 +152,8 @@ public enum Jwt {
         return jws;
     }
 
-    public JsonWebSignature createDpopProof(String alg, String htm, String htu, String accessToken, String nonce) throws NoSuchAlgorithmException {
-        return createDpopProof(alg, htm, htu, accessToken, nonce, new HashMap<>());
+    public JsonWebSignature createDpopProof(String alg, String htm, String htu, String accessToken, String dpopNonce, String dpopNonceProvider) throws NoSuchAlgorithmException {
+        return createDpopProof(alg, htm, htu, accessToken, dpopNonce, dpopNonceProvider, new HashMap<>());
     }
 
     public String getDpopJkt(String alg) {

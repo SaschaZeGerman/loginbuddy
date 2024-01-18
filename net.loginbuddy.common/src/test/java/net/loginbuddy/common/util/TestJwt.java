@@ -190,7 +190,7 @@ public class TestJwt {
     @Test
     public void testDpopDefaultRS256() {
         try {
-            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("RS256", "POST", "https://localhost/token", "accessToken", "nonce");
+            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("RS256", "POST", "https://localhost/token", "accessToken", "nonce", "localhost");
             assertEquals("dpop+jwt", dpopProof.getHeader("typ"));
             assertEquals("RS256", dpopProof.getHeader("alg"));
             assertNotNull(dpopProof.getJwkHeader());
@@ -208,7 +208,7 @@ public class TestJwt {
         try {
             Map<String, String> additionalClaims = new HashMap<>();
             additionalClaims.put("key1", "value1");
-            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("RS256", "POST", "https://localhost/token", "accessToken", "nonceValue", additionalClaims);
+            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("RS256", "POST", "https://localhost/token", "accessToken", "nonceValue", "localhost", additionalClaims);
 
             JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("value1", proof.get("key1"));
@@ -227,8 +227,9 @@ public class TestJwt {
     @Test
     public void testDpopDefaultES256() {
         try {
-            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("ES256", "POST", "https://localhost/token", "accessToken", "nonce");
+            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("ES256", "POST", "https://localhost/token", "accessToken", "nonce", "localhost");
             assertEquals("ES256", dpopProof.getHeader("alg"));
+            assertEquals("dpop+jwt", dpopProof.getHeader("typ"));
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -239,7 +240,7 @@ public class TestJwt {
         try {
             Map<String, String> additionalClaims = new HashMap<>();
             additionalClaims.put("key1", "value1");
-            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("ES256", "POST", "https://localhost/token", "accessToken", "nonce", additionalClaims);
+            JsonWebSignature dpopProof = Jwt.DEFAULT.createDpopProof("ES256", "POST", "https://localhost/token", "accessToken", "nonce", "localhost", additionalClaims);
 
             JSONObject proof = (JSONObject) new JSONParser().parse(dpopProof.getUnverifiedPayload());
             assertEquals("value1", proof.get("key1"));
