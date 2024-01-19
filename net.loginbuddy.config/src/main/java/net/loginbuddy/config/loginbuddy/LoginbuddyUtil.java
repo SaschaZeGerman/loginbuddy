@@ -82,20 +82,20 @@ public enum LoginbuddyUtil implements Bootstrap {
         try {
             if (providers == null) {
                 providers = loader.getLoginbuddy().getProviders();
-                for (Providers next : providers) {
-                    // dynamic registration is done at boot time. However, if that fails this section will try again
-                    if (getProviderType(next).equals(ProviderConfigType.MINIMAL)) {
-                        JSONObject retrieveAndRegister = HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(), DiscoveryUtil.UTIL.getRedirectUri());
-                        if (retrieveAndRegister.get("error") == null) {
-                            Providers readValue = MAPPER.readValue(retrieveAndRegister.toJSONString(), Providers.class);
-                            next.enhanceToFull(readValue);
-                            next.setMeta(new Meta());
-                        } else {
-                            LOGGER.warning(String.format("Could not register: '%s'", retrieveAndRegister.get("error_description")));
-                            next.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, (String) retrieveAndRegister.get("error_description"));
-                        }
-                    }
-                }
+//                for (Providers next : providers) {
+//                    // dynamic registration is done at boot time. However, if that fails this section will try again
+//                    if (getProviderType(next).equals(ProviderConfigType.MINIMAL)) {
+//                        JSONObject retrieveAndRegister = HttpHelper.retrieveAndRegister(next.getOpenidConfigurationUri(), DiscoveryUtil.UTIL.getRedirectUri());
+//                        if (retrieveAndRegister.get("error") == null) {
+//                            Providers readValue = MAPPER.readValue(retrieveAndRegister.toJSONString(), Providers.class);
+//                            next.enhanceToFull(readValue);
+//                            next.setMeta(new Meta());
+//                        } else {
+//                            LOGGER.warning(String.format("Could not register: '%s'", retrieveAndRegister.get("error_description")));
+//                            next.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, (String) retrieveAndRegister.get("error_description"));
+//                        }
+//                    }
+//                }
                 LoginbuddyCache.CACHE.put("providers", providers);
             }
         } catch (Exception e) {

@@ -103,16 +103,16 @@ public class LoginbuddyObjectMapper extends ObjectMapper {
 
         // if no clients are defined, the 'loginbuddy-sidecar' client is added to pass validations when searching for providers that belog to a specific client
         // TODO is there a scenario where this could be an issue?
-        JSONArray clients = (JSONArray)configJson.get("clients");
-        if(clients.size() == 0) {
+        JSONArray clients = (JSONArray) configJson.get("clients");
+        if (clients.size() == 0) {
 
             JSONArray redirectUris = new JSONArray();
             redirectUris.add(Constants.SIDECAR_REDIRECT_URI.getKey());
 
             JSONObject sidecarClient = new JSONObject();
-            sidecarClient.put(Constants.CLIENT_ID.getKey(),Constants.SIDECAR_CLIENT_ID.getKey());
-            sidecarClient.put(Constants.CLIENT_TYPE.getKey(),Constants.CLIENT_TYPE_CONFIDENTIAL.getKey());
-            sidecarClient.put(Constants.REDIRECT_URIS.getKey(),redirectUris);
+            sidecarClient.put(Constants.CLIENT_ID.getKey(), Constants.SIDECAR_CLIENT_ID.getKey());
+            sidecarClient.put(Constants.CLIENT_TYPE.getKey(), Constants.CLIENT_TYPE_CONFIDENTIAL.getKey());
+            sidecarClient.put(Constants.REDIRECT_URIS.getKey(), redirectUris);
 
             clients.add(sidecarClient);
         }
@@ -188,35 +188,36 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
         // Figure out what type of configuration we have (the same check as in LoginbuddyUtil)
         ProviderConfigType providerType = currentProvider.get(Constants.CLIENT_ID.getKey()) == null ? ProviderConfigType.MINIMAL : providers.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
 
-        // DEFAULT, using OIDC configuration endpoint to get authorization server details
-        if (ProviderConfigType.DEFAULT.equals(providerType)) {
-            try {
-                JSONObject retrieveOidcConfig = retrieveOidcConfig(providers.getOpenidConfigurationUri());
-                currentProvider.put(Constants.AUTHORIZATION_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
-                currentProvider.put(Constants.TOKEN_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
-                currentProvider.put(Constants.USERINFO_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
-                currentProvider.put(Constants.JWKS_URI.getKey(), retrieveOidcConfig.get(Constants.JWKS_URI.getKey()));
-                currentProvider.put(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey(), retrieveOidcConfig.get(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey()));
-            } catch (Exception e) {
-                LOGGER.warning(e.getMessage());
-                providers.getMeta().addStatus(Meta.STATUS_OIDC_CONFIG_ERROR, String.format("Retrieving OIDC configuration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage()));
-            }
-        } // MINIMUM configuration, configured for dynamic registration
-        else if (ProviderConfigType.MINIMAL.equals(providerType)) {
-            LOGGER.info(String.format("Registering for provider: '%s'", providers.getProvider()));
-            try {
-                currentProvider = HttpHelper.retrieveAndRegister(providers.getOpenidConfigurationUri(), DiscoveryUtil.UTIL.getRedirectUri());
-                if (currentProvider.get("error") == null) {
-                    currentProvider.put(Constants.PROVIDER.getKey(), Objects.requireNonNullElse((String) currentProvider.get(Constants.PROVIDER.getKey()), providers.getProvider()));
-                    currentProvider.put(Constants.ISSUER.getKey(), Objects.requireNonNullElse((String) currentProvider.get(Constants.ISSUER.getKey()), providers.getIssuer()));
-                    LOGGER.info(String.format("Successfully registered with: %s!", currentProvider.get(Constants.PROVIDER.getKey())));
-                } else {
-                    throw new DynamicProviderRegistrationException((String) currentProvider.get("error_description"));
+        JSONObject retrieveOidcConfig = new JSONObject();
+        try {
+            // DEFAULT or MINIMUM configuration, retrieve OIDC configuration
+            if (ProviderConfigType.MINIMAL.equals(providerType) || ProviderConfigType.DEFAULT.equals(providerType)) {
+                retrieveOidcConfig = retrieveOidcConfig(providers.getOpenidConfigurationUri());
+
+                // MINIMUM configuration, register dynamically
+//                JSONObject registeredDetails = new JSONObject();
+                if (ProviderConfigType.MINIMAL.equals(providerType)) {
+                    String registerUrl = (String) retrieveOidcConfig.get(Constants.REGISTRATION_ENDPOINT.getKey());
+                    if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
+                        LOGGER.warning(String.format("The provider does not support dynamic registration. Provider: %s", providers.getProvider()));
+                        providers.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("The provider does not support dynamic registration. Provider: %s", providers.getProvider()));
+                    } else {
+                        MsgResponse registered = HttpHelper.register(registerUrl, DiscoveryUtil.UTIL.getRedirectUri());
+                        currentProvider = (JSONObject) new JSONParser().parse(registered.getMsg());
+                        if (registered.getStatus() == 200) {
+                            LOGGER.info(String.format("Successfully registered with: %s!", currentProvider.get(Constants.PROVIDER.getKey())));
+                        } else {
+                            throw new DynamicProviderRegistrationException((String) currentProvider.get("error_description"));
+                        }
+                    }
                 }
-            } catch (Exception e) {
-                LOGGER.warning(e.getMessage());
-                providers.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("Dynamic registration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage()));
+                currentProvider = HttpHelper.providerTemplate(retrieveOidcConfig, currentProvider, (String) currentProvider.get(Constants.REDIRECT_URI.getKey()), false, false);
+                currentProvider.put(Constants.PROVIDER.getKey(), Objects.requireNonNullElse((String) currentProvider.get(Constants.PROVIDER.getKey()), providers.getProvider()));
+                currentProvider.put(Constants.ISSUER.getKey(), Objects.requireNonNullElse((String) currentProvider.get(Constants.ISSUER.getKey()), providers.getIssuer()));
             }
+        } catch (Exception e) {
+            LOGGER.warning(e.getMessage());
+            providers.getMeta().addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("Dynamic registration for provider: '%s' failed: %s", providers.getProvider(), e.getMessage()));
         }
 
         // FULL configuration as of here, check for required values

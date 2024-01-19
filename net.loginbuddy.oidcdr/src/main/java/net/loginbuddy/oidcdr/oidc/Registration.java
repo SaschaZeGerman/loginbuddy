@@ -5,10 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -86,14 +89,26 @@ public class Registration extends HttpServlet {
 // ** Register at the given provider
 // ***************************************************************
 
-        JSONObject registration = HttpHelper.retrieveAndRegister(discoveryUrl, redirectUriResult.getValue(), true, true);
-
-        if (registration.get("error") != null) {
-            response.setStatus(400);
-        } else {
+        MsgResponse msg = HttpHelper.getAPI(discoveryUrl);
+        try {
+            JSONObject oidcConfig = (JSONObject)new JSONParser().parse(msg.getMsg());
+            String registerUrl = (String) oidcConfig.get(Constants.REGISTRATION_ENDPOINT.getKey());
+            MsgResponse registration = HttpHelper.register(registerUrl, redirectUriResult.getValue(), true, true);
+            if (registration.getStatus() > 204) {
+                LOGGER.warning(String.format("The registration at this URL failed: %s, error: %s", registerUrl, registration.getMsg()));
+                response.setStatus(400);
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "The registration at this URL failed").toJSONString());
+                return;
+            }
             response.setStatus(200);
+            response.getWriter().write(registration.getMsg());
+        } catch (ParseException e) {
+            LOGGER.warning(e.getMessage());
+            response.setStatus(400);
+            LOGGER.warning(String.format("The OIDC document could not be parsed as JSON: %s\n", msg.getMsg()));
+            response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "The OIDC document could not be parsed as JSON").toJSONString());
         }
-        response.getWriter().write(registration.toJSONString());
+
     }
 
     @Override
