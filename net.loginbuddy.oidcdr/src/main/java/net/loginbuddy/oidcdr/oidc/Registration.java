@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.config.Meta;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
@@ -91,17 +92,29 @@ public class Registration extends HttpServlet {
 
         MsgResponse msg = HttpHelper.getAPI(discoveryUrl);
         try {
-            JSONObject oidcConfig = (JSONObject)new JSONParser().parse(msg.getMsg());
+            JSONObject oidcConfig = (JSONObject) new JSONParser().parse(msg.getMsg());
             String registerUrl = (String) oidcConfig.get(Constants.REGISTRATION_ENDPOINT.getKey());
-            MsgResponse registration = HttpHelper.register(registerUrl, redirectUriResult.getValue(), true, true);
-            if (registration.getStatus() > 204) {
-                LOGGER.warning(String.format("The registration at this URL failed: %s, error: %s", registerUrl, registration.getMsg()));
+            if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
+                LOGGER.warning(String.format("The OP does not support dynamic registration. OP: %s", oidcConfig.get(Constants.ISSUER.getKey())));
                 response.setStatus(400);
-                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "The registration at this URL failed").toJSONString());
-                return;
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "The OP does not support dynamic registration").toJSONString());
+            } else {
+                MsgResponse registration = HttpHelper.register(registerUrl, redirectUriResult.getValue());
+                if (registration.getStatus() == 200) {
+                    JSONObject providerConfig = (JSONObject) new JSONParser().parse(registration.getMsg());
+                    oidcConfig.put(Constants.CLIENT_ID.getKey(), providerConfig.get(Constants.CLIENT_ID.getKey()));
+                    oidcConfig.put(Constants.CLIENT_SECRET.getKey(), providerConfig.get(Constants.CLIENT_SECRET.getKey()));
+                    oidcConfig.put(Constants.PROVIDER.getKey(), oidcConfig.get(Constants.ISSUER.getKey()));
+                    oidcConfig.put(Constants.REDIRECT_URI.getKey(), redirectUriResult.getValue());
+                    oidcConfig.remove("openid_discovery_uri");
+                    response.setStatus(200);
+                    response.getWriter().write(oidcConfig.toJSONString());
+                } else {
+                    LOGGER.warning(String.format("The registration at this URL failed: %s, error: %s", registerUrl, registration.getMsg()));
+                    response.setStatus(400);
+                    response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "The registration at this OP failed").toJSONString());
+                }
             }
-            response.setStatus(200);
-            response.getWriter().write(registration.getMsg());
         } catch (ParseException e) {
             LOGGER.warning(e.getMessage());
             response.setStatus(400);

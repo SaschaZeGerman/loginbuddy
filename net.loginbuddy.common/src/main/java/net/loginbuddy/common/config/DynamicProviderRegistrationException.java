@@ -1,4 +1,4 @@
-package net.loginbuddy.config.loginbuddy.exception;
+package net.loginbuddy.common.config;
 
 public class DynamicProviderRegistrationException extends RuntimeException {
     public DynamicProviderRegistrationException(String message) {

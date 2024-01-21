@@ -11,7 +11,7 @@ package net.loginbuddy.config.loginbuddy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.loginbuddy.config.loginbuddy.common.Meta;
+import net.loginbuddy.common.config.Meta;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
 
 import java.io.Serializable;

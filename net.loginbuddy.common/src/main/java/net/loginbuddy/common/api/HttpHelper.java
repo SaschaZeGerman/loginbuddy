@@ -1,6 +1,9 @@
 package net.loginbuddy.common.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.config.Meta;
 import net.loginbuddy.common.util.CertificateManager;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidatorResult;
@@ -10,17 +13,15 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,14 +42,49 @@ public class HttpHelper {
     public HttpHelper() {
     }
 
-    private static HttpResponse getHttpResponse(HttpRequestBase req) throws IOException {
+    private static MsgResponse getHttpResponse(HttpRequestBase req) {
+        return getHttpResponse(req, "application/json");
+    }
+
+    private static MsgResponse getHttpResponse(HttpRequestBase req, String defaultContentType) {
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
         requestBuilder.setConnectTimeout(5000);
         requestBuilder.setConnectionRequestTimeout(5000);
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultRequestConfig(requestBuilder.build());
         HttpClient httpClient = builder.build();
-        return httpClient.execute(req);
+        try {
+            HttpResponse response = httpClient.execute(req);
+            Map<String, String> headers = new HashMap<>();
+            for (Header h : response.getAllHeaders()) {
+                headers.put(h.getName(), h.getValue());
+            }
+            return new MsgResponse(getHeader(response, "content-type", defaultContentType),
+                    EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
+                    headers);
+        } catch (Exception e) {
+            MsgResponse msg = new MsgResponse();
+            msg.setContentType("application/json");
+            msg.setStatus(400);
+            if (e.getMessage().contains("refused")) {
+                msg.setMsg(getErrorAsJson("invalid_server", "connection to openid provider was refused").toJSONString());
+            } else if (e.getMessage().contains("registration_url")) {
+                msg.setMsg(getErrorAsJson("invalid_server", e.getMessage()).toJSONString());
+            } else if (e.getMessage().contains("discovery_url")) {
+                msg.setMsg(getErrorAsJson("invalid_server", e.getMessage()).toJSONString());
+            } else if (e.getMessage().contains("PKIX path building failed")) {
+                msg.setMsg(getErrorAsJson("invalid_server", "OpenID Providers using a self-signed SSL certificate are not supported").toJSONString());
+            } else if (e.getMessage().contains("subject alternative names")) {
+                msg.setMsg(getErrorAsJson("invalid_server", "The OpenID Provider uses an invalid certificate with unsupported subject alternative names").toJSONString());
+            } else if (e.getMessage().contains("failed to respond")) {
+                msg.setMsg(getErrorAsJson("invalid_server", "OpenID Provider did not respond. Need to use HTTPS?").toJSONString());
+            } else if (e.getMessage().contains("Read timed out")) {
+                msg.setMsg(getErrorAsJson("invalid_server", "OpenID Provider connection timed out").toJSONString());
+            } else {
+                msg.setMsg(getErrorAsJson("invalid_server", String.format("no idea what went wrong. Exception: %s", e.getMessage())).toJSONString());
+            }
+            return msg;
+        }
     }
 
     // TODO check got 'single' header
@@ -81,23 +117,16 @@ public class HttpHelper {
         return getAPI(GetRequest.create(targetApi).setAccessToken(authScheme, accessToken).build());
     }
 
-    public static MsgResponse getAPI(String accessToken, String targetApi) throws IOException {
+    public static MsgResponse getAPI(String accessToken, String targetApi) {
         return getAPI(GetRequest.create(targetApi).setBearerAccessToken(accessToken).build());
     }
 
-    public static MsgResponse getAPI(String targetApi) throws IOException {
+    public static MsgResponse getAPI(String targetApi)  {
         return getAPI(GetRequest.create(targetApi).build());
     }
 
-    public static MsgResponse getAPI(HttpGet req) throws IOException {
-        HttpResponse response = getHttpResponse(req);
-        Map<String, String> headers = new HashMap<>();
-        for(Header h : response.getAllHeaders()) {
-            headers.put(h.getName(), h.getValue());
-        }
-        return new MsgResponse(getHeader(response, "content-type", "application/json"),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
-                headers);
+    public static MsgResponse getAPI(HttpGet req) {
+        return getHttpResponse(req);
     }
 
     public static MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode,
@@ -118,7 +147,6 @@ public class HttpHelper {
     }
 
     /**
-     *
      * @param queryString       a key=value[&key=....] where value is URLEncoded. This methods sets the request content-type to application/x-www-form-urlencoded using this string as body
      * @param targetUrl
      * @param acceptContentType
@@ -146,138 +174,17 @@ public class HttpHelper {
     }
 
     public static MsgResponse postMessage(HttpPost req, String acceptContentType) throws IOException {
-        HttpResponse response = getHttpResponse(req);
-        Map<String, String> headers = new HashMap<>();
-        for(Header h : response.getAllHeaders()) {
-            headers.put(h.getName(), h.getValue());
-        }
-        return new MsgResponse(getHeader(response, "content-type", acceptContentType),
-                EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
-                headers);
+        return getHttpResponse(req, acceptContentType);
     }
 
-    public static MsgResponse register(String registerUrl, String redirectUri) throws IOException {
-        return register(registerUrl, redirectUri, false, false);
+    public static MsgResponse register(String registerUrl, String redirectUri) throws IOException, ParseException {
+        JSONObject registrationMSg = new JSONObject();
+        JSONArray redirectUrisArray = new JSONArray();
+        redirectUrisArray.add(redirectUri);
+        registrationMSg.put(Constants.REDIRECT_URIS.getKey(), redirectUrisArray);
+        registrationMSg.put(Constants.TOKEN_ENDPOINT_AUTH_METHOD.getKey(), Constants.CLIENT_SECRET_POST.getKey());
+        return postMessage(registrationMSg, registerUrl, "application/json");
     }
-
-    public static MsgResponse register(String registerUrl, String redirectUri, boolean updateProvider, boolean updateIssuer) throws IOException {
-
-                        JSONObject registrationMSg = new JSONObject();
-                        JSONArray redirectUrisArray = new JSONArray();
-                        redirectUrisArray.add(redirectUri);
-                        registrationMSg.put(Constants.REDIRECT_URIS.getKey(), redirectUrisArray);
-                        registrationMSg.put(Constants.TOKEN_ENDPOINT_AUTH_METHOD.getKey(), Constants.CLIENT_SECRET_POST.getKey());
-                        return postMessage(registrationMSg, registerUrl, "application/json");
-//                        if (registrationResponse.getStatus() == 200) {
-//                            if (registrationResponse.getContentType().startsWith("application/json")) {
-//                                return providerTemplate(doc, (JSONObject) new JSONParser().parse(registrationResponse.getMsg()), redirectUri, updateProvider, updateIssuer);
-//                            } else {
-//                                // TODO handle the strange case of not getting JSON as content-type
-//                                return getErrorAsJson("invalid_configuration", "the registration response is not JSON");
-//                            }
-//                        } else {
-//                            // TODO handle the non 200 case for registration responses
-//                            LOGGER.warning(registrationResponse.getMsg());
-//                            return getErrorAsJson("invalid_request", "the registration failed");
-//                        }
-//                    }
-//                } else {
-//                    // TODO handle the strange case of not getting JSON as a content-type
-//                    return getErrorAsJson("invalid_configuration", "the openid-configuration response is not JSON");
-//                }
-//            } else {
-//                // TODO handle non 200 responses
-//                return getErrorAsJson("invalid_configuration", "the openid-configuration could not be retrieved");
-//            }
-//        } catch (Exception e) {
-//            // TODO need to handle errors
-////      e.printStackTrace();
-//            if (e.getMessage().contains("refused")) {
-//                return getErrorAsJson("invalid_server", "connection to openid provider was refused");
-//            } else if (e.getMessage().contains("registration_url")) {
-//                return getErrorAsJson("invalid_server", e.getMessage());
-//            } else if (e.getMessage().contains("discovery_url")) {
-//                return getErrorAsJson("invalid_server", e.getMessage());
-//            } else if (e.getMessage().contains("PKIX path building failed")) {
-//                return getErrorAsJson("invalid_server", "OpenID Providers using a self-signed SSL certificate are not supported");
-//            } else if (e.getMessage().contains("failed to respond")) {
-//                return getErrorAsJson("invalid_server", "OpenID Provider did not respond. Need to use HTTPS?");
-//            } else if (e.getMessage().contains("Read timed out")) {
-//                return getErrorAsJson("invalid_server", "OpenID Provider connection timed out");
-//            } else {
-//                return getErrorAsJson("invalid_server", String.format("no idea what went wrong. Exception: %s", e.getMessage()));
-//            }
-//        }
-    }
-
-
-//    public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri) {
-//        return retrieveAndRegister(discoveryUrl, redirectUri, false, false);
-//    }
-
-//    public static JSONObject retrieveAndRegister(String discoveryUrl, String redirectUri, boolean updateProvider, boolean updateIssuer) {
-//
-//        JSONObject errorResp = new JSONObject();
-//        try {
-//            if (discoveryUrl.startsWith("http:")) {
-//                throw new IllegalArgumentException("The discovery_url is invalid or not provided");
-//            }
-//            MsgResponse oidcConfig = getAPI(discoveryUrl);
-//            if (oidcConfig.getStatus() == 200) {
-//                if (oidcConfig.getContentType().startsWith("application/json")) {
-//                    JSONObject doc = (JSONObject) new JSONParser().parse(oidcConfig.getMsg());
-//                    // TODO check for 'code' and 'authorization_code' as supported
-//                    String registerUrl = (String) doc.get(Constants.REGISTRATION_ENDPOINT.getKey());
-//                    if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
-//                        throw new IllegalArgumentException("The registration_url is invalid or not provided");
-//                    } else {
-//                        JSONObject registrationMSg = new JSONObject();
-//                        JSONArray redirectUrisArray = new JSONArray();
-//                        redirectUrisArray.add(redirectUri);
-//                        registrationMSg.put(Constants.REDIRECT_URIS.getKey(), redirectUrisArray);
-//                        registrationMSg.put(Constants.TOKEN_ENDPOINT_AUTH_METHOD.getKey(), Constants.CLIENT_SECRET_POST.getKey());
-//                        MsgResponse registrationResponse = postMessage(registrationMSg, registerUrl, "application/json");
-//                        if (registrationResponse.getStatus() == 200) {
-//                            if (registrationResponse.getContentType().startsWith("application/json")) {
-//                                return providerTemplate(doc, (JSONObject) new JSONParser().parse(registrationResponse.getMsg()), redirectUri, updateProvider, updateIssuer);
-//                            } else {
-//                                // TODO handle the strange case of not getting JSON as content-type
-//                                return getErrorAsJson("invalid_configuration", "the registration response is not JSON");
-//                            }
-//                        } else {
-//                            // TODO handle the non 200 case for registration responses
-//                            LOGGER.warning(registrationResponse.getMsg());
-//                            return getErrorAsJson("invalid_request", "the registration failed");
-//                        }
-//                    }
-//                } else {
-//                    // TODO handle the strange case of not getting JSON as a content-type
-//                    return getErrorAsJson("invalid_configuration", "the openid-configuration response is not JSON");
-//                }
-//            } else {
-//                // TODO handle non 200 responses
-//                return getErrorAsJson("invalid_configuration", "the openid-configuration could not be retrieved");
-//            }
-//        } catch (Exception e) {
-//            // TODO need to handle errors
-////      e.printStackTrace();
-//            if (e.getMessage().contains("refused")) {
-//                return getErrorAsJson("invalid_server", "connection to openid provider was refused");
-//            } else if (e.getMessage().contains("registration_url")) {
-//                return getErrorAsJson("invalid_server", e.getMessage());
-//            } else if (e.getMessage().contains("discovery_url")) {
-//                return getErrorAsJson("invalid_server", e.getMessage());
-//            } else if (e.getMessage().contains("PKIX path building failed")) {
-//                return getErrorAsJson("invalid_server", "OpenID Providers using a self-signed SSL certificate are not supported");
-//            } else if (e.getMessage().contains("failed to respond")) {
-//                return getErrorAsJson("invalid_server", "OpenID Provider did not respond. Need to use HTTPS?");
-//            } else if (e.getMessage().contains("Read timed out")) {
-//                return getErrorAsJson("invalid_server", "OpenID Provider connection timed out");
-//            } else {
-//                return getErrorAsJson("invalid_server", String.format("no idea what went wrong. Exception: %s", e.getMessage()));
-//            }
-//        }
-//    }
 
     public static String getErrorForRedirect(String redirectUri, String error, String errorDescription) {
         if ("".equals(errorDescription)) {
@@ -327,66 +234,6 @@ public class HttpHelper {
 
     public static String urlEncode(String input) {
         return URLEncoder.encode(input == null ? "" : input, StandardCharsets.UTF_8).replaceAll("[+]", "%20");
-    }
-
-    /**
-     * This template matches what is configured in config.json. At least for fields that should be provided through an OpenID Connect Discovery endpoint and the Registration
-     *
-     * @param oidcConfig
-     * @param registration
-     * @param redirectUri
-     * @param updateProvider
-     * @param updateIssuer
-     * @return
-     */
-    public static JSONObject providerTemplate(JSONObject oidcConfig, JSONObject registration, String redirectUri, boolean updateProvider, boolean updateIssuer) {
-        // TODO this should be removed, it is a mean redundant piece of code
-        JSONObject config = new JSONObject();
-        config.put("client_id", registration.get(Constants.CLIENT_ID.getKey()));
-        config.put("client_secret", registration.get(Constants.CLIENT_SECRET.getKey()));
-        config.put("redirect_uri", redirectUri);
-        config.put("scope", HttpHelper.jsonArrayToString((JSONArray) oidcConfig.get(Constants.SCOPES_SUPPORTED.getKey())));
-        config.put("authorization_endpoint", oidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));
-        if (oidcConfig.get(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey()) != null) {
-            config.put("pushed_authorization_request_endpoint", oidcConfig.get(Constants.PUSHED_AUTHORIZATION_REQUEST_ENDPOINT.getKey()));
-        }
-        config.put("token_endpoint", oidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()));
-        config.put("userinfo_endpoint", oidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()));
-        config.put("jwks_uri", oidcConfig.get(Constants.JWKS_URI.getKey()));
-        if (updateIssuer) {
-            config.put("issuer", oidcConfig.get(Constants.ISSUER.getKey()));
-        }
-        if (updateProvider) {
-            config.put("provider", oidcConfig.get(Constants.ISSUER.getKey()));
-        }
-        String responseType =
-                ((JSONArray) oidcConfig.get(Constants.RESPONSE_TYPES_SUPPORTED.getKey())).contains("code") ? "code" :
-                        ((JSONArray) oidcConfig.get(Constants.RESPONSE_TYPES_SUPPORTED.getKey())).contains("id_token") ? "id_token" : "unsupported";
-        config.put("response_type", responseType);
-        if (oidcConfig.get("dpop_bound_access_tokens") != null) {
-            config.put("dpop_bound_access_tokens", Boolean.parseBoolean(oidcConfig.get("dpop_bound_access_tokens").toString()));
-        } else {
-            config.put("dpop_bound_access_tokens", false);
-        }
-        if (oidcConfig.get("dpop_signing_alg_values_supported") != null) {
-            JSONArray algs = (JSONArray)oidcConfig.get("dpop_signing_alg_values_supported");
-            String chosenAlg = null;
-            for(Object alg : algs) {
-                // we prefer ES256 over RS256
-                if("ES256".equalsIgnoreCase((String)alg)) {
-                    chosenAlg = "ES256";
-                    break;
-                } else if ("RS256".equalsIgnoreCase((String)alg) && chosenAlg == null) {
-                    chosenAlg = "RS256";
-                }
-            }
-            if(chosenAlg != null) {
-                config.put("dpop_signing_alg", chosenAlg);
-            } else {
-                LOGGER.info("No suitable algorithm for DPoP is supported by this provider!");
-            }
-        }
-        return config;
     }
 
     /**

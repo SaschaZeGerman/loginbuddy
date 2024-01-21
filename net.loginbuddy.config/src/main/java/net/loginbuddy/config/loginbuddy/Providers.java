@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.config.loginbuddy.common.Meta;
+import net.loginbuddy.common.config.Meta;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -106,25 +106,6 @@ public class Providers implements Serializable {
     public Providers(String issuer, String clientId, String redirectUri, String clientSecret) {
         this(issuer, clientId, redirectUri);
         this.clientSecret = clientSecret;
-    }
-
-    /**
-     * Updates the net.loginbuddy.service.config and removes the oidc net.loginbuddy.service.config endpoint. This way we do not do another API call to retrieve it
-     * again. It does NOT update 'issuer' or 'provider'
-     */
-    public void enhanceToFull(Providers config) {
-        this.clientId = config.getClientId();
-        this.clientSecret = config.getClientSecret();
-        this.redirectUri = config.getRedirectUri();
-        this.scope = config.getScope();
-        this.authorizationEndpoint = config.getAuthorizationEndpoint();
-        this.tokenEndpoint = config.getTokenEndpoint();
-        this.userinfoEndpoint = config.getUserinfoEndpoint();
-        this.jwksUri = config.getJwksUri();
-        this.responseType = config.getResponseType();
-        this.pushedAuthorizationRequestEndpoint = config.getPushedAuthorizationRequestEndpoint();
-        this.openidConfigurationUri = null;
-        this.dpopSigningAlg = config.getDpopSigningAlg();
     }
 
     public String getProvider() {

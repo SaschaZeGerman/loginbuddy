@@ -1,4 +1,4 @@
-package net.loginbuddy.config.loginbuddy.common;
+package net.loginbuddy.common.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

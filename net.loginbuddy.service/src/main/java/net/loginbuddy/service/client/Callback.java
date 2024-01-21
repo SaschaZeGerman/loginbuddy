@@ -123,7 +123,6 @@ public class Callback extends HttpServlet {
 
             } catch (Exception e) {
                 LOGGER.warning(String.format("authorization request failed! %s", e.getMessage()));
-                e.printStackTrace();
                 response.sendError(400, "authorization request failed!");
             }
         }

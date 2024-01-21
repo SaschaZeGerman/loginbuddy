@@ -9,18 +9,13 @@
 package net.loginbuddy.config.loginbuddy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.config.Bootstrap;
-import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.loginbuddy.common.Meta;
-import org.json.simple.JSONObject;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.util.*;
 import java.util.logging.Logger;
 
