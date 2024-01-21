@@ -89,6 +89,41 @@ public class CertificateManager {
     }
 
     /**
+     * Tries to connect to servers to import self-signed SSL certificates as trusted certificates. Intended for development purposes. The list of server is provided via env variable SSL_TRUSTED_SERVER
+     */
+    public static void loadTrustedServers() {
+        String servers = null;
+        try {
+            servers = System.getenv("SSL_TRUSTED_SERVER");
+        } catch (Exception e) {
+            LOGGER.warning(String.format("Variable SSL_TRUSTED_SERVER is not accessible and therefore no self-signed certs are imported: %s", e.getMessage()));
+        }
+        servers = servers == null ? "" : servers;
+        try {
+            String oidcdr = System.getenv("SUPPORT_OIDCDR");
+            if (Boolean.parseBoolean(oidcdr)) {
+                servers = "loginbuddy-oidcdr:445,".concat(servers);
+            } else {
+                LOGGER.info("loginbuddy-oidcdr was not requested");
+            }
+        } catch (Exception e) {
+            LOGGER.warning(String.format("Variable SUPPORT_OIDCDR is not accessible and therefore its certificate is not imported: %s", e.getMessage()));
+        }
+        try {
+            if (servers.trim().length() > 0) {
+                LOGGER.info("Connecting to trusted servers!");
+                CertificateManager cm = new CertificateManager();
+                for (String server : servers.split(",")) {
+                    List<Certificate> certificates = cm.retrieveTrustedCert(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
+                    cm.addToTruststore(certificates);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warning(String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
+        }
+    }
+
+    /**
      * Used to import self-signed certificates as trusted certs during startup
      */
     private SSLContext getOpenSslContext() throws NoSuchAlgorithmException, KeyManagementException {

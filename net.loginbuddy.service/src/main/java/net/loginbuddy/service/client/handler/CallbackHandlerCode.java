@@ -56,7 +56,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         } else {
             // dynamically registered providers are in a separate container and not available here. Get details out of the session
             providers = new Providers(
-                    provider,
+                    provider, // in this flow provider and issuer have the same value
                     sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
                     sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()),
                     sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
@@ -94,38 +94,34 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         MsgResponse tokenResponse = HttpHelper.postMessage(req, "application/json");
 
         String tokenType = Constants.BEARER.getKey();
-        if (tokenResponse != null) {
-            if (tokenResponse.getStatus() == 200) {
-                if (tokenResponse.getContentType().startsWith("application/json")) {
-                    JSONObject tokenResponseObject = new DefaultTokenResponseHandler().handleCodeTokenExchangeResponse(
-                            tokenResponse,
-                            sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey()),
-                            providers,
-                            sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
-                            sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
-                            sessionCtx.getString(Constants.JWKS_URI.getKey())
-                    );
-                    tokenType = tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) != null ? (String) tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) : tokenType;
-                    if (tokenResponseObject.get("id_token_payload") != null) {
-                        eb.setIdTokenPayload((JSONObject) tokenResponseObject.remove("id_token_payload"));
-                    }
-                    access_token = (String) tokenResponseObject.remove("provider_access_token");
-                    eb.setTokenResponse(tokenResponseObject);
-                } else {
-                    endFunHere("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()), sessionCtx, response);
-                    return;
+
+        if (tokenResponse.getStatus() == 200) {
+            if (tokenResponse.getContentType().startsWith("application/json")) {
+                JSONObject tokenResponseObject = new DefaultTokenResponseHandler().handleCodeTokenExchangeResponse(
+                        tokenResponse,
+                        sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey()),
+                        providers,
+                        sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
+                        sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+                        sessionCtx.getString(Constants.JWKS_URI.getKey())
+                );
+                tokenType = tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) != null ? (String) tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) : tokenType;
+                if (tokenResponseObject.get("id_token_payload") != null) {
+                    eb.setIdTokenPayload((JSONObject) tokenResponseObject.remove("id_token_payload"));
                 }
+                access_token = (String) tokenResponseObject.remove("provider_access_token");
+                eb.setTokenResponse(tokenResponseObject);
             } else {
-                // need to handle error cases
-                if (tokenResponse.getContentType().startsWith("application/json")) {
-                    JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-                    endFunHere((String) err.get("error"), (String) err.get("error_description"), sessionCtx, response);
-                    return;
-                }
+                endFunHere("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()), sessionCtx, response);
+                return;
             }
         } else {
-            endFunHere("invalid_request", "the code exchange failed. An access_token could not be retrieved", sessionCtx, response);
-            return;
+            // need to handle error cases
+            if (tokenResponse.getContentType().startsWith("application/json")) {
+                JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
+                endFunHere((String) err.get("error"), (String) err.get("error_description"), sessionCtx, response);
+                return;
+            }
         }
 
 // ***************************************************************
@@ -138,10 +134,15 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                 HttpGet userInfoReq = Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
                         GetRequest.create(userinfo)
                                 .setBearerAccessToken(access_token)
-                                .build():
+                                .build() :
                         GetRequest.create(userinfo)
                                 .setAccessToken(tokenType, access_token)
-                                .setDpopHeader(providers.getDpopSigningAlg(), userinfo, access_token, null, null)
+                                .setDpopHeader(
+                                        providers.getDpopSigningAlg(),
+                                        userinfo,
+                                        access_token,
+                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                                 .build();
                 MsgResponse userinfoResp = HttpHelper.getAPI(userInfoReq);
                 if (userinfoResp.getStatus() == 200) {
@@ -159,6 +160,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         createUserInfoSession(sessionCtx, access_token, tokenType, providers.getDpopSigningAlg());
 
         returnAuthorizationCode(response, sessionCtx, eb);
+
     }
 
     protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg) {

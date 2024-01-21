@@ -1,6 +1,6 @@
 package net.loginbuddy.config.loginbuddy;
 
-import net.loginbuddy.common.api.HttpHelper;
+import net.loginbuddy.common.util.CertificateManager;
 import org.apache.naming.ResourceRef;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +21,7 @@ public class Factory implements ObjectFactory {
     @Override
     public Object getObjectInstance(Object o, Name name, Context context, Hashtable<?, ?> hashtable) throws Exception {
 
-        HttpHelper.loadTrustedServers();
+        CertificateManager.loadTrustedServers();
 
         String path = (String) ((ResourceRef) o).get("path").getContent();
         LOGGER.info(String.format("Loading default Loginbuddy configuration: '%s'", path));

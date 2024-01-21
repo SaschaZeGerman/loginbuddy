@@ -1,10 +1,6 @@
 package net.loginbuddy.common.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.config.Meta;
-import net.loginbuddy.common.util.CertificateManager;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
@@ -27,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.Certificate;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -132,7 +127,6 @@ public class HttpHelper {
     public static MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode,
                                                 String tokenEndpoint, String codeVerifier) throws IOException {
 
-        // build POST request
         List<NameValuePair> formParameters = new ArrayList<>();
         formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), authCode));
         formParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), clientId));
@@ -149,35 +143,35 @@ public class HttpHelper {
     /**
      * @param queryString       a key=value[&key=....] where value is URLEncoded. This methods sets the request content-type to application/x-www-form-urlencoded using this string as body
      * @param targetUrl
-     * @param acceptContentType
+     * @param defaultContentType
      * @return
      * @throws IOException
      */
-    public static MsgResponse postMessage(String queryString, String targetUrl, String acceptContentType)
+    public static MsgResponse postMessage(String queryString, String targetUrl, String defaultContentType)
             throws IOException {
         return postMessage(
-                PostRequest.create(targetUrl).setAcceptType(acceptContentType).setUrlEncodedParametersPayload(queryString).build(),
-                acceptContentType);
+                PostRequest.create(targetUrl).setAcceptType(defaultContentType).setUrlEncodedParametersPayload(queryString).build(),
+                defaultContentType);
     }
 
-    public static MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String acceptContentType)
+    public static MsgResponse postMessage(List<NameValuePair> formParameters, String targetUrl, String defaultContentType)
             throws IOException {
         return postMessage(
-                PostRequest.create(targetUrl).setAcceptType(acceptContentType).setFormParametersPayload(formParameters).build(),
-                acceptContentType);
+                PostRequest.create(targetUrl).setAcceptType(defaultContentType).setFormParametersPayload(formParameters).build(),
+                defaultContentType);
     }
 
-    public static MsgResponse postMessage(JSONObject input, String targetUrl, String acceptContentType) throws IOException {
+    public static MsgResponse postMessage(JSONObject input, String targetUrl, String defaultContentType) {
         return postMessage(
-                PostRequest.create(targetUrl).setAcceptType(acceptContentType).setJsonPayload(input.toJSONString()).build(),
-                acceptContentType);
+                PostRequest.create(targetUrl).setAcceptType(defaultContentType).setJsonPayload(input.toJSONString()).build(),
+                defaultContentType);
     }
 
-    public static MsgResponse postMessage(HttpPost req, String acceptContentType) throws IOException {
-        return getHttpResponse(req, acceptContentType);
+    public static MsgResponse postMessage(HttpPost req, String defaultContentType) {
+        return getHttpResponse(req, defaultContentType);
     }
 
-    public static MsgResponse register(String registerUrl, String redirectUri) throws IOException, ParseException {
+    public static MsgResponse register(String registerUrl, String redirectUri) throws ParseException {
         JSONObject registrationMSg = new JSONObject();
         JSONArray redirectUrisArray = new JSONArray();
         redirectUrisArray.add(redirectUri);
@@ -264,42 +258,6 @@ public class HttpHelper {
             }
         }
         return result;
-    }
-
-
-    /**
-     * Tries to connect to servers to import self-signed SSL certificates as trusted certificates. Intended for development purposes. The list of server is provided via env variable SSL_TRUSTED_SERVER
-     */
-    public static void loadTrustedServers() {
-        String servers = null;
-        try {
-            servers = System.getenv("SSL_TRUSTED_SERVER");
-        } catch (Exception e) {
-            LOGGER.warning(String.format("Variable SSL_TRUSTED_SERVER is not accessible and therefore no self-signed certs are imported: %s", e.getMessage()));
-        }
-        servers = servers == null ? "" : servers;
-        try {
-            String oidcdr = System.getenv("SUPPORT_OIDCDR");
-            if (Boolean.parseBoolean(oidcdr)) {
-                servers = "loginbuddy-oidcdr:445,".concat(servers);
-            } else {
-                LOGGER.info("loginbuddy-oidcdr was not requested");
-            }
-        } catch (Exception e) {
-            LOGGER.warning(String.format("Variable SUPPORT_OIDCDR is not accessible and therefore its certificate is not imported: %s", e.getMessage()));
-        }
-        try {
-            if (servers.trim().length() > 0) {
-                LOGGER.info("Connecting to trusted servers!");
-                CertificateManager cm = new CertificateManager();
-                for (String server : servers.split(",")) {
-                    List<Certificate> certificates = cm.retrieveTrustedCert(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
-                    cm.addToTruststore(certificates);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.warning(String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
-        }
     }
 
     public static String createJsonErrorResponse(String value) {

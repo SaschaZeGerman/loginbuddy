@@ -1,7 +1,6 @@
 package net.loginbuddy.service.server;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.loginbuddy.Clients;

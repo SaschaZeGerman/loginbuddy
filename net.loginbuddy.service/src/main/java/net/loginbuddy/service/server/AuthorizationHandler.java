@@ -302,7 +302,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 
 // ***************************************************************
-// ** Present the provider selection page if non was given in this request. Otherwise, fast forward
+// ** Present the provider selection page if none was given in this request. Otherwise, fast forward
 // ***************************************************************
 
         if (isPar) {

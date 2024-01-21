@@ -1,6 +1,5 @@
 package net.loginbuddy.common.api;
 
-import net.loginbuddy.common.config.Constants;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 

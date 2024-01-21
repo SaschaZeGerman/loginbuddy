@@ -4,7 +4,6 @@ import net.loginbuddy.common.util.Jwt;
 import org.apache.http.client.methods.HttpGet;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class GetRequest extends AnyRequest {
 

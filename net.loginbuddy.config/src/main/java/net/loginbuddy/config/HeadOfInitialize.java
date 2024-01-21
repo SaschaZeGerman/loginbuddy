@@ -14,10 +14,8 @@ import net.loginbuddy.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,57 +81,15 @@ public class HeadOfInitialize {
         }
 
 // ***************************************************************
-// ** Retrieve the OpenID Configuration
-// ***************************************************************
-
-//        JSONObject oidcConfig = null;
-//        String oidcConfigUrl = providers.getOpenidConfigurationUri();
-//        if (oidcConfigUrl != null) {
-//            try {
-//                MsgResponse msg = HttpHelper.getAPI(oidcConfigUrl);
-//                if (msg.getStatus() == 200) {
-//                    try {
-//                        oidcConfig = (JSONObject) new JSONParser().parse(msg.getMsg());
-//                    } catch (ParseException e) {
-//                        // should never happen
-//                        LOGGER.warning("For some unknown reason the OpenID Configuration could not be parsed as JSON object!");
-//                        return
-//                                HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "message_error",
-//                                        "The OpenID Configuration could not be parsed!");
-//                    }
-//                } else {
-//                    LOGGER.warning(
-//                            String.format("Requesting the OpenID Configuration caused an error. Given URL: %s, http status: %s", oidcConfigUrl, msg.getStatus()));
-//                    return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "message_error",
-//                            "The OpenID Configuration could not be retrieved!");
-//                }
-//            } catch (IOException e) {
-//                LOGGER.warning(
-//                        String.format("The OpenID Connect configuration could not be retrieved. Given URL: %s, error message: %s", oidcConfigUrl, e.getMessage()));
-//                return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "message_error",
-//                        "The OpenID Configuration could not be retrieved!");
-//            }
-//        }
-
-// ***************************************************************
 // ** Build the authorization URL and retrieve protocol endpoints
 // ***************************************************************
 
         StringBuilder authorizeUrl = new StringBuilder();
         String providerTokenEndpoint, providerJwksEndpoint, providerUserinfoEndpoint;
-//        if (oidcConfig != null) {
-//            authorizeUrl.append(oidcConfig.get(Constants.AUTHORIZATION_ENDPOINT.getKey()).toString());
-//            providerTokenEndpoint = oidcConfig.get(Constants.TOKEN_ENDPOINT.getKey()).toString();
-//            providerJwksEndpoint = oidcConfig.get(Constants.JWKS_URI.getKey()).toString();
-//            providerUserinfoEndpoint = oidcConfig.get(Constants.USERINFO_ENDPOINT.getKey()).toString();
-//
-//        } else {
-            // using the configured URLs since a well-known endpoint has not been configured
-            authorizeUrl.append(providers.getAuthorizationEndpoint());
-            providerTokenEndpoint = providers.getTokenEndpoint();
-            providerJwksEndpoint = providers.getJwksUri();
-            providerUserinfoEndpoint = providers.getUserinfoEndpoint();
-//        }
+        authorizeUrl.append(providers.getAuthorizationEndpoint());
+        providerTokenEndpoint = providers.getTokenEndpoint();
+        providerJwksEndpoint = providers.getJwksUri();
+        providerUserinfoEndpoint = providers.getUserinfoEndpoint();
 
 // ***************************************************************
 // ** Prepare provider endpoints to be used via loginbuddy-oidcdr if dynamic provider registration was used
@@ -222,9 +178,9 @@ public class HeadOfInitialize {
                 JSONObject obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
                 if (msgResponse.getStatus() > 204) {
                     LOGGER.warning(String.format("The PAR request failed: %s\n", obj.get("error_description")));
-                    return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String)obj.get("error"),(String)obj.get("error_description"));
+                    return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String) obj.get("error"), (String) obj.get("error_description"));
                 }
-                if(msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
+                if (msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(providers.getPushedAuthorizationRequestEndpoint()));
                 }

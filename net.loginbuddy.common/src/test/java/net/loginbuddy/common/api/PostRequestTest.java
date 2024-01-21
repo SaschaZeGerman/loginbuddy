@@ -1,6 +1,5 @@
 package net.loginbuddy.common.api;
 
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.jose4j.base64url.Base64;
 import org.json.simple.JSONObject;
