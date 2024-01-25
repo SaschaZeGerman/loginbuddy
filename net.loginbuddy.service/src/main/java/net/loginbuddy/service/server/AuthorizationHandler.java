@@ -44,7 +44,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
                 .getSingleValue(request.getParameterValues(Constants.ACCEPT_DYNAMIC_PROVIDER.getKey()));
 
 // ***************************************************************
-// ** Let's start with checking for a valid client credentials
+// ** Let's start with checking for valid client credentials
 // ***************************************************************
 
         ParameterValidatorResult clientIdResult = getClientIdResult(request, response);
@@ -54,7 +54,8 @@ public abstract class AuthorizationHandler extends HttpServlet {
             handleError(400, "Missing or multiple client_id parameters given!", response);
             return;
         }
-        ParameterValidatorResult clientSecretResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));  // only needed for a PAR call (.../pauthorize)
+        // only needed for a PAR call (.../pauthorize)
+        ParameterValidatorResult clientSecretResult = ParameterValidator.getSingleValue(request.getParameterValues(Constants.CLIENT_SECRET.getKey()));
         ClientAuthenticator.ClientCredentialsResult clientValidationResult =
                 handleClientValidation(clientIdResult, clientSecretResult, request.getHeader(Constants.AUTHORIZATION.getKey()), signedResponseAlgResult.getValue(), acceptDynamicProviderResult.getBooleanValue());
         if (!clientValidationResult.isValid()) {
@@ -64,7 +65,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
         }
         Clients cc = clientValidationResult.getClients();
 
-        // Check if this request includes a request_uri. If so, it is a PAR request and needs little attention.
+        // Check if this request includes a request_uri. If so, it is a PAR request and needs some attention.
         // The authorization response is also created and returned to the client; processing ends here
         if (handleParRequestUriRequest(request, response, clientIdResult)) return;
 
@@ -361,6 +362,7 @@ public abstract class AuthorizationHandler extends HttpServlet {
 
     protected void handleAuthorizationResponse(HttpServletRequest request, HttpServletResponse response, SessionContext sessionCtx, Object value) throws ServletException, IOException {
         if ("".equals(value)) {
+            // present a page to users to choose a provider, goto .../initialize (as below) afterwards
             request.getRequestDispatcher(String.format("/iapis/providers.jsp?session=%s", sessionCtx.getId()))
                     .forward(request, response);
         } else {

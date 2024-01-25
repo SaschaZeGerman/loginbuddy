@@ -32,7 +32,7 @@ import static net.loginbuddy.common.api.HttpHelper.postMessage;
 
 public class HeadOfInitialize {
 
-    private static final Logger LOGGER = Logger.getLogger(String.valueOf(HeadOfInitialize.class));
+    private static final Logger LOGGER = Logger.getLogger(HeadOfInitialize.class.getName());
 
     public static String processInitializeRequest(
             LoginbuddyContext sessionCtx,

@@ -26,7 +26,7 @@ import static net.loginbuddy.common.api.HttpHelper.getErrorForRedirect;
 
 public class Initialize extends HttpServlet {
 
-  private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));
+  private static final Logger LOGGER = Logger.getLogger(Initialize.class.getName());
 
   // initiate authorization flow with provider
   @Override

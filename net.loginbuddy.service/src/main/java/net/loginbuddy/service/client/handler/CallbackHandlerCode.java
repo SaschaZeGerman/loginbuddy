@@ -127,30 +127,26 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
         if (userinfo != null) {
             try {
-                HttpGet userInfoReq = Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
-                        GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
-                                .setBearerAccessToken(access_token)
-                                .build() :
-                        GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
-                                .setAccessToken(tokenType, access_token)
-                                .setDpopHeader(
-                                        providers.getDpopSigningAlg(),
-                                        loginbuddyHandler.getUserinfoApi(userinfo, false),
-                                        access_token,
-                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
-                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
-                                .build();
+                HttpGet userInfoReq = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
                 MsgResponse userinfoResp = HttpHelper.getAPI(userInfoReq);
                 if (userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getUserinfoApi(userinfo, false)));
+                }
+                if (userinfoResp.getStatus() == 401) {
+                    if (userinfoResp.getHeader("WWW-Authenticate") != null && userinfoResp.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
+                        userInfoReq = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
+                        userinfoResp = HttpHelper.getAPI(userInfoReq);
+                    }
                 }
                 if (userinfoResp.getStatus() == 200) {
                     if (userinfoResp.getContentType().startsWith("application/json")) {
                         JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
                         eb.setUserinfo(userinfoRespObject);
                     }
-                } // TODO : handle non 200 response
+                }
+                // TODO : handle non 200 response
+                LOGGER.warning(String.format("Userinfo request failed: %s", userinfoResp.getMsg()));
             } catch (Exception e) {
                 LOGGER.warning(String.format("Retrieving userinfo failed! %s", e.getMessage()));
             }
@@ -161,6 +157,22 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
 
         returnAuthorizationCode(response, sessionCtx, eb);
 
+    }
+
+    private static HttpGet getUserInfoReq(SessionContext sessionCtx, String tokenType, LoginbuddyHandler loginbuddyHandler, String userinfo, String access_token, Providers providers) throws Exception {
+        return Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
+                GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
+                        .setBearerAccessToken(access_token)
+                        .build() :
+                GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
+                        .setAccessToken(tokenType, access_token)
+                        .setDpopHeader(
+                                providers.getDpopSigningAlg(),
+                                loginbuddyHandler.getUserinfoApi(userinfo, false),
+                                access_token,
+                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
+                        .build();
     }
 
     protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg, LoginbuddyHandler loginbuddyHandler) {
