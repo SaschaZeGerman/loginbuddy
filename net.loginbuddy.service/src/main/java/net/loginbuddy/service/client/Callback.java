@@ -35,6 +35,15 @@ public class Callback extends HttpServlet {
                 .getSingleValue(request.getParameterValues(Constants.ERROR_DESCRIPTION.getKey()), "");
 
 // ***************************************************************
+// ** End the fun here if the provider send back an error
+// ***************************************************************
+
+        if (errorResult.getValue() != null) {
+            sendError(400, "invalid_response", errorDescriptionResult.getValue(), response);
+            return null;
+        }
+
+// ***************************************************************
 // ** Check for the current session
 // ***************************************************************
 
@@ -50,13 +59,6 @@ public class Callback extends HttpServlet {
             return sendError(400, "invalid_session", "The current session is invalid or it has expired!", response, null);
         }
 
-// ***************************************************************
-// ** End the fun here if the provider send back an error
-// ***************************************************************
-
-        if (errorResult.getValue() != null) {
-            return endFunHere(errorResult.getValue(), errorDescriptionResult.getValue(), sessionCtx, response);
-        }
 
 // ***************************************************************
 // ** Check if we expected this call

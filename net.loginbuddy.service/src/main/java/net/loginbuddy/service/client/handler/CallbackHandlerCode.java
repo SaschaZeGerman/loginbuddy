@@ -68,22 +68,18 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                 .addParameter(Constants.CODE_VERIFIER.getKey(), sessionCtx.getString(Constants.CODE_VERIFIER.getKey()))
                 .addParameter(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey())
                 .build();
-        HttpPost req = providers.isDpopEnabled() ?
-                PostRequest.create(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), true))
-                        .setFormParametersPayload(params)
-                        .setDpopHeader(
-                                providers.getDpopSigningAlg(),
-                                sessionCtx.getString(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)),
-                                null,
-                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
-                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
-                        .setAcceptType("application/json")
-                        .build() :
-                PostRequest.create(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), true))
-                        .setFormParametersPayload(params)
-                        .setAcceptType("application/json")
-                        .build();
-        MsgResponse tokenResponse = HttpHelper.postMessage(req, "application/json");
+        PostRequest pr = PostRequest.create(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), true))
+                .setFormParametersPayload(params)
+                .setAcceptType("application/json");
+        if(providers.isDpopEnabled()) {
+            pr.setDpopHeader(
+                    providers.getDpopSigningAlg(),
+                    sessionCtx.getString(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)),
+                    null,
+                    sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                    sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
+        }
+        MsgResponse tokenResponse = HttpHelper.postMessage(pr.build(), "application/json");
         if (tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
             sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
             sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)));
@@ -134,7 +130,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getUserinfoApi(userinfo, false)));
                 }
                 if (userinfoResp.getStatus() == 401) {
-                    if (userinfoResp.getHeader("WWW-Authenticate") != null && userinfoResp.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
+                    if (userinfoResp.getHeader("www-authenticate") != null && userinfoResp.getHeader("www-authenticate").contains("use_dpop_nonce")) {
                         userInfoReq = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
                         userinfoResp = HttpHelper.getAPI(userInfoReq);
                     }
@@ -144,9 +140,10 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                         JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
                         eb.setUserinfo(userinfoRespObject);
                     }
+                } else {
+                    // TODO : handle non 200 response
+                    LOGGER.warning(String.format("Userinfo request failed: %s", userinfoResp.getMsg()));
                 }
-                // TODO : handle non 200 response
-                LOGGER.warning(String.format("Userinfo request failed: %s", userinfoResp.getMsg()));
             } catch (Exception e) {
                 LOGGER.warning(String.format("Retrieving userinfo failed! %s", e.getMessage()));
             }

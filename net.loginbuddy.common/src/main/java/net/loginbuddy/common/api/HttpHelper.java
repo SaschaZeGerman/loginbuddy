@@ -52,7 +52,7 @@ public class HttpHelper {
             HttpResponse response = httpClient.execute(req);
             Map<String, String> headers = new HashMap<>();
             for (Header h : response.getAllHeaders()) {
-                headers.put(h.getName(), h.getValue());
+                headers.put(h.getName().toLowerCase(), h.getValue());
             }
             return new MsgResponse(getHeader(response, "content-type", defaultContentType),
                     EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),

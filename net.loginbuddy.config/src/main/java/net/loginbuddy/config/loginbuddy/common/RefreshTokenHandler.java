@@ -69,17 +69,18 @@ public class RefreshTokenHandler implements GrantTypeHandler {
                             .addParameter(Constants.SCOPE.getKey(), scopeForRTRequest)
                             .build();
                     try {
-                        HttpPost req = providers.isDpopEnabled() ?
-                                PostRequest.create(providers.getTokenEndpoint())
-                                        .setFormParametersPayload(params)
-                                        .setDpopHeader(providers.getDpopSigningAlg(), providers.getTokenEndpoint(), null, null, null)
-                                        .setAcceptType("application/json")
-                                        .build() :
-                                PostRequest.create(providers.getTokenEndpoint())
-                                        .setFormParametersPayload(params)
-                                        .setAcceptType("application/json")
-                                        .build();
-                        MsgResponse tokenResponse = HttpHelper.postMessage(req, "application/json");
+                        PostRequest pr = PostRequest.create(providers.getTokenEndpoint())
+                                .setFormParametersPayload(params)
+                                .setAcceptType("application/json");
+                        if(providers.isDpopEnabled()) {
+                            pr.setDpopHeader(
+                                    providers.getDpopSigningAlg(),
+                                    providers.getTokenEndpoint(),
+                                    null,
+                                    null,
+                                    null);
+                        }
+                        MsgResponse tokenResponse = HttpHelper.postMessage(pr.build(), "application/json");
 
                         JSONObject tokenResponseObject = new DefaultTokenResponseHandler().handleRefreshTokenResponse(tokenResponse, providers, clientId);
                         response.setStatus(tokenResponse.getStatus());

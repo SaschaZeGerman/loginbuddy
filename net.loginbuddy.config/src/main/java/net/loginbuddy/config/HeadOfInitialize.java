@@ -18,6 +18,7 @@ import net.loginbuddy.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -67,10 +68,10 @@ public class HeadOfInitialize {
             if (HttpHelper.checkForDynamicProvider(selectedProvider, issuerResult, discoveryUrlResult, sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey()))) {
                 LoginbuddyHandler loginbuddyHandler = new OidcdrLoginbuddyHandler();
                 Map<String, Providers> dynamicProviders = (Map<String, Providers>) LoginbuddyStorage.STORAGE.get(Constants.PROVIDER_DYNAMIC_REGISTRATION.getKey());
-                if(dynamicProviders == null) {
+                if (dynamicProviders == null) {
                     dynamicProviders = new HashMap<>();
                 }
-                if(dynamicProviders.get(issuerResult.getValue()) == null) {
+                if (dynamicProviders.get(issuerResult.getValue()) == null) {
                     MsgResponse msg = registerProviderViaOIDCDR(issuerResult.getValue(), discoveryUrlResult.getValue(), loginbuddyHandler);
                     if (msg.getStatus() == 200) {
                         providers = LoginbuddyUtil.UTIL.getProviderConfigFromJsonString(msg.getMsg());
@@ -171,29 +172,38 @@ public class HeadOfInitialize {
                 if (providers.getClientSecret() != null) {
                     queryParams.append("&").append(Constants.CLIENT_SECRET.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientSecret()));
                 }
-                LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler)sessionCtx.get(Constants.ISSUER_HANDLER.getKey());
-                HttpPost req = providers.isDpopEnabled() ?
-                        PostRequest.create(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), true))
-                                .setAcceptType("application/json")
-                                .setUrlEncodedParametersPayload(queryParams.toString())
-                                .setDpopHeader(
-                                        providers.getDpopSigningAlg(),
-                                        loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), false),
-                                        null,
-                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
-                                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
-                                .build() :
-                        PostRequest.create(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), true))
-                                .setAcceptType("application/json")
-                                .setUrlEncodedParametersPayload(queryParams.toString())
-                                .build();
-                MsgResponse msgResponse = postMessage(req, "application/json");
+                LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler) sessionCtx.get(Constants.ISSUER_HANDLER.getKey());
+                PostRequest pr = PostRequest.create(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), true))
+                        .setAcceptType("application/json")
+                        .setUrlEncodedParametersPayload(queryParams.toString());
+                if (providers.isDpopEnabled()) {
+                    pr.setDpopHeader(
+                            providers.getDpopSigningAlg(),
+                            loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), false),
+                            null,
+                            sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                            sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
+                }
+                MsgResponse msgResponse = postMessage(pr.build(), "application/json");
                 if (msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), false)));
                 }
                 JSONObject obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
-                if (msgResponse.getStatus() > 204) {
+                if (msgResponse.getStatus() == 400) {
+                    if ("use_dpop_nonce".equalsIgnoreCase((String) obj.get("error"))) {
+                        pr.setDpopHeader(
+                                providers.getDpopSigningAlg(),
+                                loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), false),
+                                null,
+                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                                sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
+                        LOGGER.info(EntityUtils.toString(pr.build().getEntity()));
+                        msgResponse = postMessage(pr.build(), "application/json");
+                        obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
+                    }
+                }
+                if (msgResponse.getStatus() > 201) {
                     LOGGER.warning(String.format("The PAR request failed: %s\n", obj.get("error_description")));
                     return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String) obj.get("error"), (String) obj.get("error_description"));
                 }
@@ -214,6 +224,8 @@ public class HeadOfInitialize {
         sessionCtx.setSessionCallback(Constants.valueOf(providers.getResponseType().toUpperCase()));
 
         LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.provider.flow"));
+
+        LOGGER.info(authorizeUrl.toString());
 
         return authorizeUrl.toString();
     }
