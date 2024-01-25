@@ -5,11 +5,15 @@ import net.loginbuddy.common.api.PostRequest;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.cache.LoginbuddyContext;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.common.storage.LoginbuddyStorage;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.Loginbuddy;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
+import net.loginbuddy.config.loginbuddy.handler.OidcdrLoginbuddyHandler;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
@@ -19,7 +23,9 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static net.loginbuddy.common.api.HttpHelper.postMessage;
@@ -35,7 +41,7 @@ public class HeadOfInitialize {
             ParameterValidatorResult discoveryUrlResult) {
 
 // ***************************************************************
-// ** Check if a provider was chosen
+// ** Check if a provider was selected
 // ***************************************************************
 
         String selectedProvider = (sessionCtx.getString(Constants.CLIENT_PROVIDER.getKey())).trim();
@@ -59,10 +65,26 @@ public class HeadOfInitialize {
             // dynamic registration of unknown provider
             // we need: 'dynamic_provider', and 'issuer', client must be registered to accept dynamic provider
             if (HttpHelper.checkForDynamicProvider(selectedProvider, issuerResult, discoveryUrlResult, sessionCtx.getBoolean(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey()))) {
-                providers = registerProviderViaOIDCDR(issuerResult.getValue(), discoveryUrlResult.getValue(), sessionCtx);
-                if (providers != null) {
-                    selectedProvider = providers.getProvider(); // overwriting the provider from 'dynamic_provider' to the 'real' value (provider==issuer)
+                LoginbuddyHandler loginbuddyHandler = new OidcdrLoginbuddyHandler();
+                Map<String, Providers> dynamicProviders = (Map<String, Providers>) LoginbuddyStorage.STORAGE.get(Constants.PROVIDER_DYNAMIC_REGISTRATION.getKey());
+                if(dynamicProviders == null) {
+                    dynamicProviders = new HashMap<>();
                 }
+                if(dynamicProviders.get(issuerResult.getValue()) == null) {
+                    MsgResponse msg = registerProviderViaOIDCDR(issuerResult.getValue(), discoveryUrlResult.getValue(), loginbuddyHandler);
+                    if (msg.getStatus() == 200) {
+                        providers = LoginbuddyUtil.UTIL.getProviderConfigFromJsonString(msg.getMsg());
+                        dynamicProviders.put(issuerResult.getValue(), providers);
+                        LoginbuddyStorage.STORAGE.put(Constants.PROVIDER_DYNAMIC_REGISTRATION.getKey(), dynamicProviders);
+                    } else {
+                        LOGGER.warning(msg.getMsg());
+                        JSONObject resp = (JSONObject) new JSONParser().parse(msg.getMsg());
+                        return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", (String) resp.get("error_description"));
+                    }
+                } else {
+                    providers = dynamicProviders.get(issuerResult.getValue());
+                }
+                sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), loginbuddyHandler);
             } else {
                 // null if the given provider is not available to the client
                 providers = LoginbuddyUtil.UTIL.getProviders(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()), selectedProvider);
@@ -73,6 +95,7 @@ public class HeadOfInitialize {
                 LOGGER.warning("The given provider is unknown or invalid");
                 return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), "invalid_request", "The given provider is unknown or invalid");
             } else {
+                selectedProvider = providers.getProvider(); // overwriting the dynamic provider from 'dynamic_provider' to the 'real' value (provider==issuer) for the case dynamic registration was used
                 sessionCtx.put(Constants.CLIENT_PROVIDER.getKey(), selectedProvider);
             }
         } catch (Exception e) {
@@ -81,28 +104,17 @@ public class HeadOfInitialize {
         }
 
 // ***************************************************************
-// ** Build the authorization URL and retrieve protocol endpoints
+// ** Build the authorization URL and set protocol client and endpoint values
 // ***************************************************************
 
         StringBuilder authorizeUrl = new StringBuilder();
-        String providerTokenEndpoint, providerJwksEndpoint, providerUserinfoEndpoint;
         authorizeUrl.append(providers.getAuthorizationEndpoint());
-        providerTokenEndpoint = providers.getTokenEndpoint();
-        providerJwksEndpoint = providers.getJwksUri();
-        providerUserinfoEndpoint = providers.getUserinfoEndpoint();
-
-// ***************************************************************
-// ** Prepare provider endpoints to be used via loginbuddy-oidcdr if dynamic provider registration was used
-// ***************************************************************
-
-        // if this provider was dynamically registered we'll delegate other requests to loginbuddy-oidcdr later also
-        boolean isHandlerLoginbuddy = sessionCtx.get(Constants.ISSUER_HANDLER.getKey()).equals(Constants.ISSUER_HANDLER_LOGINBUDDY.getKey());
-        sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerTokenEndpoint : String
-                .format("https://loginbuddy-oidcdr:445/oidcdr/token?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerTokenEndpoint)));
-        sessionCtx.put(Constants.JWKS_URI.getKey(), isHandlerLoginbuddy ? providerJwksEndpoint : String
-                .format("https://loginbuddy-oidcdr:445/oidcdr/jwks?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerJwksEndpoint)));
-        sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), isHandlerLoginbuddy ? providerUserinfoEndpoint : String
-                .format("https://loginbuddy-oidcdr:445/oidcdr/userinfo?%s=%s", Constants.TARGET_PROVIDER.getKey(), HttpHelper.urlEncode(providerUserinfoEndpoint)));
+        sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providers.getClientId());
+        sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providers.getClientSecret());
+        sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providers.getRedirectUri());
+        sessionCtx.put(Constants.TOKEN_ENDPOINT.getKey(), providers.getTokenEndpoint());
+        sessionCtx.put(Constants.JWKS_URI.getKey(), providers.getJwksUri());
+        sessionCtx.put(Constants.USERINFO_ENDPOINT.getKey(), providers.getUserinfoEndpoint());
 
 // ***************************************************************
 // ** use PKCE only if the provider supports it. Unfortunately, some providers fail if unsupported parameters are being send
@@ -130,9 +142,9 @@ public class HeadOfInitialize {
 // ***************************************************************
 
         // do not include empty parameters. Some providers will fail the request if included
-        String cp = "".equals(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey())) ? "" : "&" + Constants.PROMPT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()));
-        String lh = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()));
-        String ith = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()));
+        String prompt = "".equals(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey())) ? "" : "&" + Constants.PROMPT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()));
+        String loginHint = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()));
+        String idTokenHint = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()));
 
         StringBuilder queryParams = new StringBuilder();
         queryParams.append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId())).
@@ -142,9 +154,9 @@ public class HeadOfInitialize {
                 .append("&").append(Constants.REDIRECT_URI.getKey()).append("=").append(HttpHelper.urlEncode(providers.getRedirectUri()))
                 .append(pkce == null ? "" : pkce)
                 .append(responseMode == null ? "" : responseMode)
-                .append(cp)
-                .append(lh)
-                .append(ith)
+                .append(prompt)
+                .append(loginHint)
+                .append(idTokenHint)
                 .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId())
                 .append(providers.isDpopEnabled() ? String.format("&dpop_jkt=%s", HttpHelper.urlEncode(Jwt.DEFAULT.getDpopJkt(providers.getDpopSigningAlg()))) : "");
 
@@ -159,30 +171,31 @@ public class HeadOfInitialize {
                 if (providers.getClientSecret() != null) {
                     queryParams.append("&").append(Constants.CLIENT_SECRET.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientSecret()));
                 }
+                LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler)sessionCtx.get(Constants.ISSUER_HANDLER.getKey());
                 HttpPost req = providers.isDpopEnabled() ?
-                        PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
+                        PostRequest.create(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), true))
                                 .setAcceptType("application/json")
                                 .setUrlEncodedParametersPayload(queryParams.toString())
                                 .setDpopHeader(
                                         providers.getDpopSigningAlg(),
-                                        providers.getPushedAuthorizationRequestEndpoint(),
+                                        loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), false),
                                         null,
                                         sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
                                         sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                                 .build() :
-                        PostRequest.create(providers.getPushedAuthorizationRequestEndpoint())
+                        PostRequest.create(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), true))
                                 .setAcceptType("application/json")
                                 .setUrlEncodedParametersPayload(queryParams.toString())
                                 .build();
                 MsgResponse msgResponse = postMessage(req, "application/json");
+                if (msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
+                    sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                    sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getPAuthorizeApi(providers.getPushedAuthorizationRequestEndpoint(), false)));
+                }
                 JSONObject obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
                 if (msgResponse.getStatus() > 204) {
                     LOGGER.warning(String.format("The PAR request failed: %s\n", obj.get("error_description")));
                     return HttpHelper.getErrorForRedirect(sessionCtx.getString(Constants.CLIENT_REDIRECT_VALID.getKey()), (String) obj.get("error"), (String) obj.get("error_description"));
-                }
-                if (msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
-                    sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), msgResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
-                    sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(providers.getPushedAuthorizationRequestEndpoint()));
                 }
                 authorizeUrl.append(Constants.REQUEST_URI.getKey()).append("=").append(HttpHelper.urlEncode((String) obj.get(Constants.REQUEST_URI.getKey())));
                 authorizeUrl.append("&").append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId()));
@@ -208,25 +221,13 @@ public class HeadOfInitialize {
     /**
      * Register loginbuddy at the provider and remember a few details for later use
      */
-    private static Providers registerProviderViaOIDCDR(String issuer, String discoveryUrl, LoginbuddyContext sessionCtx)
+    private static MsgResponse registerProviderViaOIDCDR(String issuer, String discoveryUrl, LoginbuddyHandler loginbuddyHandler)
             throws IOException {
 
         List<NameValuePair> formParameters = new ArrayList<>();
         formParameters.add(new BasicNameValuePair(Constants.ISSUER.getKey(), issuer));
         formParameters.add(new BasicNameValuePair(Constants.DISCOVERY_URL.getKey(), discoveryUrl));
         formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), DiscoveryUtil.UTIL.getRedirectUri()));
-
-        MsgResponse msg = postMessage(formParameters, "https://loginbuddy-oidcdr:445/oidcdr/register", "application/json");
-        if (msg.getStatus() == 200) {
-            Providers providers = LoginbuddyUtil.UTIL.getProviderConfigFromJsonString(msg.getMsg());
-            sessionCtx.put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_OIDCDR.getKey());
-            sessionCtx.put(Constants.PROVIDER_CLIENT_ID.getKey(), providers.getClientId()); // we have to store this in the session to make it available later
-            sessionCtx.put(Constants.PROVIDER_CLIENT_SECRET.getKey(), providers.getClientSecret()); // we have to store this in the session to make it available later
-            sessionCtx.put(Constants.PROVIDER_REDIRECT_URI.getKey(), providers.getRedirectUri()); // we have to store this in the session to make it available later
-            return providers;
-        } else {
-            LOGGER.warning(msg.getMsg());
-            return null;
-        }
+        return postMessage(formParameters, loginbuddyHandler.getRegistrationApi(), "application/json");
     }
 }

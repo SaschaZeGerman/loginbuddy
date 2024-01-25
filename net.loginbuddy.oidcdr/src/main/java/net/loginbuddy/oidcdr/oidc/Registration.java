@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 public class Registration extends HttpServlet {
 
-    private static Logger LOGGER = Logger.getLogger(String.valueOf(Registration.class));
+    private static Logger LOGGER = Logger.getLogger(Registration.class.getName());
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -92,6 +92,12 @@ public class Registration extends HttpServlet {
         MsgResponse msg = HttpHelper.getAPI(discoveryUrl);
         try {
             JSONObject oidcConfig = (JSONObject) new JSONParser().parse(msg.getMsg());
+            if(msg.getStatus() > 200) {
+                LOGGER.warning(String.format("Retrieving OIDC discovery failed. error: %s, error_description: %s", oidcConfig.get("error"), oidcConfig.get("error_description")));
+                response.setStatus(400);
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", (String)oidcConfig.get("error_description")).toJSONString());
+                return;
+            }
             String registerUrl = (String) oidcConfig.get(Constants.REGISTRATION_ENDPOINT.getKey());
             if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
                 LOGGER.warning(String.format("The OP does not support dynamic registration. OP: %s", oidcConfig.get(Constants.ISSUER.getKey())));
@@ -106,6 +112,9 @@ public class Registration extends HttpServlet {
                     oidcConfig.put(Constants.PROVIDER.getKey(), oidcConfig.get(Constants.ISSUER.getKey()));
                     oidcConfig.put(Constants.REDIRECT_URI.getKey(), redirectUriResult.getValue());
                     oidcConfig.remove("openid_discovery_uri");
+
+                    LOGGER.info(String.format("Successfully registered at: %s", registerUrl));
+
                     response.setStatus(200);
                     response.getWriter().write(oidcConfig.toJSONString());
                 } else {

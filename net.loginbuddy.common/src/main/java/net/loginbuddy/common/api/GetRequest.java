@@ -40,6 +40,11 @@ public class GetRequest extends AnyRequest {
         return this;
     }
 
+    public GetRequest setAcceptType(String acceptContentType) {
+        addHeader(req, "Accept", acceptContentType);
+        return this;
+    }
+
     public HttpGet build() {
         return this.req;
     }

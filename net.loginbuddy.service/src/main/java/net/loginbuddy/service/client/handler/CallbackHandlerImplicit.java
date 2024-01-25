@@ -11,8 +11,12 @@ import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.common.DefaultTokenResponseHandler;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import net.loginbuddy.service.util.SessionContext;
+import org.jose4j.lang.JoseException;
 import org.json.simple.JSONObject;
 
 import java.util.logging.Logger;
@@ -36,61 +40,35 @@ public class CallbackHandlerImplicit extends CallbackHandlerDefault {
             return;
         }
 
-        Providers providers = null;
-        if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-            providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
-        } else {
-            // dynamically registered providers are in a separate container and not available here. Get details out of the session
-            providers = new Providers(
-                    provider,
-                    sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
-                    sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey())
-            );
-        }
-
-        JSONObject idTokenPayload = null;
-        String idTokenForResponse = null;
+        LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler)sessionCtx.get(Constants.ISSUER_HANDLER.getKey());
+        
+        Providers providers = loginbuddyHandler.getProviders(provider);
+        
         try {
-            // the only provider for which this may stay null is 'self-issued'. For that Jwt().validate ... handles an alternative JSON key that contains the JWK
-            String jwks = null;
-            if(sessionCtx.getString(Constants.JWKS_URI.getKey()) != null) {
-                jwks = HttpHelper.getAPI(sessionCtx.getString(Constants.JWKS_URI.getKey())).getMsg();
-            }
-            idTokenPayload = Jwt.DEFAULT.validateIdToken(idTokenResult.getValue(), jwks, providers.getIssuer(), providers.getClientId(), sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-            // check if the client is configured to get an id_token re-signed by Loginbuddy, on behalf of the original issuer
-            Clients currentClient = LoginbuddyUtil.UTIL.getClientConfigByClientId(sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()));
-            for (OnBehalfOf obo : currentClient.getOnBehalfOf()) {
-                if ("id_token".equalsIgnoreCase(obo.getTokenType())) {
-                    JSONObject onBehalfOf = new JSONObject();
-                    onBehalfOf.put("iss", idTokenPayload.get("iss"));
-                    onBehalfOf.put("aud", idTokenPayload.get("aud"));
-                    onBehalfOf.put("nonce", idTokenPayload.get("nonce"));
-                    idTokenPayload.put("on_behalf_of", onBehalfOf);
-                    idTokenPayload.put("iss", DiscoveryUtil.UTIL.getIssuer());
-                    idTokenPayload.put("aud", currentClient.getClientId());
-                    idTokenPayload.put("nonce", sessionCtx.getString(Constants.CLIENT_NONCE.getKey()));
-                    idTokenForResponse = Jwt.DEFAULT.createSignedJwt(idTokenPayload.toJSONString(), JwsAlgorithm.findMatchingAlg(obo.getAlg())).getCompactSerialization();
-                    break;
-                }
-            }
-            if(idTokenForResponse == null) {
-                idTokenForResponse = idTokenResult.getValue();
-            }
-            eb.setIdTokenPayload(idTokenPayload);
+
+            OnBehalfOfResult resigningResult = new DefaultTokenResponseHandler().getOnBehalfOfResult(
+                    loginbuddyHandler.getJwksApi((String)sessionCtx.get(Constants.JWKS_URI.getKey()), true),
+                    idTokenResult.getValue(),
+                    providers.getIssuer(),
+                    providers.getClientId(),
+                    sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+                    sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey())
+            );
+
+// ***************************************************************
+// ** In this flow there is no complete token response (access_token, refresh_token), we'll create it manually for id_token
+// ***************************************************************
+
+            JSONObject tokenResponseObject = new JSONObject();
+            tokenResponseObject.put(Constants.ID_TOKEN.getKey(), resigningResult.getIdToken());
+            eb.setTokenResponse(tokenResponseObject);
+            eb.setIdTokenPayload(resigningResult.getIdTokenPayload());
+            eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), null));
+
+            returnAuthorizationCode(response, sessionCtx, eb);
         } catch (Exception e) {
             LOGGER.warning(String.format("No id_token was issued or it was invalid! Details: %s", e.getMessage()));
             throw e;
         }
-        eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), null));
-
-// ***************************************************************
-// ** In this flow there is no token response, we'll create it manually
-// ***************************************************************
-
-        JSONObject tokenResponseObject = new JSONObject();
-        tokenResponseObject.put(Constants.ID_TOKEN.getKey(), idTokenForResponse);
-        eb.setTokenResponse(tokenResponseObject);
-
-        returnAuthorizationCode(response, sessionCtx, eb);
     }
 }

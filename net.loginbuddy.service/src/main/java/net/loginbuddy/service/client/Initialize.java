@@ -8,7 +8,6 @@
 
 package net.loginbuddy.service.client;
 
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +24,6 @@ import java.util.logging.Logger;
 
 import static net.loginbuddy.common.api.HttpHelper.getErrorForRedirect;
 
-@WebServlet(name = "Initialize")
 public class Initialize extends HttpServlet {
 
   private static final Logger LOGGER = Logger.getLogger(String.valueOf(Initialize.class));

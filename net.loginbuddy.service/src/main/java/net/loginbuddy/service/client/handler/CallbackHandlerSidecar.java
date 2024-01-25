@@ -6,6 +6,7 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import net.loginbuddy.service.util.SessionContext;
 import org.jose4j.lang.JoseException;
 
@@ -14,7 +15,7 @@ import java.io.IOException;
 public class CallbackHandlerSidecar extends CallbackHandlerCode {
 
     @Override
-    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg) {
+    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg, LoginbuddyHandler loginbuddyHandler) {
         // do nothing on purpose
     }
 

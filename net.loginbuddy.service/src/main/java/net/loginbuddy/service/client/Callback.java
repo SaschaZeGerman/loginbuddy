@@ -7,14 +7,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.cache.LoginbuddyCache;
 import net.loginbuddy.common.config.Constants;
-import net.loginbuddy.common.util.ExchangeBean;
-import net.loginbuddy.common.util.ParameterValidator;
-import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.*;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
 import net.loginbuddy.service.client.handler.CallbackHandler;
 import net.loginbuddy.service.client.handler.CallbackHandlerCode;
 import net.loginbuddy.service.client.handler.CallbackHandlerImplicit;
 import net.loginbuddy.service.util.SessionContext;
+import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
@@ -138,7 +139,7 @@ public class Callback extends HttpServlet {
         } else if (Constants.ID_TOKEN.getKey().equals(sessionCtx.getString(Constants.ACTION_USED_RESPONSE_TYPE.getKey()))) {
             return new CallbackHandlerImplicit();
         }
-        return null;
+        return null; // it can only be one of the two above for now. Still leaving the checks to not forget 'later'
     }
 
     protected SessionContext sendError(int httpStatus, String error, String errorMsg, HttpServletResponse response) throws IOException {

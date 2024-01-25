@@ -33,16 +33,8 @@
         <servlet-class>net.loginbuddy.oidcdr.oidc.Registration</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>OidcDrTokenExchange</servlet-name>
-        <servlet-class>net.loginbuddy.oidcdr.oidc.TokenExchange</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>OidcDrJwksUri</servlet-name>
-        <servlet-class>net.loginbuddy.oidcdr.oidc.JwksUri</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>OidcDrUserinfo</servlet-name>
-        <servlet-class>net.loginbuddy.oidcdr.oidc.Userinfo</servlet-class>
+        <servlet-name>OidcDrProxi</servlet-name>
+        <servlet-class>net.loginbuddy.oidcdr.oidc.ProxyAPI</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>SelfIssuedRegistation</servlet-name>
@@ -68,16 +60,20 @@
         <url-pattern>/oidcdr/register</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>OidcDrTokenExchange</servlet-name>
+        <servlet-name>OidcDrProxi</servlet-name>
         <url-pattern>/oidcdr/token</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>OidcDrJwksUri</servlet-name>
+        <servlet-name>OidcDrProxi</servlet-name>
         <url-pattern>/oidcdr/jwks</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>OidcDrUserinfo</servlet-name>
+        <servlet-name>OidcDrProxi</servlet-name>
         <url-pattern>/oidcdr/userinfo</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OidcDrProxi</servlet-name>
+        <url-pattern>/oidcdr/pauthorize</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>SelfIssuedRegistation</servlet-name>

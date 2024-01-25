@@ -7,8 +7,14 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.config.JwsAlgorithm;
 import net.loginbuddy.common.util.ExchangeBean;
 import net.loginbuddy.common.util.Jwt;
+import net.loginbuddy.common.util.MsgResponse;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
+import net.loginbuddy.config.loginbuddy.common.OnBehalfOfResult;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
+import org.jose4j.lang.JoseException;
+import org.json.simple.JSONObject;
 
 import java.io.IOException;
 import java.util.UUID;

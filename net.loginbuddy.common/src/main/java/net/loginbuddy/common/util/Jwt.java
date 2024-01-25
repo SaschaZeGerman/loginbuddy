@@ -133,6 +133,7 @@ public enum Jwt {
         if (dpopNonce != null && Sanetizer.getDomain(htu).equalsIgnoreCase(dpopNonceProvider)) {
             claims.setClaim("nonce", dpopNonce);
         } else {
+            // TODO avoid logging if values are null
             LOGGER.warning(String.format("DPoP nonce was not set as it was created by a different provider. Expected: %s, actual: %s", dpopNonceProvider, Sanetizer.getDomain(htu)));
         }
         claims.setIssuedAtToNow();

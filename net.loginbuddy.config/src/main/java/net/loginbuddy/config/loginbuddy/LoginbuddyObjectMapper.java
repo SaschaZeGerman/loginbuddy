@@ -17,6 +17,8 @@ import net.loginbuddy.common.config.Meta;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
+import net.loginbuddy.config.loginbuddy.handler.DefaultLoginbuddyHandler;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -200,6 +202,7 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
                     meta.addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("The provider does not support dynamic registration. Provider: %s", currentProvider.get(Constants.PROVIDER.getKey())));
                     throw new DynamicProviderRegistrationException((String) currentProvider.get("The provider does not support dynamic registration"));
                 }
+
                 MsgResponse registration = HttpHelper.register(registerUrl, DiscoveryUtil.UTIL.getRedirectUri());
                 JSONObject registrationMsg = (JSONObject) new JSONParser().parse(registration.getMsg());;
                 if (registration.getStatus() == 200) {
@@ -218,6 +221,11 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
         currentProvider.remove("openid_discovery_uri");
         oidcConfig.remove("openid_discovery_uri");
 
+        // In this case the registration was most likely dynamically done at runtime and 'currentProvider' is a mix of OIDC discovery and provider configuration.
+        // The code below will search for keywords such as 'dpop_signing_alg_values_supported' in oidcConfig.json and will find nothing if it is in 'currentProvider'
+        if(oidcConfig.size() == 0) {
+            oidcConfig = new JSONObject(currentProvider);
+        }
         currentProvider = augmentProviderConfiguration(oidcConfig, currentProvider, currentRedirectUri, false, false);
 
         Providers providers = new Providers((String) currentProvider.get(Constants.ISSUER.getKey()), (String) currentProvider.get(Constants.CLIENT_ID.getKey()), (String) currentProvider.get(Constants.REDIRECT_URI.getKey()), (String) currentProvider.get(Constants.CLIENT_SECRET.getKey()));
@@ -255,8 +263,8 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
     /**
      * This template matches what is configured in config.json. At least for fields that should be provided through an OpenID Connect Discovery endpoint and the Registration
      *
-     * @param oidcConfig
-     * @param providerConfig
+     * @param oidcConfig This may be an empty object
+     * @param providerConfig In the case of dynamic registration at runtime this is a mix of OIDC discovery and provider config
      * @param redirectUri
      * @param updateProvider
      * @param updateIssuer

@@ -125,6 +125,7 @@ public enum Constants {
     TARGET_PROVIDER("target"),
     PROVIDER_CLIENT_ID("providerClientId"),
     PROVIDER_CLIENT_SECRET("providerClientSecret"),
+    PROVIDER_DYNAMIC_REGISTRATION("dynamicProviders"),
     PROVIDER_REDIRECT_URI("providerRedirectUri");
 
     private final String key;

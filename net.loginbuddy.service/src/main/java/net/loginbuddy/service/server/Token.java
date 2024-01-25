@@ -29,12 +29,12 @@ public class Token extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(Token.class.getName());
 
-    private Map<String, GrantTypeHandler> token_handler;
+    private Map<String, GrantTypeHandler> grantTypeHandler;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        token_handler = getGrantTypeHandlers();
+        grantTypeHandler = getGrantTypeHandlers();
     }
 
     @Override
@@ -60,11 +60,11 @@ public class Token extends HttpServlet {
             if (!grantTypeResult.getResult().equals(ParameterValidatorResult.RESULT.VALID)) {
                 response.getWriter().write(HttpHelper.createJsonErrorResponse("the given grant_type parameter is invalid or was provided multiple times"));
                 return;
-            } else if (token_handler.keySet().stream().noneMatch(grantTypeResult.getValue()::equals)) {
+            } else if (grantTypeHandler.keySet().stream().noneMatch(grantTypeResult.getValue()::equals)) {
                 response.getWriter().write(HttpHelper.createJsonErrorResponse("the given grant_type is not supported", grantTypeResult.getValue()));
                 return;
             }
-            token_handler.get(grantTypeResult.getValue()).handleGrantType(request, response, clientCredentialsResult.getClients().getClientId());
+            grantTypeHandler.get(grantTypeResult.getValue()).handleGrantType(request, response, clientCredentialsResult.getClients().getClientId());
         } else {
             response.getWriter().write(HttpHelper.createJsonErrorResponse(clientCredentialsResult.getErrorMsg()));
         }

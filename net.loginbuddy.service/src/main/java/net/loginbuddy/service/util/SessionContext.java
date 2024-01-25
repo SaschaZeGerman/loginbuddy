@@ -2,6 +2,7 @@ package net.loginbuddy.service.util;
 
 import net.loginbuddy.common.cache.LoginbuddyContext;
 import net.loginbuddy.common.config.Constants;
+import net.loginbuddy.config.loginbuddy.handler.DefaultLoginbuddyHandler;
 
 import java.util.UUID;
 
@@ -49,7 +50,7 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_ACCEPT_DYNAMIC_PROVIDER.getKey(), acceptDynamicProvider);
     put(Constants.CLIENT_SIGNED_RESPONSE_ALG.getKey(), signedResponseAlg);
     put(Constants.CHECK_REDIRECT_URI.getKey(), checkRedirectUri);
-    put(Constants.ISSUER_HANDLER.getKey(), Constants.ISSUER_HANDLER_LOGINBUDDY.getKey()); // default: assuming a registered provider is used
+    put(Constants.ISSUER_HANDLER.getKey(), new DefaultLoginbuddyHandler()); // default: assuming a registered provider is used
     put(Constants.CLIENT_NONCE.getKey(), nonce == null ? UUID.randomUUID().toString() : nonce);
     put(Constants.ACTION_EXPECTED.getKey(), Constants.ACTION_INITIALIZE.getKey());
     put(Constants.OBFUSCATE_TOKEN.getKey(), obfuscateToken);

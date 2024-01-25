@@ -21,6 +21,7 @@ import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.config.loginbuddy.common.DefaultTokenResponseHandler;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.apache.http.NameValuePair;
@@ -50,17 +51,8 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
             return;
         }
 
-        Providers providers = null;
-        if (Constants.ISSUER_HANDLER_LOGINBUDDY.getKey().equalsIgnoreCase(sessionCtx.getString(Constants.ISSUER_HANDLER.getKey()))) {
-            providers = LoginbuddyUtil.UTIL.getProviderConfigByProvider(provider);
-        } else {
-            // dynamically registered providers are in a separate container and not available here. Get details out of the session
-            providers = new Providers(
-                    provider, // in this flow provider and issuer have the same value
-                    sessionCtx.getString(Constants.PROVIDER_CLIENT_ID.getKey()),
-                    sessionCtx.getString(Constants.PROVIDER_REDIRECT_URI.getKey()),
-                    sessionCtx.getString(Constants.PROVIDER_CLIENT_SECRET.getKey()));
-        }
+        LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler) sessionCtx.get(Constants.ISSUER_HANDLER.getKey());
+        Providers providers = loginbuddyHandler.getProviders(provider);
 
         String access_token = null;
 
@@ -77,21 +69,25 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                 .addParameter(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey())
                 .build();
         HttpPost req = providers.isDpopEnabled() ?
-                PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
+                PostRequest.create(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), true))
                         .setFormParametersPayload(params)
                         .setDpopHeader(
                                 providers.getDpopSigningAlg(),
-                                sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()),
+                                sessionCtx.getString(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)),
                                 null,
                                 sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
                                 sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                         .setAcceptType("application/json")
                         .build() :
-                PostRequest.create(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()))
+                PostRequest.create(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), true))
                         .setFormParametersPayload(params)
                         .setAcceptType("application/json")
                         .build();
         MsgResponse tokenResponse = HttpHelper.postMessage(req, "application/json");
+        if (tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
+            sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+            sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)));
+        }
 
         String tokenType = Constants.BEARER.getKey();
 
@@ -103,7 +99,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                         providers,
                         sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
                         sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
-                        sessionCtx.getString(Constants.JWKS_URI.getKey())
+                        loginbuddyHandler.getJwksApi(sessionCtx.getString(Constants.JWKS_URI.getKey()), true)
                 );
                 tokenType = tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) != null ? (String) tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) : tokenType;
                 if (tokenResponseObject.get("id_token_payload") != null) {
@@ -132,19 +128,23 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         if (userinfo != null) {
             try {
                 HttpGet userInfoReq = Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
-                        GetRequest.create(userinfo)
+                        GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
                                 .setBearerAccessToken(access_token)
                                 .build() :
-                        GetRequest.create(userinfo)
+                        GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
                                 .setAccessToken(tokenType, access_token)
                                 .setDpopHeader(
                                         providers.getDpopSigningAlg(),
-                                        userinfo,
+                                        loginbuddyHandler.getUserinfoApi(userinfo, false),
                                         access_token,
                                         sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
                                         sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                                 .build();
                 MsgResponse userinfoResp = HttpHelper.getAPI(userInfoReq);
+                if (userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
+                    sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                    sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getUserinfoApi(userinfo, false)));
+                }
                 if (userinfoResp.getStatus() == 200) {
                     if (userinfoResp.getContentType().startsWith("application/json")) {
                         JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
@@ -152,35 +152,36 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                     }
                 } // TODO : handle non 200 response
             } catch (Exception e) {
-                LOGGER.warning("Retrieving userinfo failed!");
+                LOGGER.warning(String.format("Retrieving userinfo failed! %s", e.getMessage()));
             }
         }
         eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
 
-        createUserInfoSession(sessionCtx, access_token, tokenType, providers.getDpopSigningAlg());
+        createUserInfoSession(sessionCtx, access_token, tokenType, providers.getDpopSigningAlg(), loginbuddyHandler);
 
         returnAuthorizationCode(response, sessionCtx, eb);
 
     }
 
-    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg) {
+    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg, LoginbuddyHandler loginbuddyHandler) {
 
 // ***************************************************************
 // ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
 // ***************************************************************
 
-        JSONObject jo = new JSONObject();
-        jo.put(Constants.USERINFO_ENDPOINT.getKey(), sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
-        jo.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
-        jo.put(Constants.TOKEN_TYPE.getKey(), tokenType);
-        jo.put(Constants.DPOP_SIGNING_ALG.getKey(), dpopSigningAlg);
-        jo.put(Constants.DPOP_NONCE_HEADER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()));
-        jo.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
+        JSONObject userInfoSession = new JSONObject();
+        userInfoSession.put(Constants.USERINFO_ENDPOINT.getKey(), sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey()));
+        userInfoSession.put(Constants.JWKS_URI.getKey(), sessionCtx.getString(Constants.JWKS_URI.getKey()));
+        userInfoSession.put(Constants.TOKEN_TYPE.getKey(), tokenType);
+        userInfoSession.put(Constants.DPOP_SIGNING_ALG.getKey(), dpopSigningAlg);
+        userInfoSession.put(Constants.DPOP_NONCE_HEADER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()));
+        userInfoSession.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
+        userInfoSession.put(Constants.ISSUER_HANDLER.getKey(), loginbuddyHandler);
         String[] hint = access_token.split("[.]");
         if (hint.length == 3) {
-            LoginbuddyCache.CACHE.put(hint[2], jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.CACHE.put(hint[2], userInfoSession, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
         } else {
-            LoginbuddyCache.CACHE.put(access_token, jo, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
+            LoginbuddyCache.CACHE.put(access_token, userInfoSession, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
         }
     }
 }

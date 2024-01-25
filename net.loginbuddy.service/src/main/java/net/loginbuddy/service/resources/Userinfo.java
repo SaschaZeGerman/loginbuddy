@@ -12,6 +12,7 @@ import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
+import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import net.loginbuddy.service.server.Overlord;
 import org.apache.http.client.methods.HttpGet;
 import org.json.simple.JSONObject;
@@ -51,21 +52,21 @@ public class Userinfo extends Overlord {
         }
 
         MsgResponse msg;
-        JSONObject apis = (JSONObject) LoginbuddyCache.CACHE.get(tokenHint);
-        if (apis == null) {
+        JSONObject userInfoSession = (JSONObject) LoginbuddyCache.CACHE.get(tokenHint);
+        if (userInfoSession == null) {
             msg = new MsgResponse();
             msg.setStatus(400);
             msg.setContentType("application/json");
             msg.setMsg(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
         } else {
             try {
-                String dpopNonce = (String)apis.get(Constants.DPOP_NONCE_HEADER.getKey());
-                String dpopNonceProvider = (String)apis.get(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey());
-                HttpGet req = getUserinfo(apis, tokenHint, dpopNonce, dpopNonceProvider);
+                String dpopNonce = (String)userInfoSession.get(Constants.DPOP_NONCE_HEADER.getKey());
+                String dpopNonceProvider = (String)userInfoSession.get(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey());
+                HttpGet req = getUserinfo(userInfoSession, tokenHint, dpopNonce, dpopNonceProvider);
                 msg = HttpHelper.getAPI(req);
                 if (msg.getStatus() == 401) {
                     if (msg.getHeader("WWW-Authenticate") != null && msg.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
-                        req = getUserinfo(apis, tokenHint, msg.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                        req = getUserinfo(userInfoSession, tokenHint, msg.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
                         msg = HttpHelper.getAPI(req);
                     }
                 }
@@ -82,19 +83,25 @@ public class Userinfo extends Overlord {
         response.getWriter().write(msg.getMsg());
     }
 
-    private HttpGet getUserinfo(JSONObject apis, String tokenHint, String dpopNonce) throws Exception {
-        return getUserinfo(apis, tokenHint, dpopNonce, Sanetizer.getDomain((String) apis.get(Constants.USERINFO_ENDPOINT.getKey())));
+    private HttpGet getUserinfo(JSONObject userInfoSession, String tokenHint, String dpopNonce) throws Exception {
+        return getUserinfo(userInfoSession, tokenHint, dpopNonce, Sanetizer.getDomain((String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey())));
     }
 
-    private HttpGet getUserinfo(JSONObject apis, String tokenHint, String dpopNonce, String dpopNonceProvider) throws Exception {
-        String tokenType = (String) apis.get(Constants.TOKEN_TYPE.getKey());
+    private HttpGet getUserinfo(JSONObject userInfoSession, String tokenHint, String dpopNonce, String dpopNonceProvider) throws Exception {
+        String tokenType = (String) userInfoSession.get(Constants.TOKEN_TYPE.getKey());
+        LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler)userInfoSession.get(Constants.ISSUER_HANDLER.getKey());
         return Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
-                GetRequest.create((String) apis.get(Constants.USERINFO_ENDPOINT.getKey()))
+                GetRequest.create(loginbuddyHandler.getUserinfoApi( (String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey()), true ))
                         .setBearerAccessToken(tokenHint)
                         .build() :
-                GetRequest.create((String) apis.get(Constants.USERINFO_ENDPOINT.getKey()))
-                        .setAccessToken((String) apis.get(Constants.TOKEN_TYPE.getKey()), tokenHint)
-                        .setDpopHeader((String) apis.get(Constants.DPOP_SIGNING_ALG.getKey()), (String) apis.get(Constants.USERINFO_ENDPOINT.getKey()), tokenHint, dpopNonce, dpopNonceProvider)
+                GetRequest.create(loginbuddyHandler.getUserinfoApi( (String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey()), true ))
+                        .setAccessToken((String) userInfoSession.get(Constants.TOKEN_TYPE.getKey()), tokenHint)
+                        .setDpopHeader(
+                                (String) userInfoSession.get(Constants.DPOP_SIGNING_ALG.getKey()),
+                                loginbuddyHandler.getUserinfoApi( (String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey()), false ),
+                                tokenHint,
+                                dpopNonce,
+                                dpopNonceProvider)
                         .build();
     }
 
