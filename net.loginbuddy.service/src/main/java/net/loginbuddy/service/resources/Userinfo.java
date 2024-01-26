@@ -51,23 +51,23 @@ public class Userinfo extends Overlord {
             tokenHint = token[0];
         }
 
-        MsgResponse msg;
+        MsgResponse userinfoResp;
         JSONObject userInfoSession = (JSONObject) LoginbuddyCache.CACHE.get(tokenHint);
         if (userInfoSession == null) {
-            msg = new MsgResponse();
-            msg.setStatus(400);
-            msg.setContentType("application/json");
-            msg.setMsg(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
+            userinfoResp = new MsgResponse();
+            userinfoResp.setStatus(400);
+            userinfoResp.setContentType("application/json");
+            userinfoResp.setMsg(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
         } else {
             try {
                 String dpopNonce = (String)userInfoSession.get(Constants.DPOP_NONCE_HEADER.getKey());
                 String dpopNonceProvider = (String)userInfoSession.get(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey());
                 HttpGet req = getUserinfo(userInfoSession, tokenHint, dpopNonce, dpopNonceProvider);
-                msg = HttpHelper.getAPI(req);
-                if (msg.getStatus() == 401) {
-                    if (msg.getHeader("WWW-Authenticate") != null && msg.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
-                        req = getUserinfo(userInfoSession, tokenHint, msg.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
-                        msg = HttpHelper.getAPI(req);
+                userinfoResp = HttpHelper.getAPI(req);
+                if (userinfoResp.getStatus() == 401) {
+                    if (userinfoResp.getHeader("WWW-Authenticate") != null && userinfoResp.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
+                        req = getUserinfo(userInfoSession, tokenHint, userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                        userinfoResp = HttpHelper.getAPI(req);
                     }
                 }
             } catch (Exception e) {
@@ -78,9 +78,9 @@ public class Userinfo extends Overlord {
             }
         }
 
-        response.setStatus(msg.getStatus());
-        response.setContentType(msg.getContentType());
-        response.getWriter().write(msg.getMsg());
+        response.setStatus(userinfoResp.getStatus());
+        response.setContentType(userinfoResp.getContentType());
+        response.getWriter().write(userinfoResp.getMsg());
     }
 
     private HttpGet getUserinfo(JSONObject userInfoSession, String tokenHint, String dpopNonce) throws Exception {

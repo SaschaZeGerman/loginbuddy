@@ -124,22 +124,6 @@ public class HttpHelper {
         return getHttpResponse(req);
     }
 
-    public static MsgResponse postTokenExchange(String clientId, String clientSecret, String redirectUri, String authCode,
-                                                String tokenEndpoint, String codeVerifier) throws IOException {
-
-        List<NameValuePair> formParameters = new ArrayList<>();
-        formParameters.add(new BasicNameValuePair(Constants.CODE.getKey(), authCode));
-        formParameters.add(new BasicNameValuePair(Constants.CLIENT_ID.getKey(), clientId));
-        formParameters.add(new BasicNameValuePair(Constants.CLIENT_SECRET.getKey(), clientSecret));
-        formParameters.add(new BasicNameValuePair(Constants.REDIRECT_URI.getKey(), redirectUri));
-        formParameters.add(new BasicNameValuePair(Constants.GRANT_TYPE.getKey(), Constants.AUTHORIZATION_CODE.getKey()));
-        if (codeVerifier != null) {
-            formParameters.add(new BasicNameValuePair(Constants.CODE_VERIFIER.getKey(), codeVerifier));
-        }
-
-        return postMessage(formParameters, tokenEndpoint, "application/json");
-    }
-
     /**
      * @param queryString       a key=value[&key=....] where value is URLEncoded. This methods sets the request content-type to application/x-www-form-urlencoded using this string as body
      * @param targetUrl

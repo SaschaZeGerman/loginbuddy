@@ -198,7 +198,6 @@ public class HeadOfInitialize {
                                 null,
                                 sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
                                 sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
-                        LOGGER.info(EntityUtils.toString(pr.build().getEntity()));
                         msgResponse = postMessage(pr.build(), "application/json");
                         obj = (JSONObject) new JSONParser().parse(msgResponse.getMsg());
                     }

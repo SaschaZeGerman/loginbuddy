@@ -33,6 +33,8 @@ import org.json.simple.parser.JSONParser;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static net.loginbuddy.common.api.HttpHelper.postMessage;
+
 public class CallbackHandlerCode extends CallbackHandlerDefault {
 
     private static final Logger LOGGER = Logger.getLogger(CallbackHandlerCode.class.getName());
@@ -71,7 +73,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         PostRequest pr = PostRequest.create(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), true))
                 .setFormParametersPayload(params)
                 .setAcceptType("application/json");
-        if(providers.isDpopEnabled()) {
+        if (providers.isDpopEnabled()) {
             pr.setDpopHeader(
                     providers.getDpopSigningAlg(),
                     sessionCtx.getString(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)),
@@ -84,29 +86,36 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
             sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
             sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)));
         }
+        JSONObject tokenResponseObject = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
+        if (tokenResponse.getStatus() == 400) {
+            if ("use_dpop_nonce".equalsIgnoreCase((String) tokenResponseObject.get("error"))) {
+                pr.setDpopHeader(
+                        providers.getDpopSigningAlg(),
+                        sessionCtx.getString(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)),
+                        null,
+                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
+                        sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
+                tokenResponse = postMessage(pr.build(), "application/json");
+            }
+        }
 
         String tokenType = Constants.BEARER.getKey();
 
         if (tokenResponse.getStatus() == 200) {
-            if (tokenResponse.getContentType().startsWith("application/json")) {
-                JSONObject tokenResponseObject = new DefaultTokenResponseHandler().handleCodeTokenExchangeResponse(
-                        tokenResponse,
-                        sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey()),
-                        providers,
-                        sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
-                        sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
-                        loginbuddyHandler.getJwksApi(sessionCtx.getString(Constants.JWKS_URI.getKey()), true)
-                );
-                tokenType = tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) != null ? (String) tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) : tokenType;
-                if (tokenResponseObject.get("id_token_payload") != null) {
-                    eb.setIdTokenPayload((JSONObject) tokenResponseObject.remove("id_token_payload"));
-                }
-                access_token = (String) tokenResponseObject.remove("provider_access_token");
-                eb.setTokenResponse(tokenResponseObject);
-            } else {
-                endFunHere("invalid_response", String.format("the provider returned a response with an unsupported content-type: %s", tokenResponse.getContentType()), sessionCtx, response);
-                return;
+            tokenResponseObject = new DefaultTokenResponseHandler().handleCodeTokenExchangeResponse(
+                    tokenResponse,
+                    sessionCtx.getBoolean(Constants.OBFUSCATE_TOKEN.getKey()),
+                    providers,
+                    sessionCtx.getString(Constants.CLIENT_CLIENT_ID.getKey()),
+                    sessionCtx.getString(Constants.CLIENT_NONCE.getKey()),
+                    loginbuddyHandler.getJwksApi(sessionCtx.getString(Constants.JWKS_URI.getKey()), true)
+            );
+            tokenType = tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) != null ? (String) tokenResponseObject.get(Constants.TOKEN_TYPE.getKey()) : tokenType;
+            if (tokenResponseObject.get("id_token_payload") != null) {
+                eb.setIdTokenPayload((JSONObject) tokenResponseObject.remove("id_token_payload"));
             }
+            access_token = (String) tokenResponseObject.remove("provider_access_token");
+            eb.setTokenResponse(tokenResponseObject);
         } else {
             // need to handle error cases
             if (tokenResponse.getContentType().startsWith("application/json")) {
@@ -123,23 +132,21 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
         if (userinfo != null) {
             try {
-                HttpGet userInfoReq = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
-                MsgResponse userinfoResp = HttpHelper.getAPI(userInfoReq);
+                HttpGet req = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
+                MsgResponse userinfoResp = HttpHelper.getAPI(req);
                 if (userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getUserinfoApi(userinfo, false)));
                 }
                 if (userinfoResp.getStatus() == 401) {
                     if (userinfoResp.getHeader("www-authenticate") != null && userinfoResp.getHeader("www-authenticate").contains("use_dpop_nonce")) {
-                        userInfoReq = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
-                        userinfoResp = HttpHelper.getAPI(userInfoReq);
+                        req = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
+                        userinfoResp = HttpHelper.getAPI(req);
                     }
                 }
                 if (userinfoResp.getStatus() == 200) {
-                    if (userinfoResp.getContentType().startsWith("application/json")) {
-                        JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
-                        eb.setUserinfo(userinfoRespObject);
-                    }
+                    JSONObject userinfoRespObject = (JSONObject) new JSONParser().parse(userinfoResp.getMsg());
+                    eb.setUserinfo(userinfoRespObject);
                 } else {
                     // TODO : handle non 200 response
                     LOGGER.warning(String.format("Userinfo request failed: %s", userinfoResp.getMsg()));

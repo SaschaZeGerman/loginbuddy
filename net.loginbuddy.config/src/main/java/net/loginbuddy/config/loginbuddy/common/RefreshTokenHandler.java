@@ -9,16 +9,20 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
+import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
+
+import static net.loginbuddy.common.api.HttpHelper.postMessage;
 
 public class RefreshTokenHandler implements GrantTypeHandler {
 
@@ -81,9 +85,24 @@ public class RefreshTokenHandler implements GrantTypeHandler {
                                     null);
                         }
                         MsgResponse tokenResponse = HttpHelper.postMessage(pr.build(), "application/json");
-
-                        JSONObject tokenResponseObject = new DefaultTokenResponseHandler().handleRefreshTokenResponse(tokenResponse, providers, clientId);
-                        response.setStatus(tokenResponse.getStatus());
+                        JSONObject tokenResponseObject = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
+                        if (tokenResponse.getStatus() == 400) {
+                            if ("use_dpop_nonce".equalsIgnoreCase((String) tokenResponseObject.get("error"))) {
+                                pr.setDpopHeader(
+                                        providers.getDpopSigningAlg(),
+                                        providers.getTokenEndpoint(),
+                                        null,
+                                        tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()),
+                                        Sanetizer.getDomain(providers.getTokenEndpoint()));
+                                tokenResponse = postMessage(pr.build(), "application/json");
+                            }
+                        }
+                        if (tokenResponse.getStatus() == 200) {
+                            tokenResponseObject = new DefaultTokenResponseHandler().handleRefreshTokenResponse(tokenResponse, providers, clientId);
+                            response.setStatus(200);
+                        } else {
+                            response.setStatus(400);
+                        }
                         response.setContentType(tokenResponse.getContentType());
                         response.getWriter().write(tokenResponseObject.toJSONString());
                     } catch (ParseException e) {
@@ -92,7 +111,6 @@ public class RefreshTokenHandler implements GrantTypeHandler {
                         response.setContentType("application/json");
                         response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the openid connect provider returned an unusable response").toJSONString());
                     } catch (Exception e) {
-                        // caused by setDpopHeader ...
                         LOGGER.info(e.getMessage());
                         response.setStatus(500);
                         response.setContentType("application/json");
