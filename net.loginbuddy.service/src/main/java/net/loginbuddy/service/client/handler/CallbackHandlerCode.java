@@ -76,7 +76,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         if (providers.isDpopEnabled()) {
             pr.setDpopHeader(
                     providers.getDpopSigningAlg(),
-                    sessionCtx.getString(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)),
+                    loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), false),
                     null,
                     sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
                     sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
@@ -84,7 +84,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         MsgResponse tokenResponse = HttpHelper.postMessage(pr.build(), "application/json");
         if (tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
             sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), tokenResponse.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
-            sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getTokenApi(Constants.TOKEN_ENDPOINT.getKey(), false)));
+            sessionCtx.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), Sanetizer.getDomain(loginbuddyHandler.getTokenApi(sessionCtx.getString(Constants.TOKEN_ENDPOINT.getKey()), false)));
         }
         JSONObject tokenResponseObject = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
         if (tokenResponse.getStatus() == 400) {
@@ -119,8 +119,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         } else {
             // need to handle error cases
             if (tokenResponse.getContentType().startsWith("application/json")) {
-                JSONObject err = (JSONObject) new JSONParser().parse(tokenResponse.getMsg());
-                endFunHere((String) err.get("error"), (String) err.get("error_description"), sessionCtx, response);
+                endFunHere((String) tokenResponseObject.get("error"), (String) tokenResponseObject.get("error_description"), sessionCtx, response);
                 return;
             }
         }

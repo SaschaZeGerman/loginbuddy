@@ -224,8 +224,6 @@ public class HeadOfInitialize {
 
         LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.provider.flow"));
 
-        LOGGER.info(authorizeUrl.toString());
-
         return authorizeUrl.toString();
     }
 
