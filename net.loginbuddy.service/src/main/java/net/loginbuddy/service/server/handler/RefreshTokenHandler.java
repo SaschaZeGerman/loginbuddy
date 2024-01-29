@@ -1,4 +1,4 @@
-package net.loginbuddy.config.loginbuddy.common;
+package net.loginbuddy.service.server.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,8 +12,8 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Sanetizer;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
+import net.loginbuddy.config.loginbuddy.common.DefaultTokenResponseHandler;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPost;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;

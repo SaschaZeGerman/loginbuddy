@@ -1,4 +1,4 @@
-package net.loginbuddy.config.scope;
+package net.loginbuddy.config.management.scope;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.util.Sanetizer;

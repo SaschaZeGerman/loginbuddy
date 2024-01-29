@@ -10,7 +10,7 @@ import net.loginbuddy.common.util.Jwt;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.scope.LoginbuddyScope;
+import net.loginbuddy.config.management.scope.LoginbuddyScope;
 import net.loginbuddy.service.server.ClientAuthenticator;
 import org.json.simple.JSONObject;
 

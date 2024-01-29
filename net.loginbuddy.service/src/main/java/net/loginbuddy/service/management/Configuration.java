@@ -13,8 +13,8 @@ import net.loginbuddy.config.management.AccessToken;
 import net.loginbuddy.config.management.ActualScope;
 import net.loginbuddy.config.management.ConfigurationTypes;
 import net.loginbuddy.config.properties.PropertiesUtil;
-import net.loginbuddy.config.scope.LoginbuddyScope;
-import net.loginbuddy.config.scope.RequireScope;
+import net.loginbuddy.config.management.scope.LoginbuddyScope;
+import net.loginbuddy.config.management.scope.RequireScope;
 
 import java.io.IOException;
 

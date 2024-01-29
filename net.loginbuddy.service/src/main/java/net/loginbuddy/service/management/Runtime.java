@@ -10,8 +10,8 @@ import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.management.AccessToken;
 import net.loginbuddy.config.management.ActualScope;
 import net.loginbuddy.config.management.RuntimeTypes;
-import net.loginbuddy.config.scope.LoginbuddyScope;
-import net.loginbuddy.config.scope.RequireScope;
+import net.loginbuddy.config.management.scope.LoginbuddyScope;
+import net.loginbuddy.config.management.scope.RequireScope;
 
 import java.io.IOException;
 import java.util.List;

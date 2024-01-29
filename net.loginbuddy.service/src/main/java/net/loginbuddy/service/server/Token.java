@@ -17,8 +17,9 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.loginbuddy.common.GrantTypeHandler;
-import net.loginbuddy.config.loginbuddy.common.RefreshTokenHandler;
+import net.loginbuddy.service.server.handler.GrantTypeHandler;
+import net.loginbuddy.service.server.handler.RefreshTokenHandler;
+import net.loginbuddy.service.server.handler.AuthorizationCodeHandler;
 
 import java.io.IOException;
 import java.util.HashMap;

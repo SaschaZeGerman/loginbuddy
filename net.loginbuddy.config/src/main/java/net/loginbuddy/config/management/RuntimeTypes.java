@@ -1,6 +1,6 @@
 package net.loginbuddy.config.management;
 
-import net.loginbuddy.config.scope.LoginbuddyScope;
+import net.loginbuddy.config.management.scope.LoginbuddyScope;
 
 public enum RuntimeTypes {
 

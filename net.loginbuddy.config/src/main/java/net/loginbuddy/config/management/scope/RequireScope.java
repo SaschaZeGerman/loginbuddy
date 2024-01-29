@@ -1,4 +1,4 @@
-package net.loginbuddy.config.scope;
+package net.loginbuddy.config.management.scope;
 
 import java.lang.annotation.Documented;
 

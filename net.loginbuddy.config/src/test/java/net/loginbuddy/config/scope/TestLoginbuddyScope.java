@@ -1,5 +1,6 @@
 package net.loginbuddy.config.scope;
 
+import net.loginbuddy.config.management.scope.LoginbuddyScope;
 import org.junit.Test;
 
 import java.util.Set;

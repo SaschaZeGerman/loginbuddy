@@ -1,4 +1,4 @@
-package net.loginbuddy.config.loginbuddy.common;
+package net.loginbuddy.service.server.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

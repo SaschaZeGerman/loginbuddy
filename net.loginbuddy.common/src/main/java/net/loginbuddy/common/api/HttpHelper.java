@@ -13,7 +13,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,7 +22,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -174,15 +176,15 @@ public class HttpHelper {
         return redirectUri.concat("error=").concat(error).concat("&error_description=").concat(errorDescription);
     }
 
-    public static String stringArrayToString(String[] jsonArray) {
-        return stringArrayToString(jsonArray, " ");
-    }
-
     /**
      * Turn ["first","second"] to "first second"
      */
     public static String jsonArrayToString(JSONArray jsonArray) {
         return jsonArray.toJSONString().substring(1, jsonArray.toJSONString().length() - 1).replaceAll("[,\"]{1,5}", " ").trim();
+    }
+
+    public static String stringArrayToString(String[] jsonArray) {
+        return stringArrayToString(jsonArray, " ");
     }
 
     /**

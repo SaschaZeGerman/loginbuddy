@@ -1,4 +1,4 @@
-package net.loginbuddy.service.server;
+package net.loginbuddy.service.server.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,7 +8,6 @@ import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
 import net.loginbuddy.common.util.Pkce;
-import net.loginbuddy.config.loginbuddy.common.GrantTypeHandler;
 import net.loginbuddy.service.util.SessionContext;
 
 import java.io.IOException;
