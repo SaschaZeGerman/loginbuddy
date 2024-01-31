@@ -24,9 +24,9 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public abstract class AuthorizationHandler extends HttpServlet {
+public abstract class AuthorizeHandler extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(AuthorizationHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AuthorizeHandler.class.getName());
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);

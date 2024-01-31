@@ -15,7 +15,7 @@ import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 
 import java.io.IOException;
 
-public class Authorize extends AuthorizationHandler {
+public class Authorize extends AuthorizeHandler {
 
     @Override
     protected void handleError(int httpStatus, String errorMsg, HttpServletResponse response) throws IOException {

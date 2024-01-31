@@ -10,7 +10,7 @@ import net.loginbuddy.common.util.ParameterValidatorResult;
 
 import java.io.IOException;
 
-public class AuthorizePar extends AuthorizationHandler {
+public class AuthorizePar extends AuthorizeHandler {
 
     @Override
     protected void handleError(int httpStatus, String errorMsg, HttpServletResponse response) throws IOException {

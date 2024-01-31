@@ -1,4 +1,4 @@
-package net.loginbuddy.config;
+package net.loginbuddy.service.server;
 
 import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.api.PostRequest;
@@ -9,16 +9,13 @@ import net.loginbuddy.common.storage.LoginbuddyStorage;
 import net.loginbuddy.common.util.*;
 import net.loginbuddy.common.util.ParameterValidatorResult.RESULT;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
-import net.loginbuddy.config.loginbuddy.Loginbuddy;
 import net.loginbuddy.config.loginbuddy.LoginbuddyUtil;
 import net.loginbuddy.config.loginbuddy.Providers;
 import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import net.loginbuddy.config.loginbuddy.handler.OidcdrLoginbuddyHandler;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 

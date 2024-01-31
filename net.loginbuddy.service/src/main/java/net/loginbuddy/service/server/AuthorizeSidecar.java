@@ -6,13 +6,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
-import net.loginbuddy.config.HeadOfInitialize;
 import net.loginbuddy.service.util.SessionContext;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class AuthorizeSidecar extends AuthorizationHandler {
+public class AuthorizeSidecar extends AuthorizeHandler {
 
     private static final Logger LOGGER = Logger.getLogger(AuthorizeSidecar.class.getName());
 
