@@ -17,8 +17,6 @@ import net.loginbuddy.common.config.Meta;
 import net.loginbuddy.common.util.MsgResponse;
 import net.loginbuddy.config.discovery.DiscoveryUtil;
 import net.loginbuddy.config.loginbuddy.common.OnBehalfOf;
-import net.loginbuddy.config.loginbuddy.handler.DefaultLoginbuddyHandler;
-import net.loginbuddy.config.loginbuddy.handler.LoginbuddyHandler;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -248,6 +246,9 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
         currentMeta.getStatus().putAll(meta.getStatus());
 
         providers.setMeta(currentMeta);
+        for(String metaMsg : currentMeta.getStatus().keySet()) {
+            LOGGER.warning(String.format("Provider config issues: %S -> %s", metaMsg, currentMeta.getStatus().get(metaMsg)));
+        }
 
         return providers;
     }
@@ -596,6 +597,10 @@ class ClientObjectDeserializer extends StdDeserializer<Clients> {
             }
         }
         clients.setClientContacts(contacts);
+
+        for(String metaMsg : clients.getMeta().getStatus().keySet()) {
+            LOGGER.warning(String.format("Client config issues: %S -> %s", metaMsg, clients.getMeta().getStatus().get(metaMsg)));
+        }
 
         return clients;
     }

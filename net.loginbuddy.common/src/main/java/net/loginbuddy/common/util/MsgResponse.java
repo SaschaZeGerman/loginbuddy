@@ -64,6 +64,10 @@ public class MsgResponse implements Serializable {
         return headerName == null ? null : headers.get(headerName.toLowerCase());
     }
 
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
     @Override
     public String toString() {
         return msg;
