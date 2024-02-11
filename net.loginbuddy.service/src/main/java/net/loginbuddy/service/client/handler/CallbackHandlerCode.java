@@ -56,7 +56,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler) sessionCtx.get(Constants.ISSUER_HANDLER.getKey());
         Providers providers = loginbuddyHandler.getProviders(provider);
 
-        String access_token = null;
+        String providerAccessToken = null;
 
 // ***************************************************************
 // ** Exchange the code for a token response
@@ -114,7 +114,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
             if (tokenResponseObject.get("id_token_payload") != null) {
                 eb.setIdTokenPayload((JSONObject) tokenResponseObject.remove("id_token_payload"));
             }
-            access_token = (String) tokenResponseObject.remove("provider_access_token");
+            providerAccessToken = (String) tokenResponseObject.remove("provider_access_token");
             eb.setTokenResponse(tokenResponseObject);
         } else {
             // need to handle error cases
@@ -131,7 +131,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         String userinfo = sessionCtx.getString(Constants.USERINFO_ENDPOINT.getKey());
         if (userinfo != null) {
             try {
-                HttpGet req = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
+                HttpGet req = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, providerAccessToken, providers);
                 MsgResponse userinfoResp = HttpHelper.getAPI(req);
                 if (userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()) != null) {
                     sessionCtx.put(Constants.DPOP_NONCE_HEADER.getKey(), userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
@@ -139,7 +139,7 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                 }
                 if (userinfoResp.getStatus() == 401) {
                     if (userinfoResp.getHeader("www-authenticate") != null && userinfoResp.getHeader("www-authenticate").contains("use_dpop_nonce")) {
-                        req = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, access_token, providers);
+                        req = getUserInfoReq(sessionCtx, tokenType, loginbuddyHandler, userinfo, providerAccessToken, providers);
                         userinfoResp = HttpHelper.getAPI(req);
                     }
                 }
@@ -154,31 +154,31 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
                 LOGGER.warning(String.format("Retrieving userinfo failed! %s", e.getMessage()));
             }
         }
-        eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), access_token));
+        eb.setNormalized(Normalizer.normalizeDetails(providers.getMappings(), eb.getEbAsJson(), providerAccessToken));
 
-        createUserInfoSession(sessionCtx, access_token, tokenType, providers.getDpopSigningAlg(), loginbuddyHandler);
+        createUserInfoSession(sessionCtx, providerAccessToken, tokenType, providers.getDpopSigningAlg(), loginbuddyHandler);
 
         returnAuthorizationCode(response, sessionCtx, eb);
 
     }
 
-    private static HttpGet getUserInfoReq(SessionContext sessionCtx, String tokenType, LoginbuddyHandler loginbuddyHandler, String userinfo, String access_token, Providers providers) throws Exception {
+    private static HttpGet getUserInfoReq(SessionContext sessionCtx, String tokenType, LoginbuddyHandler loginbuddyHandler, String userinfo, String providerAccessToken, Providers providers) throws Exception {
         return Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
                 GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
-                        .setBearerAccessToken(access_token)
+                        .setBearerAccessToken(providerAccessToken)
                         .build() :
                 GetRequest.create(loginbuddyHandler.getUserinfoApi(userinfo, true))
-                        .setAccessToken(tokenType, access_token)
+                        .setAccessToken(tokenType, providerAccessToken)
                         .setDpopHeader(
                                 providers.getDpopSigningAlg(),
                                 loginbuddyHandler.getUserinfoApi(userinfo, false),
-                                access_token,
+                                providerAccessToken,
                                 sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()),
                                 sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()))
                         .build();
     }
 
-    protected void createUserInfoSession(SessionContext sessionCtx, String access_token, String tokenType, String dpopSigningAlg, LoginbuddyHandler loginbuddyHandler) {
+    protected void createUserInfoSession(SessionContext sessionCtx, String providerAccessToken, String tokenType, String dpopSigningAlg, LoginbuddyHandler loginbuddyHandler) {
 
 // ***************************************************************
 // ** Create a session to be used if the client wants to call the providers Userinfo endpoint itself. Loginbuddy will proxy those calls
@@ -192,11 +192,10 @@ public class CallbackHandlerCode extends CallbackHandlerDefault {
         userInfoSession.put(Constants.DPOP_NONCE_HEADER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER.getKey()));
         userInfoSession.put(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey(), sessionCtx.getString(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey()));
         userInfoSession.put(Constants.ISSUER_HANDLER.getKey(), loginbuddyHandler);
-        String[] hint = access_token.split("[.]");
-        if (hint.length == 3) {
-            LoginbuddyCache.CACHE.put(hint[2], userInfoSession, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
-        } else {
-            LoginbuddyCache.CACHE.put(access_token, userInfoSession, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
+        String sessionKey = providerAccessToken;
+        if (providerAccessToken.split("[.]").length == 3) {
+            sessionKey = providerAccessToken.split("[.]")[2];
         }
+        LoginbuddyCache.CACHE.put(sessionKey, userInfoSession, PropertiesUtil.UTIL.getLongProperty("lifetime.proxy.userinfo"));
     }
 }

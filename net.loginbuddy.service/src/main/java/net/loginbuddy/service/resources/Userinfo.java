@@ -24,82 +24,84 @@ public class Userinfo extends Overlord {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        ParameterValidatorResult accessToken = ParameterValidator.getSingleValue(request.getParameterValues(Constants.ACCESS_TOKEN.getKey()));
+        ParameterValidatorResult accessTokenParameter = ParameterValidator.getSingleValue(request.getParameterValues(Constants.ACCESS_TOKEN.getKey()));
         String authorizationHeader = request.getHeader(Constants.AUTHORIZATION.getKey());
 
-        String tokenHint;
-        String[] token = HttpHelper.extractAccessToken(accessToken, authorizationHeader).split("[.]");
+        // if it was encrypted by Loginbuddy it will look like lb.ey.....
+        String givenToken = HttpHelper.extractAccessToken(accessTokenParameter, authorizationHeader);
 
-        // encrypted token (i.e.: lb.access_token_value)
-        if (token.length == 2 && "lb".equals(token[0])) {
+        String originalAccessToken;
+
+        if (givenToken.startsWith("lb.")) {
             try {
-                tokenHint = LoginbuddyUtil.UTIL.decrypt(String.format("%s.%s", token[0], token[1]));
-                // the original access_token may be a reference token or a JWT
-                token = tokenHint.split(":")[1].split("[.]");
+                String decryptedToken = LoginbuddyUtil.UTIL.decrypt(givenToken);
+                String originalProvider = decryptedToken.split("[:]")[0];  // no use for this right now ... !?
+                originalAccessToken = decryptedToken.split("[:]")[1];
             } catch (Exception e) {
                 response.setStatus(400);
                 response.setContentType("application/json");
-                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the given token could not be encrypted").toJSONString());
-
+                response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the given token could not be decrypted").toJSONString());
+                return;
             }
+        } else {
+            originalAccessToken = givenToken;
         }
 
+        String sessionKey;
+
         // for JWT based token the signature was used as key for the cache
-        if (token.length == 3) {
-            tokenHint = token[2];
+        if (originalAccessToken.split("[.]").length == 3) {
+            sessionKey = originalAccessToken.split("[.]")[2];
         } else {
-            tokenHint = token[0];
+            sessionKey = originalAccessToken;
         }
 
         MsgResponse userinfoResp;
-        JSONObject userInfoSession = (JSONObject) LoginbuddyCache.CACHE.get(tokenHint);
+        JSONObject userInfoSession = (JSONObject) LoginbuddyCache.CACHE.get(sessionKey);
         if (userInfoSession == null) {
-            userinfoResp = new MsgResponse();
-            userinfoResp.setStatus(400);
-            userinfoResp.setContentType("application/json");
-            userinfoResp.setMsg(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
+            response.setStatus(400);
+            response.setContentType("application/json");
+            response.getWriter().write(HttpHelper.getErrorAsJson("invalid_request", "the given token is unknown").toJSONString());
         } else {
             try {
                 String dpopNonce = (String)userInfoSession.get(Constants.DPOP_NONCE_HEADER.getKey());
                 String dpopNonceProvider = (String)userInfoSession.get(Constants.DPOP_NONCE_HEADER_PROVIDER.getKey());
-                HttpGet req = getUserinfo(userInfoSession, tokenHint, dpopNonce, dpopNonceProvider);
+                HttpGet req = getUserInfoRequest(userInfoSession, originalAccessToken, dpopNonce, dpopNonceProvider);
                 userinfoResp = HttpHelper.getAPI(req);
                 if (userinfoResp.getStatus() == 401) {
                     if (userinfoResp.getHeader("WWW-Authenticate") != null && userinfoResp.getHeader("WWW-Authenticate").contains("use_dpop_nonce")) {
-                        req = getUserinfo(userInfoSession, tokenHint, userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
+                        req = getUserInfoRequest(userInfoSession, originalAccessToken, userinfoResp.getHeader(Constants.DPOP_NONCE_HEADER.getKey()));
                         userinfoResp = HttpHelper.getAPI(req);
                     }
                 }
+                response.setStatus(userinfoResp.getStatus());
+                response.setContentType(userinfoResp.getContentType());
+                response.getWriter().write(userinfoResp.getMsg());
             } catch (Exception e) {
                 response.setStatus(500);
                 response.setContentType("application/json");
                 response.getWriter().write(HttpHelper.getErrorAsJson("server_error", "the userinfo request failed").toJSONString());
-                return;
             }
         }
-
-        response.setStatus(userinfoResp.getStatus());
-        response.setContentType(userinfoResp.getContentType());
-        response.getWriter().write(userinfoResp.getMsg());
     }
 
-    private HttpGet getUserinfo(JSONObject userInfoSession, String tokenHint, String dpopNonce) throws Exception {
-        return getUserinfo(userInfoSession, tokenHint, dpopNonce, Sanetizer.getDomain((String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey())));
+    private HttpGet getUserInfoRequest(JSONObject userInfoSession, String providerAccessToken, String dpopNonce) throws Exception {
+        return getUserInfoRequest(userInfoSession, providerAccessToken, dpopNonce, Sanetizer.getDomain((String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey())));
     }
 
-    private HttpGet getUserinfo(JSONObject userInfoSession, String tokenHint, String dpopNonce, String dpopNonceProvider) throws Exception {
+    private HttpGet getUserInfoRequest(JSONObject userInfoSession, String providerAccessToken, String dpopNonce, String dpopNonceProvider) throws Exception {
         String tokenType = (String) userInfoSession.get(Constants.TOKEN_TYPE.getKey());
         LoginbuddyHandler loginbuddyHandler = (LoginbuddyHandler)userInfoSession.get(Constants.ISSUER_HANDLER.getKey());
         return Constants.BEARER.getKey().equalsIgnoreCase(tokenType) ?
                 GetRequest.create(loginbuddyHandler.getUserinfoApi( (String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey()), true ))
-                        .setBearerAccessToken(tokenHint)
+                        .setBearerAccessToken(providerAccessToken)
                         .build() :
                 GetRequest.create(loginbuddyHandler.getUserinfoApi( (String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey()), true ))
-                        .setAccessToken((String) userInfoSession.get(Constants.TOKEN_TYPE.getKey()), tokenHint)
+                        .setAccessToken((String) userInfoSession.get(Constants.TOKEN_TYPE.getKey()), providerAccessToken)
                         .setDpopHeader(
                                 (String) userInfoSession.get(Constants.DPOP_SIGNING_ALG.getKey()),
                                 loginbuddyHandler.getUserinfoApi( (String) userInfoSession.get(Constants.USERINFO_ENDPOINT.getKey()), false ),
-                                tokenHint,
+                                providerAccessToken,
                                 dpopNonce,
                                 dpopNonceProvider)
                         .build();
