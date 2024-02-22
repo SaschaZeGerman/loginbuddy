@@ -21,7 +21,6 @@ public class Pkce {
 
     private static final Logger LOGGER = Logger.getLogger(String.valueOf(Pkce.class));
 
-    public static final String CODE_CHALLENGE_METHOD_PLAIN = "plain";
     public static final String CODE_CHALLENGE_METHOD_S256 = "S256";
 
     /**

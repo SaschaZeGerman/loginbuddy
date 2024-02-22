@@ -24,7 +24,7 @@ public class CertificateManager {
     /**
      * Connect to a host that uses a self-signed (untrusted) certificate
      */
-    public final List<Certificate> retrieveTrustedCert(String host, int port) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    private static List<Certificate> retrieveTrustedCert(String host, int port) throws IOException, NoSuchAlgorithmException, KeyManagementException {
         // TODO turn this method into good code
         List<Certificate> certs = new ArrayList<>();
         Certificate[] peerCertificates = null;
@@ -40,12 +40,13 @@ public class CertificateManager {
                 certs = new ArrayList<>(Arrays.asList(peerCertificates));
                 break;
             } catch (ConnectException e) {
-                if(e.getMessage().contains("refused")) {
+                if (e.getMessage().contains("refused")) {
                     LOGGER.info(String.format("Target server could not be reached: '%s:%d'. Attempt: %d%s", host, port, count, count == i ? ", giving up" : ""));
                     try {
                         Thread.sleep(wait);
                     } catch (InterruptedException e1) {
                         // should never occur
+                        LOGGER.severe(e1.getMessage());
                     }
                 } else {
                     throw e;
@@ -59,7 +60,7 @@ public class CertificateManager {
     /**
      * Adding self-signed certificates as trusted certs (useful during development times)
      */
-    public final void addToTruststore(List<Certificate> certs)
+    private static void addToTruststore(List<Certificate> certs)
             throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
         // TODO extract hardcoded values
         String ksLocation = "/usr/local/openjdk-11/lib/security/cacerts";
@@ -80,6 +81,7 @@ public class CertificateManager {
 
     /**
      * Generate base64url encoded sha256 value
+     *
      * @param input value for which to generate the output value
      */
     public static String generateBase64UrlEncodedSha256(String input) throws NoSuchAlgorithmException {
@@ -109,24 +111,21 @@ public class CertificateManager {
         } catch (Exception e) {
             LOGGER.warning(String.format("Variable SUPPORT_OIDCDR is not accessible and therefore its certificate is not imported: %s", e.getMessage()));
         }
-        try {
-            if (servers.trim().length() > 0) {
-                LOGGER.info("Connecting to trusted servers!");
-                CertificateManager cm = new CertificateManager();
-                for (String server : servers.split(",")) {
-                    List<Certificate> certificates = cm.retrieveTrustedCert(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
-                    cm.addToTruststore(certificates);
-                }
+        LOGGER.info("Connecting to trusted servers!");
+        for (String server : servers.split(",")) {
+            try {
+                List<Certificate> certificates = retrieveTrustedCert(server.split(":")[0], Integer.parseInt(server.split(":")[1]));
+                addToTruststore(certificates);
+            } catch (Exception e) {
+                LOGGER.warning(String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
             }
-        } catch (Exception e) {
-            LOGGER.warning(String.format("Trusted server certificate could not be added! : %s", e.getMessage()));
         }
     }
 
     /**
      * Used to import self-signed certificates as trusted certs during startup
      */
-    private SSLContext getOpenSslContext() throws NoSuchAlgorithmException, KeyManagementException {
+    private static SSLContext getOpenSslContext() throws NoSuchAlgorithmException, KeyManagementException {
         SSLContext sslCtx = SSLContext.getInstance("TLS");
         sslCtx.init(null, new TrustManager[]
                 {
