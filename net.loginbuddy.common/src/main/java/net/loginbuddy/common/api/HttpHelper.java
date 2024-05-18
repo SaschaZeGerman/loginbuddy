@@ -60,6 +60,7 @@ public class HttpHelper {
                     EntityUtils.toString(response.getEntity()), response.getStatusLine().getStatusCode(),
                     headers);
         } catch (Exception e) {
+            LOGGER.warning(e.getMessage());
             MsgResponse msg = new MsgResponse();
             msg.setContentType("application/json");
             msg.setStatus(400);

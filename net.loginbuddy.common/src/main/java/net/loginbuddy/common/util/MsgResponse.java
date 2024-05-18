@@ -11,12 +11,14 @@ package net.loginbuddy.common.util;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * The data model that is returned to Loginbuddy after receiving a response from providers.
  */
 public class MsgResponse implements Serializable {
 
+    private static final Logger LOGGER = Logger.getLogger(MsgResponse.class.getName());
     private String contentType, msg;
     private int status;
 
@@ -61,7 +63,12 @@ public class MsgResponse implements Serializable {
     }
 
     public String getHeader(String headerName) {
-        return headerName == null ? null : headers.get(headerName.toLowerCase());
+        try {
+            return headers.get(headerName.toLowerCase());
+        } catch(Exception e) {
+            LOGGER.warning(e.getMessage());
+        }
+        return null;
     }
 
     public Map<String, String> getHeaders() {

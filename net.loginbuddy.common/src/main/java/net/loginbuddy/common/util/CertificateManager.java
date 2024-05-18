@@ -30,7 +30,7 @@ public class CertificateManager {
         Certificate[] peerCertificates = null;
         int count = 1;
         int wait = 5000;
-        int i = 5;
+        int i = 15;
         while (i >= count) {
             try {
                 SSLSocket socket = (SSLSocket) getOpenSslContext().getSocketFactory().createSocket(host, port);
