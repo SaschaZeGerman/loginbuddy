@@ -33,6 +33,7 @@ Loginbuddy is built to support OpenID Connect and OAuth 2.0 specifications:
 * OpenID Connect Discovery
 * OpenID Connect Dynamic Registration
 * OAuth 2.0 Pushed Authorization Requests
+* OAuth 2.0 Demonstrate Proof of Possession (DPoP)
 * OAuth 2.0 Rich Authorization Requests
 
 For more details on the APIs supported see [WIKI - Protocols and APIs](https://github.com/SaschaZeGerman/loginbuddy/wiki/Protocols-and-APIs).
