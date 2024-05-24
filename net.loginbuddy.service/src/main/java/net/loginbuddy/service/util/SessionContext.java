@@ -32,11 +32,12 @@ public class SessionContext extends LoginbuddyContext {
    * @param signedResponseAlg
    * @param obfuscateToken
    * @param requestUriPar
+   * @param authorizationDetails
    */
   public void setSessionInit(String clientId, String scope, String response_type, String code_challenge,
       String code_challenge_method, String redirectUri, String nonce, String state, String provider,
       String prompt, String loginHint, String idtokenHint, boolean checkRedirectUri, String redirectUriValid, boolean acceptDynamicProvider,
-                             String signedResponseAlg, boolean obfuscateToken, String requestUriPar) {
+                             String signedResponseAlg, boolean obfuscateToken, String requestUriPar, String authorizationDetails) {
 
     put(Constants.CLIENT_CLIENT_ID.getKey(), clientId);
     put(Constants.CLIENT_SCOPE.getKey(), scope);
@@ -58,6 +59,7 @@ public class SessionContext extends LoginbuddyContext {
     put(Constants.CLIENT_CODE_CHALLENGE.getKey(), code_challenge);
     put(Constants.CLIENT_CODE_CHALLENGE_METHOD.getKey(), code_challenge_method);
     put(Constants.PAR_REQUEST_URI.getKey(), requestUriPar);
+    put(Constants.CLIENT_AUTHORIZATION_DETAILS.getKey(), authorizationDetails);
   }
 
   public String useParRequestUri() {

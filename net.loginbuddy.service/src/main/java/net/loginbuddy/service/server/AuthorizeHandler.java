@@ -16,6 +16,8 @@ import net.loginbuddy.config.loginbuddy.Clients;
 import net.loginbuddy.config.properties.PropertiesUtil;
 import net.loginbuddy.service.util.SessionContext;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -79,13 +81,23 @@ public abstract class AuthorizeHandler extends HttpServlet {
         ParameterValidatorResult clientNonceResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.NONCE.getKey()));
 
-        // these three parameters are forwarded to the provider, not handled by Loginbuddy
+        // these four parameters are forwarded to the provider, not handled by Loginbuddy
         ParameterValidatorResult clientPromptResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.PROMPT.getKey()), "");
         ParameterValidatorResult clientLoginHintResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.LOGIN_HINT.getKey()), "");
         ParameterValidatorResult clientIdTokenHintResult = ParameterValidator
                 .getSingleValue(request.getParameterValues(Constants.ID_TOKEN_HINT.getKey()), "");
+        ParameterValidatorResult authorizationDetailsResult = ParameterValidator
+                .getSingleValue(request.getParameterValues(Constants.AUTHORIZATION_DETAILS.getKey()), "");
+        if(!"".equals(authorizationDetailsResult.getValue())) {
+            try {
+                new JSONParser().parse(authorizationDetailsResult.getValue());
+            } catch (ParseException e) {
+                handleError(400, "The given authorization_details are not in JSON format!", response);
+                return;
+            }
+        }
 
         // if Loginbuddys response should not include 'real' access_token or refresh_token it will create fake ones. Useful for demo purposes that should not display the original values
         ParameterValidatorResult obfuscateTokenResult = ParameterValidator
@@ -265,10 +277,11 @@ public abstract class AuthorizeHandler extends HttpServlet {
                 clientRedirectUriValid,
                 acceptDynamicProvider,
                 signResponseAlg,
-                obfuscateTokenResult.getBooleanValue());
+                obfuscateTokenResult.getBooleanValue(),
+                authorizationDetailsResult.getValue());
     }
 
-    protected void createSessionAndResponse(HttpServletRequest request, HttpServletResponse response, String clientId, String clientScope, String clientResponseType, String clientCodeChallenge, String clientCodeChallendeMethod, String clientRedirectUri, String clientNonce, String clientState, ParameterValidatorResult clientProviderResult, String clientPrompt, String clientLoginHint, String clientIdTokenHint, boolean checkRedirectUri, String clientRedirectUriValid, boolean acceptDynamicProvider, String signResponseAlg, boolean obfuscateToken) throws IOException, ServletException {
+    protected void createSessionAndResponse(HttpServletRequest request, HttpServletResponse response, String clientId, String clientScope, String clientResponseType, String clientCodeChallenge, String clientCodeChallendeMethod, String clientRedirectUri, String clientNonce, String clientState, ParameterValidatorResult clientProviderResult, String clientPrompt, String clientLoginHint, String clientIdTokenHint, boolean checkRedirectUri, String clientRedirectUriValid, boolean acceptDynamicProvider, String signResponseAlg, boolean obfuscateToken, String authorizationDetails) throws IOException, ServletException {
 
         // ***************************************************************
         // ** Create the session so that it can be handled throughout multiple requests
@@ -298,7 +311,8 @@ public abstract class AuthorizeHandler extends HttpServlet {
                 acceptDynamicProvider,
                 signResponseAlg,
                 obfuscateToken,
-                parRequestUri);
+                parRequestUri,
+                authorizationDetails);
 
         LoginbuddyCache.CACHE.put(sessionCtx.getId(), sessionCtx, PropertiesUtil.UTIL.getLongProperty("lifetime.oauth.authcode.loginbuddy.flow"));
 

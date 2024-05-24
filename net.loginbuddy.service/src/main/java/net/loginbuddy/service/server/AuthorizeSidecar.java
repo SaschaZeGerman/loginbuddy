@@ -3,6 +3,7 @@ package net.loginbuddy.service.server;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import net.loginbuddy.common.api.HttpHelper;
 import net.loginbuddy.common.config.Constants;
 import net.loginbuddy.common.util.ParameterValidator;
 import net.loginbuddy.common.util.ParameterValidatorResult;
@@ -36,9 +37,11 @@ public class AuthorizeSidecar extends AuthorizeHandler {
 
     @Override
     protected void handleError(int httpStatus, String errorMsg, HttpServletResponse response) throws IOException {
-        System.out.println(httpStatus);
-        System.out.println(errorMsg);
-        // TODO handle errors (if necessary)
+        response.setStatus(httpStatus);
+        response.setContentType("application/json");
+        response.addHeader("Cache-Control", "no-store");
+        response.addHeader("Pragma", "no-cache");
+        response.getWriter().write(HttpHelper.createJsonErrorResponse(errorMsg));
     }
 
     @Override
@@ -65,7 +68,7 @@ public class AuthorizeSidecar extends AuthorizeHandler {
     }
 
     @Override
-    protected void createSessionAndResponse(HttpServletRequest request, HttpServletResponse response, String clientId, String clientScope, String clientResponseType, String clientCodeChallenge, String clientCodeChallendeMethod, String clientRedirectUri, String clientNonce, String clientState, ParameterValidatorResult clientProviderResult, String clientPrompt, String clientLoginHint, String clientIdTokenHint, boolean checkRedirectUri, String clientRedirectUriValid, boolean acceptDynamicProvider, String signResponseAlg, boolean obfuscateToken) throws IOException, ServletException {
+    protected void createSessionAndResponse(HttpServletRequest request, HttpServletResponse response, String clientId, String clientScope, String clientResponseType, String clientCodeChallenge, String clientCodeChallendeMethod, String clientRedirectUri, String clientNonce, String clientState, ParameterValidatorResult clientProviderResult, String clientPrompt, String clientLoginHint, String clientIdTokenHint, boolean checkRedirectUri, String clientRedirectUriValid, boolean acceptDynamicProvider, String signResponseAlg, boolean obfuscateToken, String authorizationDetails) throws IOException, ServletException {
 
         // ***************************************************************
         // ** Create the session so that it can be handled throughout multiple requests
@@ -91,7 +94,8 @@ public class AuthorizeSidecar extends AuthorizeHandler {
                 acceptDynamicProvider,
                 signResponseAlg,
                 obfuscateToken,
-                null);
+                null,
+                authorizationDetails);
 
         // this will be the authorization_url or an error_url
         String authorizationUrl = HeadOfInitialize.processInitializeRequest(

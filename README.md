@@ -1,6 +1,6 @@
 # About Loginbuddy 
 
-**Latest update: January 2024! See what has changed here: [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Latest-and-Greatest)**
+**Latest update: May 2024! See what has changed here: [WIKI](https://github.com/SaschaZeGerman/loginbuddy/wiki/Latest-and-Greatest)**
 
 Loginbuddy is a container based solution that handles OpenID Connect flows and is used as proxy between an application (your application) and an OpenID Provider (OP). Your application only needs to communicate with Loginbuddy. After finishing the authentication and authorization flow with providers, Loginbuddy generates a single response through a stable, normalized, interface to the application.
 
@@ -33,6 +33,7 @@ Loginbuddy is built to support OpenID Connect and OAuth 2.0 specifications:
 * OpenID Connect Discovery
 * OpenID Connect Dynamic Registration
 * OAuth 2.0 Pushed Authorization Requests
+* OAuth 2.0 Rich Authorization Requests
 
 For more details on the APIs supported see [WIKI - Protocols and APIs](https://github.com/SaschaZeGerman/loginbuddy/wiki/Protocols-and-APIs).
 

@@ -143,6 +143,7 @@ public class HeadOfInitialize {
         String prompt = "".equals(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey())) ? "" : "&" + Constants.PROMPT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_PROMPT.getKey()));
         String loginHint = "".equals(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey())) ? "" : "&" + Constants.LOGIN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_LOGIN_HINT.getKey()));
         String idTokenHint = "".equals(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey())) ? "" : "&" + Constants.ID_TOKEN_HINT.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_ID_TOKEN_HINT.getKey()));
+        String authorizationDetails = "".equals(sessionCtx.getString(Constants.CLIENT_AUTHORIZATION_DETAILS.getKey())) ? "" : "&" + Constants.AUTHORIZATION_DETAILS.getKey() + "=" + HttpHelper.urlEncode(sessionCtx.getString(Constants.CLIENT_AUTHORIZATION_DETAILS.getKey()));
 
         StringBuilder queryParams = new StringBuilder();
         queryParams.append(Constants.CLIENT_ID.getKey()).append("=").append(HttpHelper.urlEncode(providers.getClientId())).
@@ -155,6 +156,7 @@ public class HeadOfInitialize {
                 .append(prompt)
                 .append(loginHint)
                 .append(idTokenHint)
+                .append(authorizationDetails)
                 .append("&").append(Constants.STATE.getKey()).append("=").append(sessionCtx.getId())
                 .append(providers.isDpopEnabled() ? String.format("&dpop_jkt=%s", HttpHelper.urlEncode(Jwt.DEFAULT.getDpopJkt(providers.getDpopSigningAlg()))) : "");
 
