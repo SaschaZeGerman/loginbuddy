@@ -175,8 +175,8 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
             throw new IllegalArgumentException("Provider could not be loaded due to an invalid JSON format!");
         }
 
-        // Figure out what type of configuration we have (the same check as in LoginbuddyUtil)
-        ProviderConfigType providerType = currentProvider.get(Constants.CLIENT_ID.getKey()) == null ? ProviderConfigType.MINIMAL : currentProvider.get("openid_configuration_uri") == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
+        // Figure out what type of configuration we have
+        ProviderConfigType providerType = ProviderConfigType.getProviderConfigType(currentProvider);
 
         Meta meta = new Meta();
         JSONObject oidcConfig = new JSONObject();
@@ -196,9 +196,9 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
             String registerUrl = (String) oidcConfig.get(Constants.REGISTRATION_ENDPOINT.getKey());
             try {
                 if (registerUrl == null || registerUrl.trim().length() == 0 || registerUrl.startsWith("http:")) {
-                    LOGGER.warning(String.format("The provider does not support dynamic registration. Provider: %s", currentProvider.get(Constants.PROVIDER.getKey())));
-                    meta.addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("The provider does not support dynamic registration. Provider: %s", currentProvider.get(Constants.PROVIDER.getKey())));
-                    throw new DynamicProviderRegistrationException((String) currentProvider.get("The provider does not support dynamic registration"));
+                    LOGGER.warning(String.format("The provider does not support dynamic registration or uses http. Provider: %s", currentProvider.get(Constants.PROVIDER.getKey())));
+                    meta.addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("The provider does not support dynamic registration or uses http. Provider: %s", currentProvider.get(Constants.PROVIDER.getKey())));
+                    throw new DynamicProviderRegistrationException((String) currentProvider.get("The provider does not support dynamic registration or uses http"));
                 }
 
                 MsgResponse registration = HttpHelper.register(registerUrl, DiscoveryUtil.UTIL.getRedirectUri());
@@ -216,6 +216,9 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
                 meta.addStatus(Meta.STATUS_REGISTRATION_ERROR, String.format("Dynamic registration for provider: '%s' failed: %s", currentProvider.get(Constants.PROVIDER.getKey()), e.getMessage()));
             }
         }
+
+        // As of here, there are only 'full' registrations. Below is removed to avoid any kind of 're-registration'
+
         currentProvider.remove("openid_discovery_uri");
         oidcConfig.remove("openid_discovery_uri");
 
@@ -228,7 +231,7 @@ class ProviderObjectDeserializer extends StdDeserializer<Providers> {
 
         Providers providers = new Providers((String) currentProvider.get(Constants.ISSUER.getKey()), (String) currentProvider.get(Constants.CLIENT_ID.getKey()), (String) currentProvider.get(Constants.REDIRECT_URI.getKey()), (String) currentProvider.get(Constants.CLIENT_SECRET.getKey()));
         providers.setProvider((String) currentProvider.get(Constants.PROVIDER.getKey()));
-        providers.setOpenidConfigurationUri((String) currentProvider.get("openid_configuration_uri"));
+        providers.setOpenidConfigurationUri((String) currentProvider.get(Constants.OPENID_CONFIGURATION_URI.getKey()));
         providers.setResponseType((String) currentProvider.get(Constants.RESPONSE_TYPE.getKey()));
         providers.setScope((String) currentProvider.get(Constants.SCOPE.getKey()));
         providers.setAuthorizationEndpoint((String) currentProvider.get(Constants.AUTHORIZATION_ENDPOINT.getKey()));

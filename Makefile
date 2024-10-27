@@ -23,7 +23,7 @@ build_all_non_dev:
 
 # Creates a docker image that contains Java and Maven and compiles the code
 # This is useful if you do not want to fiddle around with Java versions and Maven
-# Run this target before running 'build_all_builder'
+# Run this target before running 'build_all_non_dev'
 #
 build_builder:
 	docker build --no-cache --tag saschazegerman/loginbuddy-builder:latest -f Dockerfile_builder .

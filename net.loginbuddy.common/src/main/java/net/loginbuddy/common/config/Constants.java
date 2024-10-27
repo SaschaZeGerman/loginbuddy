@@ -64,6 +64,7 @@ public enum Constants {
     NONCE("nonce"),
     OPENID_SCOPE("openid profile email"),
     OBFUSCATE_TOKEN("obfuscate_token"),
+    OPENID_CONFIGURATION_URI("openid_configuration_uri"),
     PAR_REQUEST_URI("parRequestUri"),
     PROVIDER("provider"),
     PROVIDER_ADDITION("provider_addition"),

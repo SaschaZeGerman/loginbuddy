@@ -78,6 +78,8 @@ public class HttpHelper {
                 msg.setMsg(getErrorAsJson("invalid_server", "OpenID Provider did not respond. Need to use HTTPS?").toJSONString());
             } else if (e.getMessage().contains("Read timed out")) {
                 msg.setMsg(getErrorAsJson("invalid_server", "OpenID Provider connection timed out").toJSONString());
+            } else if (e.getMessage().contains("connect timed out")) {
+                msg.setMsg(getErrorAsJson("invalid_server", "OpenID Provider connection timed out").toJSONString());
             } else {
                 msg.setMsg(getErrorAsJson("invalid_server", String.format("no idea what went wrong. Exception: %s", e.getMessage())).toJSONString());
             }

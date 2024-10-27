@@ -279,10 +279,6 @@ public enum LoginbuddyUtil implements Bootstrap {
         }
     }
 
-    private ProviderConfigType getProviderType(Providers p) {
-        return p.getClientId() == null ? ProviderConfigType.MINIMAL : p.getOpenidConfigurationUri() == null ? ProviderConfigType.FULL : ProviderConfigType.DEFAULT;
-    }
-
     public String encrypt(String msg) {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
