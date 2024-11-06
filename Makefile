@@ -5,6 +5,8 @@ define BUILD_DOCKER
 	docker build --no-cache --tag saschazegerman/loginbuddy-base:latest -f Dockerfile_base .
 	docker build --no-cache --tag saschazegerman/loginbuddy:latest .
 	docker build --no-cache --tag saschazegerman/loginbuddy-oidcdr:latest -f Dockerfile_oidcdr .
+	docker buildx build --platform linux/amd64 --no-cache --tag saschazegerman/loginbuddy-base-intel:latest -f Dockerfile_base_intel .
+	docker buildx build --platform linux/amd64 --no-cache --tag saschazegerman/loginbuddy-intel:latest -f Dockerfile_intel .
 endef
 
 # Compile the code and build the docker images
