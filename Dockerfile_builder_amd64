@@ -1,0 +1,55 @@
+#
+# Based on:
+# https://migueldoctor.medium.com/how-to-create-a-custom-docker-image-with-jdk8-maven-and-gradle-ddc90f41cee4
+#
+FROM --platform=linux/amd64 openjdk:11-jdk
+
+RUN apt install curl
+RUN apt install tar
+RUN apt install bash
+RUN apt install procps
+
+# Downloading and installing Maven
+# 1- Define a constant with the version of maven you want to install
+ARG MAVEN_VERSION=3.8.6
+
+# 2- Define a constant with the working directory
+ARG USER_HOME_DIR="/root"
+
+# 3- Define the SHA key to validate the maven download
+ARG SHA=f790857f3b1f90ae8d16281f902c689e4f136ebe584aba45e4b1fa66c80cba826d3e0e52fdd04ed44b4c66f6d3fe3584a057c26dfcac544a60b301e6d0f91c26
+
+# 4- Define the URL where maven can be downloaded from
+ARG BASE_URL=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}
+
+# 5- Create the directories, download maven, validate the download, install it, remove downloaded file and set links
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && echo "Downloading maven" \
+  && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz  \
+  && echo "Checking download hash" \
+  && echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
+  && echo "Unzipping maven" \
+  && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+  && echo "Cleaning and setting links" \
+  && rm -f /tmp/apache-maven.tar.gz \
+  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+# 6- Define environmental variables required by Maven, like Maven_Home directory and where the maven repo is located
+ENV MAVEN_HOME /usr/share/maven
+ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
+
+COPY pom.xml /tmp/pom.xml
+COPY net.loginbuddy.common/ /tmp/net.loginbuddy.common
+COPY net.loginbuddy.config/ /tmp/net.loginbuddy.config
+COPY net.loginbuddy.oidcdr/ /tmp/net.loginbuddy.oidcdr
+COPY net.loginbuddy.service/ /tmp/net.loginbuddy.service
+
+## This secret is used for testing: net.loginbuddy.config/src/test/java/net/loginbuddy/config/loginbuddy/TestLoginbuddyConfig.java
+#
+ENV SECRET_OBFUSCATION=mtL4BNYmjhy1GltxLOsk4MoRnzeIQ8YK
+
+RUN mvn -f "/tmp/pom.xml" clean install
+
+RUN rm -fr /tmp/*
+
+CMD [""]
